@@ -1,4 +1,4 @@
-﻿# Vinventory
+# Vinventory
 
 Je eigen wijnkelder, op al je apparaten. Elke gebruiker heeft een eigen, privé kelder.
 
