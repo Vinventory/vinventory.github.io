@@ -1,0 +1,2109 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#efe5d2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#140c0e" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Vinventory">
+<meta name="description" content="Vinventory: je eigen wijnkelder, op al je apparaten.">
+<title>Vinventory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Instrument+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one-column cellar ledger on the phone, fixed scan bar at the bottom, full-height sheets for scan / form / detail. */
+:root {
+  /* Day: "Champagne" (beige paper, bronze). Night: "Bordeauxnacht" (option E, "Wijngloed"). */
+  --bg: #efe5d2;
+  --surface: #fffdf6;
+  --sunk: #e5d9c1;
+  --ink: #221d12;
+  --muted: #6b6048;
+  --line: #ddd0b5;
+  --accent: #8a5a14;
+  --accent-text: #7d5112;
+  --accent-soft: #f3e6c6;
+  --accent-ink: #ffffff;
+  --danger: #b3261e;
+  --ok: #2e6b3f;
+  --shadow: 0 1px 2px rgba(35, 26, 18, .06), 0 6px 20px rgba(35, 26, 18, .07);
+  --edge: rgba(0, 0, 0, .15); /* outline of the wine-colour dots and bottles */
+  --w-rood: #6d1a2c; --w-wit: #e3cf72; --w-rose: #eba2ab; --w-mousserend: #efe3b0; --w-dessert: #c98a2b; --w-versterkt: #5c2b1b;
+  --f-display: "Gloock", "Iowan Old Style", Georgia, serif;
+  --f-body: "Instrument Sans", -apple-system, "Segoe UI", system-ui, sans-serif;
+  --r: 14px;
+  --space: 12px; /* the one vertical gap between blocks on the home screen */
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #140c0e; --surface: #22151a; --sunk: #301c22; --ink: #f5ebe6; --muted: #b8999c; --line: #45282f;
+    --accent: #a3223a; --accent-text: #f58a96; --accent-soft: #4a1622; --accent-ink: #ffffff; --danger: #ff8a80; --ok: #7fc793;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25); --edge: rgba(255,255,255,.24);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #140c0e; --surface: #22151a; --sunk: #301c22; --ink: #f5ebe6; --muted: #b8999c; --line: #45282f;
+  --accent: #a3223a; --accent-text: #f58a96; --accent-soft: #4a1622; --accent-ink: #ffffff; --danger: #ff8a80; --ok: #7fc793;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25); --edge: rgba(255,255,255,.24);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { background: var(--bg); }
+body { color: var(--ink); font-family: var(--f-body); font-size: 16px; line-height: 1.45; -webkit-tap-highlight-color: transparent; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
+
+.wrap { max-width: 640px; margin: 0 auto; padding-inline: 16px; padding-block: 20px 48px; display: flex; flex-direction: column; gap: var(--space); }
+
+/* Header */
+.head { display: flex; flex-direction: column; gap: var(--space); }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(34px, 9vw, 46px); line-height: 1; margin: 0; text-wrap: balance; }
+/* Five equal-spaced columns: first flush left, last flush right, each centred on its own label */
+.tally { display: grid; grid-template-columns: repeat(5, auto); justify-content: space-between; gap: 8px 10px; font-variant-numeric: tabular-nums; padding: 12px 16px; background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow); }
+.tally div { display: flex; flex-direction: column; align-items: center; text-align: center; white-space: nowrap; }
+.tally b { font-family: var(--f-display); font-weight: 400; font-size: 26px; line-height: 1.1; }
+.tally span { font-size: 13px; color: var(--muted); }
+@media (max-width: 360px) { .tally b { font-size: 19px; } .tally span { font-size: 11px; } .tally { padding-inline: 12px; gap: 8px 4px; } }
+
+.headrow { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.addwrap { position: relative; top: 4px; flex: none; }
+.addwrap { display: inline-flex; }
+.btn.primary.addtoggle { flex: none; width: max-content; }
+.btn.primary.addtoggle { height: 30px; padding: 0 9px 0 7px; font-size: 13px; line-height: 1; gap: 3px; white-space: nowrap; border-radius: 9px; }
+.btn.addtoggle svg { width: 14px; height: 14px; flex: none; }
+.headbtns { display: flex; align-items: center; gap: 8px; flex: none; position: relative; top: 4px; }
+.headbtns .addwrap { top: 0; }
+.setwrap { display: inline-flex; } /* menu anchors to .headbtns, so it lines up with the right edge */
+.setbtn { width: 30px; height: 30px; border-radius: 9px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); display: grid; place-items: center; padding: 0; }
+.setbtn svg { width: 17px; height: 17px; }
+.setbtn[aria-expanded="true"] { background: var(--sunk); }
+.setmenu { padding: 14px; gap: 10px; }
+.seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.seg button { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 4px 8px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); font-size: 13px; font-weight: 600; min-width: 0; }
+.seg svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.setsec { display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--line); padding-top: 12px; margin-top: 2px; }
+.backupbtn { padding: 11px 14px; font-size: 15px; }
+.backupbtn svg { width: 18px; height: 18px; }
+.backuptoggle span { flex: 1; text-align: left; }
+.backuptoggle .chev { transition: transform .15s; }
+.backuptoggle[aria-expanded="true"] .chev { transform: rotate(180deg); }
+.backupopts { display: flex; flex-direction: column; gap: 8px; }
+.restorebox { display: flex; flex-direction: column; gap: 10px; padding: 12px; border-radius: 12px; background: var(--sunk); }
+.restoretxt { margin: 0; font-size: 14px; overflow-wrap: anywhere; }
+.restoreacts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.restoreacts .btn { padding: 11px 8px; font-size: 15px; }
+.seg button[aria-checked="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.addmenu { position: absolute; right: 0; top: calc(100% + 8px); z-index: 8; width: min(280px, calc(100vw - 32px)); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); padding: 6px; display: flex; flex-direction: column; gap: 2px; }
+.menuitem { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; border: 0; background: none; padding: 12px 10px; border-radius: 10px; cursor: pointer; }
+.menuitem:hover, .menuitem:focus-visible { background: var(--sunk); }
+.menuitem svg { width: 22px; height: 22px; flex: none; color: var(--accent-text); }
+.menuitem span { display: flex; flex-direction: column; min-width: 0; }
+.menuitem small { color: var(--muted); font-size: 13px; }
+
+/* Tools */
+.tools { display: flex; flex-direction: column; gap: var(--space); }
+.chipset { display: flex; gap: 8px; flex: none; }
+.chips { align-items: center; }
+/* Icon-only round sort button, same height as the chips (7px padding + 20px line + border) */
+.sortchip { position: relative; flex: none; display: inline-flex; align-items: center; justify-content: center; padding: 7px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; cursor: pointer; }
+.sortchip:focus-within { outline: 2px solid var(--accent-text); outline-offset: 2px; }
+.sortchip svg { width: 16px; height: 16px; margin: 2px; fill: none; stroke: var(--muted); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.sortchip.on { border-color: var(--accent-text); }
+.sortchip.on svg { stroke: var(--accent-text); }
+.sort { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; font-size: 16px; cursor: pointer; -webkit-appearance: none; appearance: none; }
+.search { width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); }
+.chips { display: flex; gap: 8px; overflow-x: auto; padding-block: 2px; margin-block: -2px; scrollbar-width: none; } /* padding keeps focus rings visible without adding space */
+.chips::-webkit-scrollbar { display: none; }
+.chip { flex: none; display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; font-weight: 500; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.chip .n { font-variant-numeric: tabular-nums; opacity: .65; }
+.dot { width: 10px; height: 10px; border-radius: 50%; flex: none; box-shadow: inset 0 0 0 1px var(--edge); }
+
+/* List */
+.list { display: flex; flex-direction: column; gap: var(--space); }
+.card { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 12px 10px 10px; background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow); text-align: left; border: 0; width: 100%; }
+.card.gone { opacity: .55; }
+.thumb { width: 56px; height: 72px; border-radius: 10px; object-fit: cover; background: var(--sunk); display: block; }
+.glass { width: 56px; height: 72px; border-radius: 10px; background: var(--sunk); display: grid; place-items: center; }
+.glass i { width: 22px; height: 40px; border-radius: 11px 11px 4px 4px; display: block; box-shadow: inset 0 0 0 1px var(--edge); }
+.meta { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.meta .name { font-weight: 600; font-size: 16px; line-height: 1.25; overflow-wrap: anywhere; }
+.meta .sub { font-size: 14px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.meta .desc { font-size: 13px; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.tag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; padding: 1px 6px; border-radius: 6px; background: var(--accent-soft); color: var(--accent-text); margin-left: 6px; vertical-align: 2px; }
+
+.fav { border: 0; background: none; padding: 4px; margin: -4px 0 -4px -4px; color: var(--muted); display: inline-grid; place-items: center; vertical-align: -3px; }
+.fav svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; }
+.fav[aria-pressed="true"] { color: var(--accent-text); }
+.fav[aria-pressed="true"] svg { fill: currentColor; }
+.fav.big svg { width: 24px; height: 24px; }
+.fav.big { margin: 0; width: 38px; height: 38px; border-radius: 50%; background: var(--surface); }
+.chip .heart { width: 12px; height: 12px; fill: var(--accent-text); }
+.chip[aria-pressed="true"] .heart { fill: currentColor; }
+.rating { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 4px; }
+.rate { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 8px 0; font-weight: 600; font-variant-numeric: tabular-nums; font-size: 15px; min-width: 0; }
+.rate.on { background: var(--accent-soft); border-color: var(--accent-text); color: var(--accent-text); }
+.rate.pick { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.score { display: inline-block; font-weight: 700; font-size: 12px; font-variant-numeric: tabular-nums; padding: 1px 6px; border-radius: 6px; background: var(--ink); color: var(--bg); margin-right: 6px; vertical-align: 1px; }
+.euro { position: relative; display: flex; }
+.euro span { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+.euro input { padding-left: 28px !important; font-variant-numeric: tabular-nums; }
+.savegrid { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+.savegrid input[type="date"] { min-width: 0; width: auto; }
+.savebox { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border-radius: var(--r); background: var(--accent-soft); }
+.savebox .house { width: 22px; height: 22px; color: var(--accent-text); margin-top: 2px; }
+.savetxt { font-weight: 600; overflow-wrap: anywhere; }
+.savebox .grow { min-width: 0; display: flex; flex-direction: column; gap: 2px; align-items: flex-start; }
+.savebox.bought { background: var(--surface); box-shadow: var(--shadow); align-items: center; }
+.savebox.bought .house { margin-top: 0; }
+.savebox .grow.inline { flex: 1; flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.boughtrow { display: flex; gap: 8px; align-items: center; }
+.boughtrow input { flex: 1; min-width: 0; }
+.boughtrow .mapbtn { width: 44px; height: 44px; }
+.mapbtn { flex: none; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: var(--accent-ink); }
+.mapbtn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+a.linkbtn { text-decoration: none; }
+.saveline { font-size: 12px; color: var(--accent-text); font-weight: 600; }
+.membox { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+.photoopts { display: flex; gap: 8px; flex-wrap: wrap; }
+a.btn { text-decoration: none; color: inherit; }
+.gsearch { width: 100%; font-size: 15px; padding: 11px 14px; }
+.webhelp { display: flex; flex-direction: column; gap: 8px; }
+.pastebox { width: 100%; padding: 12px; border-radius: 10px; border: 1px dashed var(--line); background: var(--surface); font-size: 16px; text-align: center; }
+.memadd { align-self: flex-start; font-size: 15px; padding: 10px 14px; }
+.memimg { width: 100%; max-height: 50vh; object-fit: cover; border-radius: var(--r); display: block; background: var(--sunk); }
+.memsec { display: flex; flex-direction: column; gap: 8px; }
+.memsec .section-l { margin-bottom: 0; }
+.memo { margin: 0; padding: 12px 14px; border-radius: var(--r); background: var(--sunk); white-space: pre-wrap; overflow-wrap: anywhere; font-size: 15px; }
+.section-l { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin-bottom: 6px; display: block; }
+.stepper { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.stepper.row { flex-direction: row; gap: 14px; }
+.step { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--line); background: var(--bg); font-size: 17px; line-height: 1; display: grid; place-items: center; padding: 0; }
+.step.plus { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.qty { font-family: var(--f-display); font-size: 22px; line-height: 1; font-variant-numeric: tabular-nums; min-width: 2ch; text-align: center; }
+.qty-l { font-size: 11px; color: var(--muted); }
+
+.empty { text-align: center; padding: 40px 12px; color: var(--muted); display: flex; flex-direction: column; gap: 8px; align-items: center; }
+.empty h2 { font-family: var(--f-display); font-weight: 400; color: var(--ink); font-size: 24px; margin: 0; }
+.notice { font-size: 13px; color: var(--muted); padding: 10px 12px; border: 1px dashed var(--line); border-radius: 12px; }
+
+/* Bottom bar */
+.bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)); background: linear-gradient(to top, var(--bg) 70%, transparent); }
+.bar-in { max-width: 640px; margin: 0 auto; display: flex; gap: 10px; }
+.btn { border: 0; border-radius: 14px; padding: 14px 16px; font-weight: 600; font-size: 16px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); flex: 1; }
+.btn.ghost { background: var(--surface); border: 1px solid var(--line); }
+.btn.danger { background: transparent; color: var(--danger); border: 1px solid var(--line); }
+.btn:disabled { opacity: .5; cursor: default; }
+label.btn { cursor: pointer; user-select: none; -webkit-user-select: none; }
+.vh { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; clip: rect(0 0 0 0); pointer-events: none; }
+.btn svg { width: 20px; height: 20px; }
+
+/* Sheet */
+.sheet { position: fixed; inset: 0; z-index: 10; background: var(--bg); overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.sheet-in { max-width: 640px; margin: 0 auto; padding-inline: 16px; padding-block: calc(12px + env(safe-area-inset-top, 0px)) calc(28px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 16px; }
+.sheet-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.sheet-top h2 { font-family: var(--f-display); font-weight: 400; font-size: 26px; margin: 0; line-height: 1.1; }
+.title-l { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.title-l h2 { min-width: 0; overflow-wrap: anywhere; }
+.house { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.homebtn { flex: none; display: inline-flex; align-items: center; gap: 6px; padding-left: 10px !important; border: 0; background: var(--surface); color: var(--accent-text); font-weight: 600; font-size: 15px; padding: 8px 12px 8px 6px; border-radius: 999px; }
+.homebtn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.x { border: 0; background: var(--surface); width: 38px; height: 38px; border-radius: 50%; font-size: 20px; flex: none; }
+.photo { width: 100%; max-height: 46vh; object-fit: contain; border-radius: var(--r); background: var(--sunk); display: block; }
+.reading { display: flex; flex-direction: column; gap: 10px; align-items: center; text-align: center; padding: 8px 0; color: var(--muted); }
+.spinner { width: 28px; height: 28px; border-radius: 50%; border: 3px solid var(--line); border-top-color: var(--accent-text); animation: spin .9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 3s; } }
+
+form { display: flex; flex-direction: column; gap: 12px; }
+.grid2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+/* iOS date inputs have a wide intrinsic size and spill over the neighbouring field; force them into their column */
+.field input[type="date"] { -webkit-appearance: none; appearance: none; display: block; min-width: 0; max-width: 100%; min-height: 46px; text-align: left; }
+.field input[type="date"]::-webkit-date-and-time-value { text-align: left; }
+.field label { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.field input, .field select, .field textarea { width: 100%; padding: 11px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); font-size: 16px; }
+.field textarea { min-height: 110px; resize: vertical; line-height: 1.45; }
+.hint { font-size: 13px; color: var(--muted); }
+.hint.warn { color: var(--danger); }
+.hint.good { color: var(--ok); }
+.row-between { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.linkbtn { border: 0; background: none; color: var(--accent-text); font-weight: 600; padding: 4px 0; font-size: 14px; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.actions .btn { flex: 1; min-width: 140px; }
+.actions.three { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.actions.three .btn { min-width: 0; padding-inline: 6px; font-size: 14px; gap: 5px; }
+.actions.three .house { width: 16px; height: 16px; }
+
+.stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0; }
+.stat { background: var(--surface); border-radius: 12px; padding: 10px 12px; box-shadow: var(--shadow); min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.statstep { display: flex; align-items: center; gap: 10px; }
+.statstep .step { width: 24px; height: 24px; font-size: 15px; }
+.statstep span { min-width: 2ch; text-align: center; }
+.stat:last-child:nth-child(odd) { grid-column: 1 / -1; }
+.stat dt { color: var(--muted); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; font-weight: 600; }
+.stat dd { margin: 0; font-weight: 600; font-size: 15px; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.facts { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px 16px; margin: 0; font-size: 15px; }
+.facts dt { color: var(--muted); font-size: 13px; letter-spacing: .06em; text-transform: uppercase; font-weight: 600; padding-top: 2px; }
+.facts dd { margin: 0; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.lede { font-size: 17px; line-height: 1.55; margin: 0; max-width: 62ch; }
+.vint { font-family: var(--f-display); font-size: 18px; color: var(--muted); }
+.qtybox { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow); }
+.qtybox .qty { font-size: 34px; }
+.confirm { display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: var(--r); border: 1px solid var(--danger); }
+
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(24px + env(safe-area-inset-bottom, 0px)); z-index: 20; background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 20px; font-size: 14px; font-weight: 500; max-width: calc(100% - 32px); text-align: center; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 2px 10px; width: max-content; }
+.toast[hidden] { display: none; }
+.toastbtn { border: 0; background: none; color: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; padding: 4px 2px; font-size: 14px; }
+
+/* "Bewaar voor" reminders at the top */
+.reminders { display: flex; flex-direction: column; gap: var(--space); }
+.remind { display: flex; gap: 12px; align-items: center; padding: 12px 10px 12px 14px; border-radius: var(--r); background: var(--accent-soft); }
+.remind .house { width: 22px; height: 22px; color: var(--accent-text); }
+.remind .grow { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; text-align: left; border: 0; background: none; padding: 0; }
+.remind .when { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--accent-text); }
+.remind .what { font-weight: 600; overflow-wrap: anywhere; }
+.remind .for { font-size: 14px; color: var(--muted); overflow-wrap: anywhere; }
+.remind.now { background: var(--accent); color: var(--accent-ink); }
+.remind.now .house, .remind.now .when, .remind.now .for { color: var(--accent-ink); }
+.remdel { flex: none; border: 0; background: none; color: inherit; opacity: .7; width: 32px; height: 32px; border-radius: 50%; font-size: 18px; line-height: 1; padding: 0; }
+
+/* Logbook */
+.logsec { display: flex; flex-direction: column; gap: 8px; }
+.logform { display: flex; flex-direction: column; gap: 12px; padding: 14px; border-radius: var(--r); background: var(--surface); box-shadow: var(--shadow); }
+.check { display: flex; gap: 10px; align-items: center; font-size: 15px; }
+.check input { width: 20px; height: 20px; accent-color: var(--accent); flex: none; margin: 0; }
+.logitem { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: var(--r); background: var(--sunk); }
+.logitem .grow { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.logitem .when { font-weight: 600; font-variant-numeric: tabular-nums; }
+.logitem .who { font-size: 14px; color: var(--muted); overflow-wrap: anywhere; }
+.logitem .lognote { margin: 2px 0 0; font-size: 15px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.logdel { flex: none; border: 0; background: none; color: var(--muted); min-width: 32px; height: 32px; border-radius: 999px; font-size: 18px; line-height: 1; padding: 0 6px; }
+.logdel.sure { background: var(--danger); color: #fff; font-size: 13px; font-weight: 600; padding: 0 10px; }
+.logform:not([hidden]) ~ #logList .logempty { display: none; }
+.card.logcard { grid-template-columns: 56px minmax(0, 1fr); }
+.logphoto { margin-top: 8px; max-height: 40vh; }
+/* Herinneringen sit side by side and swipe sideways */
+.logsec.memrow { flex-direction: row; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 2px; }
+.memrow::-webkit-scrollbar { display: none; }
+.memrow .logitem { position: relative; flex: 0 0 90%; min-width: 0; scroll-snap-align: start; padding: 5px; }
+.memrow .logitem:only-child { flex-basis: 100%; }
+.memrow .logempty { flex: 1; }
+.memrow .logphoto { width: 100%; height: 320px; max-height: none; object-fit: cover; margin: 0; border-radius: 10px; }
+.memmeta { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 12px; padding: 8px 8px 4px; }
+.memdate { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.memnote { flex: 1 1 40%; min-width: 0; font-size: 15px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.memwith { font-size: 14px; color: var(--muted); overflow-wrap: anywhere; }
+.memrow .logdel { position: absolute; top: 11px; right: 11px; background: rgba(0,0,0,.5); color: #fff; }
+.memrow .logdel.sure { background: var(--danger); }
+.card.logcard .desc { -webkit-line-clamp: 3; }
+
+/* Statistics: the tally opens them; single-series bars in the accent, value at the bar tip */
+.tally { cursor: pointer; }
+.tallymore { grid-column: 1 / -1; display: flex; justify-content: center; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; color: var(--muted); margin-top: -2px; }
+.tallymore svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.statsec { display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow); }
+.statsec h3 { margin: 0; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.statsec .hint { margin: -4px 0 0; }
+.tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0; }
+.tiles .stat { box-shadow: none; background: var(--sunk); }
+.tiles .stat dd { font-size: 22px; line-height: 1.15; }
+.barrow { display: grid; grid-template-columns: minmax(0, 8.5em) minmax(0, 1fr) auto; gap: 10px; align-items: center; font-size: 14px; }
+.barrow .lbl { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.barrow .lbl span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sbar { height: 10px; border-radius: 0 4px 4px 0; background: var(--accent); min-width: 3px; }
+.barrow .val { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 13px; text-align: right; min-width: 2ch; }
+.cols { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 2px; align-items: end; height: 110px; border-bottom: 1px solid var(--line); }
+.col { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 3px; min-width: 0; }
+.col i { display: block; width: min(16px, 100%); background: var(--accent); border-radius: 4px 4px 0 0; }
+.col b { font-size: 11px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
+.colx { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 2px; font-size: 11px; color: var(--muted); text-align: center; margin-top: -6px; }
+.toprow { display: flex; align-items: center; gap: 10px; font-size: 15px; }
+.toprow .score { margin: 0; flex: none; }
+.toprow span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Sharing a wine */
+.topbtns { display: flex; gap: 8px; flex: none; }
+.sharebtn svg { fill: none !important; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.sharecard { width: 100%; border-radius: var(--r); box-shadow: var(--shadow); display: block; background: var(--sunk); -webkit-touch-callout: default; -webkit-user-select: auto; user-select: auto; }
+.sharetxt { width: 100%; min-height: 120px; padding: 11px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); font-size: 15px; line-height: 1.45; }
+
+/* Page basics (claude.ai used to supply these around the app) */
+:root { box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+body { margin: 0; padding: 0; }
+img { max-width: 100%; }
+
+/* Sign-in screen */
+.authscreen { position: fixed; inset: 0; z-index: 30; background: var(--bg); overflow-y: auto; display: grid; place-items: center; padding: 24px 20px; }
+.auth-in { width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 14px; }
+.auth-in .authlead { margin: 0; color: var(--muted); }
+.auth-in form { gap: 14px; }
+.seg.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.seg.two button { flex-direction: row; justify-content: center; padding: 11px 8px; font-size: 15px; }
+.authwait { display: flex; flex-direction: column; align-items: center; gap: 10px; color: var(--muted); }
+.authfoot { font-size: 12px; color: var(--muted); text-align: center; margin: 0; }
+
+/* Settings menu: account, key, back-up */
+.setmenu { width: min(320px, calc(100vw - 32px)); max-height: calc(100dvh - 90px); overflow-y: auto; }
+.setinput { width: 100%; padding: 11px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); font-size: 16px; }
+</style>
+</head>
+<body>
+
+<div class="authscreen" id="auth">
+  <div class="auth-in">
+    <div class="authwait" id="authWait"><div class="spinner" aria-hidden="true"></div><span>Even laden…</span></div>
+    <div id="authBox" hidden style="display:flex;flex-direction:column;gap:14px">
+      <h1>Vinventory</h1>
+      <p class="authlead" id="a-lead">Je eigen wijnkelder, op al je apparaten.</p>
+      <div class="seg two" id="authTabs" role="radiogroup" aria-label="Inloggen of account maken">
+        <button type="button" role="radio" data-auth-tab="in">Inloggen</button>
+        <button type="button" role="radio" data-auth-tab="up">Account maken</button>
+      </div>
+      <form id="authForm" novalidate>
+        <div class="field" id="a-mailwrap"><label for="a-email">E-mailadres</label><input id="a-email" type="email" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false"></div>
+        <div class="field" id="a-passwrap"><label for="a-pass">Wachtwoord</label><input id="a-pass" type="password" autocomplete="current-password"></div>
+        <p class="hint" id="a-msg" hidden></p>
+        <button class="btn primary" id="a-go" type="submit">Inloggen</button>
+        <button class="linkbtn" type="button" id="a-forgot">Wachtwoord vergeten?</button>
+        <button class="linkbtn" type="button" id="a-back" hidden>Terug naar inloggen</button>
+      </form>
+      <p class="authfoot">Je wijnen zijn privé: alleen jij ziet je kelder.</p>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+  <header class="head">
+    <div class="headrow">
+      <h1>Vinventory</h1>
+      <div class="headbtns">
+      <div class="setwrap">
+        <button class="setbtn" id="setToggle" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="setMenu" aria-label="Instellingen" title="Instellingen">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+        </button>
+        <div class="addmenu setmenu" id="setMenu" hidden>
+          <span class="section-l" style="margin:0">Weergave</span>
+          <div class="seg" id="themeSeg" role="radiogroup" aria-label="Weergave">
+            <button type="button" role="radio" data-theme-pick="auto"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17a8.5 8.5 0 0 0 0-17z" fill="currentColor" stroke="none"/></svg>Automatisch</button>
+            <button type="button" role="radio" data-theme-pick="light"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6 6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></svg>Licht</button>
+            <button type="button" role="radio" data-theme-pick="dark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>Donker</button>
+          </div>
+          <p class="hint" style="margin:0">Automatisch volgt de instelling van je telefoon of computer.</p>
+          <div class="setsec" id="acctSec">
+            <span class="section-l" style="margin:0">Account</span>
+            <p class="hint" style="margin:0">Ingelogd als <b id="acctMail"></b></p>
+            <button class="btn ghost backupbtn" type="button" id="signOutBtn">Uitloggen</button>
+          </div>
+          <div class="setsec" id="keySec">
+            <span class="section-l" style="margin:0">Scannen met Claude</span>
+            <p class="hint" style="margin:0" id="keyState"></p>
+            <input class="setinput" id="keyIn" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="sk-ant-…" aria-label="Claude-sleutel">
+            <div class="actions"><button class="btn ghost backupbtn" type="button" id="keyDel" hidden>Verwijderen</button><button class="btn primary backupbtn" type="button" id="keySave">Bewaar sleutel</button></div>
+            <span class="hint" id="keyMsg" hidden></span>
+            <p class="hint" style="margin:0">Dit is je eigen Anthropic-sleutel: elke scan kost een klein bedrag op jouw account. De sleutel blijft op dit apparaat en komt nooit in je kelder. Uitloggen haalt hem hier weg. <a class="linkbtn" href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener" style="padding:0">Sleutel maken</a></p>
+          </div>
+          <div class="setsec" id="backupSec">
+            <button class="btn ghost backupbtn backuptoggle" type="button" id="backupToggle" aria-expanded="false" aria-controls="backupOpts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7.5 12 4l8 3.5v9L12 20l-8-3.5zM4 7.5l8 3.5 8-3.5M12 11v9"/></svg><span>Back-up</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+            <div class="backupopts" id="backupOpts" hidden>
+            <button class="btn ghost backupbtn" type="button" id="backupBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19h14"/></svg>Download back-up</button>
+            <label class="btn ghost backupbtn" for="restoreIn" id="restoreBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M5 19h14"/></svg>Back-up terugzetten</label>
+            <input type="file" id="restoreIn" accept=".json,application/json" class="vh">
+            <p class="hint" style="margin:0" id="backupMsg">Eén bestand met al je wijnen, je logboek en je foto's.</p>
+            </div>
+            <div class="restorebox" id="restoreBox" hidden>
+              <p class="restoretxt" id="restoreTxt"></p>
+              <div class="restoreacts" id="restoreActs">
+                <button class="btn primary" type="button" id="restoreAdd">Toevoegen</button>
+                <button class="btn danger" type="button" id="restoreReplace">Vervangen</button>
+              </div>
+              <button class="linkbtn" type="button" id="restoreCancel" style="align-self:center">Annuleren</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="addwrap">
+        <button class="btn primary addtoggle" id="addToggle" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="addMenu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          Voeg toe
+        </button>
+        <div class="addmenu" id="addMenu" hidden>
+          <label class="menuitem" id="scanBtn" for="fileIn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3.2"/></svg>
+            <span><b>Scan etiket</b><small>Maak een foto, Claude herkent de wijn</small></span>
+          </label>
+          <button class="menuitem" id="addBtn" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-4-4L4 16v4zM13.5 6.5l4 4"/></svg>
+            <span><b>Handmatig</b><small>Vul de gegevens zelf in</small></span>
+          </button>
+        </div>
+        <input type="file" id="fileIn" accept="image/*" class="vh">
+      </div>
+      </div>
+    </div>
+    <div class="tally" id="tally" role="button" tabindex="0" aria-label="Bekijk statistieken">
+      <div><b id="t-bottles">0</b><span>flessen</span></div>
+      <div><b id="t-wines">0</b><span>wijnen</span></div>
+      <div><b id="t-countries">0</b><span>landen</span></div>
+      <div><b id="t-oldest">–</b><span>oudste jaar</span></div>
+      <div><b id="t-value">–</b><span>waarde</span></div>
+      <p class="tallymore" style="margin-bottom:0">Statistieken<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></p>
+    </div>
+  </header>
+
+  <section class="reminders" id="reminders" aria-label="Herinneringen" hidden></section>
+
+  <div class="tools">
+    <input class="search" id="search" type="search" placeholder="Zoek op naam, producent, streek of druif" autocomplete="off">
+    <div class="chips" role="toolbar" aria-label="Sorteren en filteren">
+      <label class="sortchip" id="sortChip" title="Sorteer">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4v16M3.5 16.5 7 20l3.5-3.5M17 20V4M13.5 7.5 17 4l3.5 3.5"/></svg>
+        <select id="sort" class="sort" aria-label="Sorteer">
+          <option value="std">Standaard</option>
+          <option value="rating">Hoogste cijfer</option>
+          <option value="vintage">Oudste jaar</option>
+          <option value="qty">Meeste flessen</option>
+          <option value="priceDesc">Hoogste prijs</option>
+          <option value="priceAsc">Laagste prijs</option>
+        </select>
+      </label>
+      <div class="chipset" id="chips"></div>
+    </div>
+  </div>
+
+  <div id="notice" class="notice" hidden></div>
+  <section class="list" id="list" aria-live="polite"></section>
+</main>
+
+
+<div class="sheet" id="sheet" hidden role="dialog" aria-modal="true"><div class="sheet-in" id="sheetIn"></div></div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
+<script>
+(() => {
+  const COLORS = [
+    ["rood", "Rood", "--w-rood"], ["wit", "Wit", "--w-wit"], ["rosé", "Rosé", "--w-rose"],
+    ["mousserend", "Mousserend", "--w-mousserend"], ["dessert", "Dessert", "--w-dessert"], ["versterkt", "Versterkt", "--w-versterkt"]
+  ];
+  const colorVar = c => (COLORS.find(x => x[0] === c) || COLORS[0])[2];
+  const HEART = "M12 20.5s-7.5-4.6-9.3-9.2C1.4 7.9 3.6 4.5 7 4.5c2 0 3.4 1.1 5 3 1.6-1.9 3-3 5-3 3.4 0 5.6 3.4 4.3 6.8-1.8 4.6-9.3 9.2-9.3 9.2z";
+  const PIN = "M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11z";
+  const HOUSE ="M3.5 10.5 12 3.5l8.5 7M5.5 9v11h5v-6h3v6h5V9";
+  const GLASS = "M7 3h10l-.5 5.5a4.5 4.5 0 0 1-9 0zM12 13v7M8.5 20.5h7";
+  const BOOK ="M5 5.5A2.5 2.5 0 0 1 7.5 3H19v15H7.5A2.5 2.5 0 0 0 5 20.5zM5 20.5A2.5 2.5 0 0 1 7.5 18H19v3H7.5M9 7.5h6";
+  const today = () => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
+  const colorName = c => (COLORS.find(x => x[0] === c) || [0, "Onbekend"])[1];
+  const YEAR = new Date().getFullYear();
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+  const norm = s => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]/g, "");
+
+  let wines = [];
+  let filter = "alle";
+  let query = "";
+  let sortBy = "std";
+  try { const s = localStorage.getItem("wijnkelder.sort"); if (["std", "rating", "vintage", "qty", "priceDesc", "priceAsc"].includes(s)) sortBy = s; } catch {}
+  const dirty = new Set();
+
+  // ---------- Platform: Supabase accounts, one private row per wine ----------
+  // The URL and the anon key are public by design. What keeps cellars apart is the row level security
+  // in web/schema.sql: a signed-in user can only read and write rows with their own user_id.
+  const SUPABASE_URL = "https://uxgkndvmjsxqucufgxcq.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4Z2tuZHZtanN4cXVjdWZneGNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTExMTc0MTgsImV4cCI6MjEwNjY5MzQxOH0.ZjKBL8_ouEPDdrCv36COBeMJ8WYItWTxUXy0Ei0dXH4";
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
+  let me = null;      // the signed-in user
+  let loading = true;
+  const saveErrText = e => {
+    const code = e && (e.code || e.status), m = String((e && e.message) || "");
+    if (String(code) === "23514") return "Deze wijn is te groot om op te slaan. Verwijder eerst een herinnering met foto.";
+    if (/jwt|not authenticated|401/i.test(m + code)) return "Je bent uitgelogd. Log opnieuw in om verder te gaan.";
+    return "Opslaan lukte niet" + (code || m ? " (" + String(code || m).slice(0, 60) + ")" : "") + ". Probeer het opnieuw.";
+  };
+  const store = {
+    chains: {}, channel: null,
+    async load() {
+      const { data, error } = await sb.from("wines").select("id,data");
+      if (error) throw error;
+      return data.map(r => Object.assign({ id: r.id }, r.data));
+    },
+    async init() {
+      render();
+      try { this.apply(await this.load()); }
+      catch (e) { loading = false; render(); showNotice("Je kelder kon niet worden opgehaald (" + why(e) + "). Controleer je verbinding en herlaad de pagina."); return; }
+      if (this.channel) sb.removeChannel(this.channel);
+      this.channel = sb.channel("wines-" + me.id)
+        .on("postgres_changes", { event: "*", schema: "public", table: "wines", filter: "user_id=eq." + me.id }, p => this.onChange(p))
+        .subscribe();
+    },
+    // Merge a full list from the server; edits that are still being saved (dirty) win.
+    apply(list) {
+      const local = new Map(wines.map(w => [w.id, w]));
+      wines = list.map(w => dirty.has(w.id) && local.get(w.id) ? local.get(w.id) : w);
+      for (const id of dirty) if (!wines.some(w => w.id === id) && local.get(id)) wines.push(local.get(id));
+      loading = false; hideNotice(); render(); refreshOpenDetail();
+    },
+    // Live changes made on another device of the same account.
+    onChange(p) {
+      if (p.eventType === "DELETE") {
+        const id = p.old && p.old.id;
+        if (id && !dirty.has(id)) { wines = wines.filter(w => w.id !== id); render(); }
+        return;
+      }
+      const r = p.new;
+      if (!r || dirty.has(r.id)) return;
+      const w = Object.assign({ id: r.id }, r.data), i = wines.findIndex(x => x.id === w.id);
+      if (i >= 0) wines[i] = w; else wines.push(w);
+      render(); refreshOpenDetail();
+    },
+    put(w) {
+      const { id, ...data } = w;
+      const bytes = docBytes(w);
+      if (bytes > MAX_DOC) { toast(tooBigMsg(bytes)); return Promise.resolve(); }
+      dirty.add(id);
+      const prev = this.chains[id] || Promise.resolve();
+      const next = prev.then(async () => {
+          const { error } = await sb.from("wines").upsert({ user_id: me.id, id, data: JSON.parse(JSON.stringify(data)) }, { onConflict: "user_id,id" });
+          if (error) throw error;
+        })
+        .catch(e => toast(saveErrText(e)))
+        // Stay dirty while another save is still waiting, so a refresh can't briefly show the old value.
+        .finally(() => { if (this.chains[id] === next) { delete this.chains[id]; if (!timers[id]) dirty.delete(id); } });
+      this.chains[id] = next;
+      return next;
+    },
+    remove(id) {
+      clearTimeout(timers[id]); delete timers[id];
+      // Delete after any save that is still running, or that save would bring the wine back.
+      const prev = this.chains[id] || Promise.resolve();
+      const next = prev.then(async () => {
+          const { error } = await sb.from("wines").delete().eq("id", id);
+          if (error) throw error;
+        })
+        .catch(() => toast("Verwijderen lukte niet."))
+        .finally(() => { if (this.chains[id] === next) delete this.chains[id]; dirty.delete(id); });
+      this.chains[id] = next;
+      return next;
+    }
+  };
+  // The database accepts at most about 900 KB of data per wine (see schema.sql). Keep a margin.
+  const MAX_DOC = 800000;
+  const docBytes = w => { const { id, ...d } = w; return new TextEncoder().encode(JSON.stringify(d)).length; };
+  const tooBigMsg = b => `Deze wijn bevat te veel foto's (${Math.round(b / 1024)} van ${Math.round(MAX_DOC / 1024)} KB). Verwijder eerst een herinnering met foto, dan past het weer.`;
+
+  // ---------- Claude: every user's own Anthropic key, kept on this device only ----------
+  const KEY_STORE = "wijnkelder.claudeKey";
+  const CLAUDE_MODEL = "claude-haiku-4-5-20251001";
+  const getKey = () => { try { return localStorage.getItem(KEY_STORE) || ""; } catch { return ""; } };
+  const blobToB64 = blob => new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result).split(",")[1]); fr.onerror = () => rej(fr.error); fr.readAsDataURL(blob); });
+  async function claudeCall(prompt, opts) {
+    opts = opts || {};
+    const key = getKey();
+    if (!key) throw { code: "no_key" };
+    const content = [];
+    for (const b of [].concat(opts.images || [])) content.push({ type: "image", source: { type: "base64", media_type: b.type || "image/jpeg", data: await blobToB64(b) } });
+    content.push({ type: "text", text: prompt });
+    let res;
+    try {
+      res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST", signal: opts.signal,
+        headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
+        body: JSON.stringify({ model: CLAUDE_MODEL, max_tokens: opts.maxTokens || 1200, messages: [{ role: "user", content }] })
+      });
+    } catch (e) { if (e && e.name === "AbortError") throw { code: "cancelled" }; throw { code: "network" }; }
+    if (!res.ok) {
+      let msg = ""; try { msg = (await res.json()).error.message || ""; } catch {}
+      throw { code: res.status === 401 || res.status === 403 ? "invalid_key" : res.status === 429 ? "rate_limited"
+        : /credit balance/i.test(msg) ? "no_credit" : res.status === 400 && opts.images ? "image_rejected" : "api_error", message: msg };
+    }
+    const j = await res.json();
+    return { text: (j.content || []).filter(c => c.type === "text").map(c => c.text).join(""), truncated: j.stop_reason === "max_tokens" };
+  }
+  // Same shape the rest of the app already uses: sample(text, { onText }) and sample.json(text, { images, signal }).
+  const sampleFn = async (prompt, opts) => { const r = await claudeCall(prompt, opts); if (opts && opts.onText) opts.onText({ text: r.text, delta: r.text }); return r; };
+  sampleFn.json = async (prompt, opts) => {
+    const { text } = await claudeCall(prompt, opts);
+    const m = text.match(/\{[\s\S]*\}/);
+    if (!m) throw { code: "invalid_json" };
+    try { return JSON.parse(m[0]); } catch { throw { code: "invalid_json" }; }
+  };
+  let sample = null;
+  let canImages = true;
+  function refreshKeyUi() {
+    const has = !!getKey();
+    $("keyState").textContent = has ? "Sleutel opgeslagen op dit apparaat." : "Nog geen sleutel. Zonder sleutel kun je wijnen alleen met de hand toevoegen.";
+    $("keyDel").hidden = !has; $("keyIn").value = "";
+  }
+  function refreshSample() { sample = getKey() ? sampleFn : null; refreshKeyUi(); }
+  $("keySave").addEventListener("click", () => {
+    const k = $("keyIn").value.trim();
+    if (!/^sk-ant-[\w-]{20,}$/.test(k)) { showMsg("keyMsg", "Dit lijkt geen Anthropic-sleutel. Zo'n sleutel begint met sk-ant-.", true); return; }
+    try { localStorage.setItem(KEY_STORE, k); } catch { showMsg("keyMsg", "Opslaan op dit apparaat lukte niet.", true); return; }
+    refreshSample(); showMsg("keyMsg", "Sleutel opgeslagen. Je kunt nu etiketten scannen.");
+  });
+  $("keyDel").addEventListener("click", () => {
+    try { localStorage.removeItem(KEY_STORE); } catch {}
+    refreshSample(); showMsg("keyMsg", "Sleutel verwijderd van dit apparaat.");
+  });
+  // Herinnering photos are shrunk until they are small (about 45 KB), so several fit on one wine.
+  function compactPhoto(img) {
+    let out = "";
+    for (const [max, q] of [[640, 0.62], [560, 0.55], [480, 0.5], [400, 0.45], [320, 0.4]]) {
+      out = scaled(img, max).toDataURL("image/jpeg", q);
+      if (out.length <= 48000) break;
+    }
+    return out;
+  }
+  const newId = () => "w" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+
+  const timers = {};
+  function saveSoon(w) {
+    clearTimeout(timers[w.id]);
+    dirty.add(w.id);
+    timers[w.id] = setTimeout(() => {
+      delete timers[w.id];
+      const cur = wines.find(x => x.id === w.id);
+      if (cur) store.put(cur);
+    }, 450);
+  }
+
+  function saveNow(w) {
+    clearTimeout(timers[w.id]); delete timers[w.id];
+    const cur = wines.find(x => x.id === w.id);
+    if (cur) store.put(cur);
+  }
+  function flushSaves() {
+    for (const id of Object.keys(timers)) {
+      clearTimeout(timers[id]); delete timers[id];
+      const cur = wines.find(x => x.id === id);
+      if (cur) store.put(cur);
+    }
+  }
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") flushSaves(); });
+  window.addEventListener("pagehide", flushSaves);
+
+  // ---------- Rendering ----------
+  function visual(w, cls) {
+    if (w.thumb) return `<img class="${cls || "thumb"}" src="${esc(w.thumb)}" alt="">`;
+    return `<span class="glass" aria-hidden="true"><i style="background:var(${colorVar(w.color)})"></i></span>`;
+  }
+
+  function render() {
+    const inStock = wines.filter(w => (w.quantity || 0) > 0);
+    $("t-bottles").textContent = inStock.reduce((a, w) => a + (w.quantity || 0), 0);
+    $("t-wines").textContent = inStock.length;
+    const years = inStock.map(w => +w.vintage).filter(Boolean);
+    $("t-oldest").textContent = years.length ? Math.min(...years) : "–";
+    const priced = inStock.filter(w => typeof w.price === "number");
+    $("t-value").textContent = priced.length
+      ? new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(priced.reduce((a, w) => a + w.price * (w.quantity || 0), 0))
+      : "–";
+    $("t-countries").textContent = new Set(inStock.map(w => norm(w.country)).filter(Boolean)).size;
+    renderReminders(inStock);
+
+    // Each chip shows "<wines>/<bottles>" for the wines it would list.
+    const tally = list => {
+      const n = list.length, b = list.reduce((a, w) => a + (w.quantity || 0), 0);
+      return `<span class="n" title="${n} ${n === 1 ? "wijn" : "wijnen"}, ${b} ${b === 1 ? "fles" : "flessen"}">${n}/${b}</span>`;
+    };
+    const byColor = c => inStock.filter(w => w.color === c);
+    const favs = wines.filter(w => w.favorite);
+    const archived = wines.filter(w => !(w.quantity > 0));
+    const logCount = wines.reduce((a, w) => a + (w.log || []).length, 0);
+    const ready = inStock.filter(drinkNow);
+    $("chips").innerHTML = `<button class="chip" type="button" data-f="alle" aria-pressed="${filter === "alle"}">Alles</button>` +
+      `<button class="chip" type="button" data-f="fav" aria-pressed="${filter === "fav"}"><svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><path d="${HEART}"/></svg>Favorieten <span class="n">${favs.length}</span></button>` +
+      ((ready.length || filter === "opdronk") ? `<button class="chip" type="button" data-f="opdronk" aria-pressed="${filter === "opdronk"}"><svg class="heart" viewBox="0 0 24 24" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round"><path d="${GLASS}"/></svg>Op dronk ${tally(ready)}</button>` : "") +
+      COLORS.filter(c => byColor(c[0]).length || filter === c[0]).map(c =>
+        `<button class="chip" type="button" data-f="${c[0]}" aria-pressed="${filter === c[0]}"><span class="dot" style="background:var(${c[2]})"></span>${c[1]} ${tally(byColor(c[0]))}</button>`
+      ).join("") +
+      ((archived.length || filter === "archief") ? `<button class="chip" type="button" data-f="archief" aria-pressed="${filter === "archief"}"><svg class="heart" viewBox="0 0 24 24" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2.2"><path d="M4 5h16v4H4zM5.5 9v10h13V9M10 13h4"/></svg>Archief ${tally(archived)}</button>` : "") +
+      ((logCount || filter === "logboek") ? `<button class="chip" type="button" data-f="logboek" aria-pressed="${filter === "logboek"}"><svg class="heart" viewBox="0 0 24 24" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2.2;stroke-linejoin:round"><path d="${BOOK}"/></svg>Logboek <span class="n">${logCount}</span></button>` : "");
+
+    const q = norm(query);
+    const list = wines
+      .filter(w => filter === "archief" ? !(w.quantity > 0)
+        : filter === "fav" ? w.favorite
+        : filter === "opdronk" ? w.quantity > 0 && drinkNow(w)
+        : w.quantity > 0 && (filter === "alle" || w.color === filter))
+      .filter(w => !q || norm([w.name, w.producer, w.region, w.country, w.grape, w.vintage, ...memoriesOf(w).map(m => m.text + " " + (m.with || "")), w.pairing, w.saveFor, w.boughtAt, ...(w.log || []).map(e => e.with + " " + e.note)].join(" ")).includes(q))
+      .sort((a, b) => {
+        const byName = String(a.producer || a.name).localeCompare(String(b.producer || b.name), "nl");
+        const stock = (b.quantity > 0) - (a.quantity > 0);
+        if (sortBy === "rating") return ((b.rating || 0) - (a.rating || 0)) || stock || byName;
+        if (sortBy === "vintage") return stock || ((a.vintage || 9999) - (b.vintage || 9999)) || byName;
+        if (sortBy === "qty") return ((b.quantity || 0) - (a.quantity || 0)) || byName;
+        if (sortBy === "priceDesc" || sortBy === "priceAsc") {
+          const pa = typeof a.price === "number", pb = typeof b.price === "number";
+          if (pa !== pb) return pb - pa; // wines without a price go last
+          const d = pa ? (sortBy === "priceDesc" ? b.price - a.price : a.price - b.price) : 0;
+          return d || stock || byName;
+        }
+        // "Op dronk" with the standard order: the wine whose window closes soonest comes first.
+        if (filter === "opdronk") return ((a.drinkTo || 9999) - (b.drinkTo || 9999)) || byName;
+        return stock || (!!b.favorite - !!a.favorite) || byName;
+      });
+
+    if (!wines.length && loading) {
+      $("list").innerHTML = `<div class="empty"><div class="spinner" aria-hidden="true"></div><p>Je kelder wordt geladen…</p></div>`;
+      return;
+    }
+    if (!wines.length) {
+      $("list").innerHTML = `<div class="empty"><h2>Je kelder is nog leeg</h2><p>Tik rechtsboven op <b>Voeg toe</b> en kies <b>Scan etiket</b> om een foto van een fles te maken. De wijn wordt herkend en je krijgt er een korte beschrijving bij.</p></div>`;
+      return;
+    }
+    if (filter === "logboek") { renderLog(q); return; }
+    if (!list.length) {
+      $("list").innerHTML = filter === "fav" && !q
+        ? `<div class="empty"><p>Nog geen favorieten. Tik op het hartje bij een wijn om hem hier te bewaren.</p></div>`
+        : filter === "opdronk" && !q
+        ? `<div class="empty"><p>Geen wijnen die nu op dronk zijn. Vul bij een wijn <b>Op dronk vanaf</b> en <b>Tot</b> in, dan verschijnt hij hier zodra het zover is.</p></div>`
+        : filter === "archief" && !q
+        ? `<div class="empty"><p>Het archief is leeg. Wijnen waarvan je de laatste fles hebt gedronken, komen hier te staan.</p></div>`
+        : filter === "alle" && !q
+        ? `<div class="empty"><p>Je hebt geen flessen meer op voorraad. Je eerdere wijnen staan in het <b>Archief</b>.</p></div>`
+        : `<div class="empty"><p>Geen wijnen gevonden voor deze zoekopdracht.</p></div>`;
+      return;
+    }
+
+    $("list").innerHTML = list.map(w => `
+      <div class="card${w.quantity > 0 ? "" : " gone"}" data-open="${esc(w.id)}" role="button" tabindex="0">
+        ${visual(w)}
+        <div class="meta">
+          <span class="name">${favBtn(w)} ${esc(w.name || w.producer || "Naamloze wijn")}${w.example ? '<span class="tag">Voorbeeld</span>' : ""}</span>
+          <span class="sub">${w.rating ? `<span class="score" aria-label="Cijfer ${w.rating}">${w.rating}</span>` : ""}${esc([/^price/.test(sortBy) && typeof w.price === "number" ? fmtEur(w.price) : "", w.name ? w.producer : "", w.vintage, w.region].filter(Boolean).join(" · "))}</span>
+          ${filter === "opdronk" ? `<span class="saveline">${w.drinkTo ? (w.drinkTo === YEAR ? "Op dronk tot dit jaar, drink hem snel" : `Op dronk tot ${w.drinkTo}`) : `Op dronk sinds ${w.drinkFrom}`}</span>` : ""}
+          ${w.saveFor || w.saveForDate ? `<span class="saveline">Bewaar voor ${esc([w.saveFor, w.saveForDate ? fmtDate(w.saveForDate) : ""].filter(Boolean).join(" · "))}</span>` : ""}
+          ${w.description ? `<span class="desc">${esc(w.description)}</span>` : ""}
+        </div>
+        <div class="stepper">
+          <button class="step plus" type="button" data-q="${esc(w.id)}" data-d="1" aria-label="Fles erbij">+</button>
+          <span class="qty">${w.quantity || 0}</span>
+          <button class="step" type="button" data-q="${esc(w.id)}" data-d="-1" aria-label="Fles eraf">−</button>
+        </div>
+      </div>`).join("");
+  }
+
+  // Wines in stock whose "Bewaar voor" date is within the next 30 days (or up to 7 days ago).
+  // Dismissing one is remembered on this device per wine and date, so a new date shows again.
+  const REMIND_AHEAD = 30, REMIND_AFTER = 7, SEEN_KEY = "wijnkelder.seenReminders";
+  let seenReminders = [];
+  try { seenReminders = JSON.parse(localStorage.getItem(SEEN_KEY) || "[]"); } catch {}
+  const remindKey = w => w.id + "|" + w.saveForDate;
+  function renderReminders(inStock) {
+    const due = inStock
+      .map(w => ({ w, n: daysUntil(w.saveForDate) }))
+      .filter(({ w, n }) => isFinite(n) && n <= REMIND_AHEAD && n >= -REMIND_AFTER && !seenReminders.includes(remindKey(w)))
+      .sort((a, b) => a.n - b.n);
+    const box = $("reminders");
+    box.hidden = !due.length;
+    box.innerHTML = due.map(({ w, n }) => `
+      <div class="remind${n <= 0 ? " now" : ""}">
+        <svg class="house" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v15H5zM5 9.5h14M9 3v4M15 3v4"/></svg>
+        <button class="grow" type="button" data-open="${esc(w.id)}">
+          <span class="when">${esc(daysLeft(w.saveForDate))} · ${esc(fmtDate(w.saveForDate))}</span>
+          <span class="what">${esc(w.name || w.producer || "Naamloze wijn")}${w.vintage ? " " + esc(w.vintage) : ""}</span>
+          ${w.saveFor ? `<span class="for">Bewaard voor ${esc(w.saveFor)}</span>` : ""}
+        </button>
+        <button class="remdel" type="button" data-remdel="${esc(remindKey(w))}" aria-label="Herinnering verbergen">×</button>
+      </div>`).join("");
+  }
+
+  // Every opened bottle across the cellar, newest first; tapping one opens that wine.
+  function renderLog(q) {
+    const rows = wines.flatMap(w => (w.log || []).map(e => ({ w, e })))
+      .filter(({ w, e }) => !q || norm([w.name, w.producer, w.vintage, e.with, e.note, fmtDate(e.date)].join(" ")).includes(q))
+      .sort((a, b) => String(b.e.date).localeCompare(String(a.e.date)) || String(b.e.id).localeCompare(String(a.e.id)));
+    if (!rows.length) {
+      $("list").innerHTML = q
+        ? `<div class="empty"><p>Niets in je logboek gevonden voor deze zoekopdracht.</p></div>`
+        : `<div class="empty"><p>Je logboek is nog leeg. Open een wijn en tik op <b>Fles geopend</b> om bij te houden wanneer en met wie je hem dronk.</p></div>`;
+      return;
+    }
+    $("list").innerHTML = rows.map(({ w, e }) => `
+      <div class="card logcard" data-open="${esc(w.id)}" role="button" tabindex="0">
+        ${visual(w)}
+        <div class="meta">
+          <span class="name">${esc(w.name || w.producer || "Naamloze wijn")}</span>
+          <span class="sub">${e.rating ? `<span class="score" aria-label="Cijfer ${e.rating}">${e.rating}</span>` : ""}${esc([fmtDate(e.date), w.name ? w.producer : "", w.vintage].filter(Boolean).join(" · "))}</span>
+          ${e.with ? `<span class="desc">Met ${esc(e.with)}</span>` : ""}
+          ${e.note ? `<span class="desc">${esc(e.note)}</span>` : ""}
+        </div>
+      </div>`).join("");
+  }
+
+  function favBtn(w, big) {
+    return `<button class="fav${big ? " big" : ""}" type="button" data-fav="${esc(w.id)}" aria-pressed="${!!w.favorite}" aria-label="${w.favorite ? "Uit favorieten halen" : "Aan favorieten toevoegen"}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${HEART}"/></svg></button>`;
+  }
+  function ratingRow(r, attr) {
+    let h = `<div class="rating" role="group" aria-label="Cijfer van 1 tot 10">`;
+    for (let i = 1; i <= 10; i++) h += `<button class="rate${r === i ? " pick" : ""}" type="button" ${attr}="${i}" aria-pressed="${r === i}">${i}</button>`;
+    return h + `</div>`;
+  }
+  function setRating(id, n) {
+    const w = wines.find(x => x.id === id);
+    if (!w) return;
+    w.rating = w.rating === n ? null : n;
+    render();
+    const box = $("d-rating");
+    if (box && openId === id) box.innerHTML = ratingRow(w.rating, "data-rate");
+    saveSoon(w);
+  }
+
+  function toggleFav(id) {
+    const w = wines.find(x => x.id === id);
+    if (!w) return;
+    w.favorite = !w.favorite;
+    render();
+    const b = $("sheetIn").querySelector(`[data-fav="${CSS.escape(id)}"]`);
+    if (b && openId === id) { b.setAttribute("aria-pressed", String(w.favorite)); b.setAttribute("aria-label", w.favorite ? "Uit favorieten halen" : "Aan favorieten toevoegen"); }
+    saveSoon(w);
+    toast(w.favorite ? "Toegevoegd aan favorieten" : "Uit favorieten gehaald");
+  }
+
+  function changeQty(id, d) {
+    const w = wines.find(x => x.id === id);
+    if (!w) return;
+    const before = w.quantity || 0;
+    w.quantity = Math.max(0, before + d);
+    render(); refreshOpenDetail();
+    saveSoon(w);
+    if (d < 0 && before > 0) {
+      toast(w.quantity === 0 ? "Laatste fles op. De wijn staat nu in het Archief." : "Fles eraf.",
+        { label: "Noteer in logboek", run: () => openDetail(id, { log: true, taken: true }) });
+    }
+  }
+
+  // ---------- Events ----------
+  $("search").addEventListener("input", e => { query = e.target.value; render(); });
+  $("sort").value = sortBy;
+  // The sort button shows only its icon; it turns accent-coloured when a non-standard order is active.
+  const syncSortChip = () => {
+    const label = "Sorteer: " + $("sort").selectedOptions[0].textContent;
+    $("sortChip").classList.toggle("on", sortBy !== "std");
+    $("sortChip").title = label; $("sort").setAttribute("aria-label", label);
+  };
+  syncSortChip();
+  $("sort").addEventListener("change", e => {
+    sortBy = e.target.value;
+    try { localStorage.setItem("wijnkelder.sort", sortBy); } catch {}
+    syncSortChip(); render();
+  });
+  $("chips").addEventListener("click", e => { const b = e.target.closest("[data-f]"); if (b) { filter = b.dataset.f; render(); } });
+  $("list").addEventListener("click", e => {
+    const s = e.target.closest("[data-q]");
+    if (s) { e.stopPropagation(); changeQty(s.dataset.q, +s.dataset.d); return; }
+    const f = e.target.closest("[data-fav]");
+    if (f) { e.stopPropagation(); toggleFav(f.dataset.fav); return; }
+    const c = e.target.closest("[data-open]");
+    if (c) openDetail(c.dataset.open);
+  });
+  $("tally").addEventListener("click", () => openStats());
+  $("tally").addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openStats(); } });
+  $("reminders").addEventListener("click", e => {
+    const x = e.target.closest("[data-remdel]");
+    if (x) {
+      seenReminders = seenReminders.concat(x.dataset.remdel).slice(-200);
+      try { localStorage.setItem(SEEN_KEY, JSON.stringify(seenReminders)); } catch {}
+      render(); toast("Herinnering verborgen");
+      return;
+    }
+    const o = e.target.closest("[data-open]");
+    if (o) openDetail(o.dataset.open);
+  });
+  $("list").addEventListener("keydown", e => {
+    if ((e.key === "Enter" || e.key === " ") && e.target.matches("[data-open]")) { e.preventDefault(); openDetail(e.target.dataset.open); }
+  });
+  // ---------- Weergave (auto / licht / donker), remembered per device ----------
+  // "auto" leaves data-theme to whatever the host set (or nothing), so the system setting is followed.
+  const THEME_KEY = "wijnkelder.theme";
+  let themePick = "auto";
+  try { const t = localStorage.getItem(THEME_KEY); if (["auto", "light", "dark"].includes(t)) themePick = t; } catch {}
+  const rootEl = document.documentElement;
+  let hostTheme = rootEl.getAttribute("data-theme");
+  let applyingTheme = false;
+  function applyTheme() {
+    applyingTheme = true;
+    const want = themePick === "auto" ? hostTheme : themePick;
+    if (want) rootEl.setAttribute("data-theme", want); else rootEl.removeAttribute("data-theme");
+    applyingTheme = false;
+    document.querySelectorAll("[data-theme-pick]").forEach(b => b.setAttribute("aria-checked", String(b.dataset.themePick === themePick)));
+  }
+  // If the host changes the theme later, follow it in "auto" and keep the viewer's own choice otherwise.
+  new MutationObserver(() => {
+    if (applyingTheme) return;
+    if (themePick === "auto") hostTheme = rootEl.getAttribute("data-theme");
+    else if (rootEl.getAttribute("data-theme") !== themePick) applyTheme();
+  }).observe(rootEl, { attributes: true, attributeFilter: ["data-theme"] });
+  applyTheme();
+  $("themeSeg").addEventListener("click", e => {
+    const b = e.target.closest("[data-theme-pick]");
+    if (!b) return;
+    themePick = b.dataset.themePick;
+    try { localStorage.setItem(THEME_KEY, themePick); } catch {}
+    applyTheme();
+    setSettings(false);
+  });
+  // ---------- Back-up: the whole cellar as one JSON file ----------
+  const downloads = {
+    save({ filename, data }) {
+      const blob = data instanceof Blob ? data : new Blob([data], { type: /\.json$/i.test(filename) ? "application/json" : "application/octet-stream" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 15000);
+      return Promise.resolve({ status: "saved" });
+    }
+  };
+
+  // ---------- Restore: "Toevoegen" adds only wines that aren't here yet; "Vervangen" makes the cellar equal to the file ----------
+  let restoreData = null, replaceArmed = false;
+  const resetRestore = () => {
+    restoreData = null; replaceArmed = false;
+    $("restoreBox").hidden = true; $("restoreReplace").textContent = "Vervangen";
+  };
+  // One "Back-up" button in the menu; tapping it shows the download and restore options.
+  const setBackupOpen = open => { $("backupOpts").hidden = !open; $("backupToggle").setAttribute("aria-expanded", String(open)); };
+  $("backupToggle").addEventListener("click", () => {
+    const open = $("backupOpts").hidden;
+    setBackupOpen(open);
+    if (!open) resetRestore();
+  });
+  function cleanBackupWine(x) {
+    if (!x || typeof x !== "object" || Array.isArray(x)) return null;
+    const w = JSON.parse(JSON.stringify(x));
+    if (typeof w.id !== "string" || !/^[\w-]{1,64}$/.test(w.id)) w.id = newId();
+    w.quantity = Math.max(0, parseInt(w.quantity, 10) || 0);
+    if (w.log && !Array.isArray(w.log)) delete w.log;
+    return (w.name || w.producer) ? w : null;
+  }
+  $("restoreIn").addEventListener("click", () => { $("restoreIn").value = ""; });
+  $("restoreIn").addEventListener("change", async e => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    resetRestore();
+    let parsed;
+    try { parsed = JSON.parse(await f.text()); } catch { showMsg("backupMsg", "Dit bestand kan niet gelezen worden. Kies een back-up van Vinventory (.json).", true); return; }
+    const list = parsed && parsed.app === "Vinventory" && Array.isArray(parsed.wines) ? parsed.wines.map(cleanBackupWine).filter(Boolean) : null;
+    if (!list) { showMsg("backupMsg", "Dit is geen back-up van Vinventory.", true); return; }
+    if (!list.length) { showMsg("backupMsg", "Deze back-up bevat geen wijnen.", true); return; }
+    restoreData = list;
+    const have = new Set(wines.map(w => w.id));
+    const fresh = list.filter(w => !have.has(w.id)).length;
+    const when = parsed.exportedAt ? fmtDate(String(parsed.exportedAt).slice(0, 10)) : "";
+    $("restoreTxt").textContent = `Back-up${when ? " van " + when : ""}: ${list.length} ${list.length === 1 ? "wijn" : "wijnen"}. ` +
+      (fresh === list.length ? "Ze zijn allemaal nieuw." : fresh ? `${fresh} nieuw, ${list.length - fresh} ${list.length - fresh === 1 ? "staat" : "staan"} al in je kelder.` : "Ze staan allemaal al in je kelder.") +
+      " Toevoegen zet alleen de nieuwe erbij; Vervangen maakt je kelder gelijk aan de back-up.";
+    $("restoreAdd").disabled = !fresh;
+    showMsg("backupMsg", "");
+    $("restoreBox").hidden = false;
+  });
+  $("restoreCancel").addEventListener("click", () => { resetRestore(); showMsg("backupMsg", "Eén bestand met al je wijnen, je logboek en je foto's."); });
+  $("restoreAdd").addEventListener("click", () => {
+    if (!restoreData) return;
+    const have = new Set(wines.map(w => w.id));
+    const add = restoreData.filter(w => !have.has(w.id));
+    wines.push(...add);
+    writeRestored(add, []);
+    resetRestore(); render();
+    showMsg("backupMsg", `${add.length} ${add.length === 1 ? "wijn" : "wijnen"} toegevoegd aan je kelder.`);
+    toast("Back-up teruggezet");
+  });
+  $("restoreReplace").addEventListener("click", () => {
+    if (!restoreData) return;
+    if (!replaceArmed) { replaceArmed = true; $("restoreReplace").textContent = "Zeker weten?"; return; }
+    const keep = new Set(restoreData.map(w => w.id));
+    const gone = wines.filter(w => !keep.has(w.id)).map(w => w.id);
+    wines = restoreData.slice();
+    writeRestored(restoreData, gone);
+    const n = restoreData.length;
+    resetRestore(); render();
+    showMsg("backupMsg", `Je kelder is vervangen door de back-up (${n} ${n === 1 ? "wijn" : "wijnen"}).`);
+    toast("Back-up teruggezet");
+  });
+  function writeRestored(put, removed) {
+    removed.forEach(id => store.remove(id));
+    put.forEach(w => store.put(w));
+  }
+  $("backupBtn").addEventListener("click", async () => {
+    if (!downloads) return;
+    if (!wines.length) { showMsg("backupMsg", "Je kelder is nog leeg; er is niets om te bewaren.", true); return; }
+    const btn = $("backupBtn");
+    btn.disabled = true;
+    const data = JSON.stringify({ app: "Vinventory", version: 1, exportedAt: new Date().toISOString(), wines }, null, 2);
+    try {
+      await downloads.save({ filename: `vinventory-backup-${today()}.json`, data });
+      const bottles = wines.reduce((a, w) => a + (w.quantity || 0), 0);
+      showMsg("backupMsg", `Back-up opgeslagen: ${wines.length} ${wines.length === 1 ? "wijn" : "wijnen"}, ${bottles} ${bottles === 1 ? "fles" : "flessen"}.`);
+    } catch (e) {
+      const code = e && e.code;
+      if (code === "declined") showMsg("backupMsg", "Niet opgeslagen. Tik nog eens als je de back-up toch wilt.");
+      else if (code === "rate_limited") showMsg("backupMsg", "Er staat al een vraag open. Probeer het zo nog eens.", true);
+      else if (code === "too_large") showMsg("backupMsg", "De back-up is te groot om op te slaan.", true);
+      else { showMsg("backupMsg", "Opslaan is hier niet mogelijk.", true); if (["unavailable", "not_granted", "capability_disabled", "capability_removed"].includes(code)) $("backupSec").hidden = true; }
+    } finally { btn.disabled = false; }
+  });
+
+  const setSettings = open => { $("setMenu").hidden = !open; $("setToggle").setAttribute("aria-expanded", String(open)); if (!open) { resetRestore(); setBackupOpen(false); } };
+  $("setToggle").addEventListener("click", e => { e.stopPropagation(); setMenu(false); setSettings($("setMenu").hidden); });
+  document.addEventListener("click", e => { if (!$("setMenu").hidden && !e.target.closest(".setwrap")) setSettings(false); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape") setSettings(false); });
+
+  const setMenu = open => { $("addMenu").hidden = !open; $("addToggle").setAttribute("aria-expanded", String(open)); };
+  $("addToggle").addEventListener("click", e => { e.stopPropagation(); setSettings(false); setMenu($("addMenu").hidden); });
+  document.addEventListener("click", e => { if (!$("addMenu").hidden && !e.target.closest(".addwrap")) setMenu(false); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape") setMenu(false); });
+  $("scanBtn").addEventListener("click", e => {
+    // Scanning needs the user's own Claude key; point them to the settings before the camera opens.
+    if (!sample) {
+      e.preventDefault();
+      setMenu(false);
+      // Open it after this click has finished bubbling, or the outside-click handler closes it again.
+      setTimeout(() => {
+        setSettings(true);
+        showMsg("keyMsg", "Vul hier je Claude-sleutel in om etiketten te scannen. Zonder sleutel kun je wijnen met de hand toevoegen.", true);
+        $("keyIn").focus();
+      }, 0);
+      return;
+    }
+    $("fileIn").value = ""; setTimeout(() => setMenu(false), 0);
+  });
+  $("addBtn").addEventListener("click", () => { setMenu(false); openForm({ quantity: 1, color: "rood" }, null); });
+  $("fileIn").addEventListener("change", e => { const f = e.target.files && e.target.files[0]; if (f) scan(f); });
+
+  // ---------- Sheet helpers ----------
+  let openId = null;
+  let scanCtl = null;
+  function openSheet(html) { $("sheetIn").innerHTML = html; $("sheet").hidden = false; $("sheet").scrollTop = 0; document.body.style.overflow = "hidden"; }
+  function closeSheet() { if (scanCtl) scanCtl.abort(); scanCtl = null; openId = null; $("sheet").hidden = true; document.body.style.overflow = ""; }
+  $("sheet").addEventListener("click", e => {
+    if (e.target.closest("[data-close]")) { closeSheet(); return; }
+    const f = e.target.closest("[data-fav]");
+    if (f) { toggleFav(f.dataset.fav); return; }
+    const r = e.target.closest("[data-rate]");
+    if (r && openId) setRating(openId, +r.dataset.rate);
+  });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("sheet").hidden) closeSheet(); });
+  const top = t => `<div class="sheet-top"><h2>${t}</h2><button class="x" type="button" data-close aria-label="Sluiten">×</button></div>`;
+
+  // ---------- Images ----------
+  function loadImg(file) {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => resolve({ img, url });
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("foto kan niet geopend worden")); };
+      img.src = url;
+    });
+  }
+  function scaled(img, max) {
+    const s = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+    const c = document.createElement("canvas");
+    c.width = Math.round(img.naturalWidth * s); c.height = Math.round(img.naturalHeight * s);
+    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+    return c;
+  }
+
+  const withTimeout = (p, ms, what) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error(what + " duurde te lang")), ms))]);
+  const why = e => String((e && (e.message || e.code)) || e || "onbekend").slice(0, 140);
+
+  // ---------- Scan ----------
+  const ERR = {
+    no_key: "Vul eerst je Claude-sleutel in bij Instellingen (het tandwiel). Voeg de wijn nu zelf toe.",
+    invalid_key: "Je Claude-sleutel is ongeldig of ingetrokken. Controleer hem bij Instellingen (het tandwiel).",
+    no_credit: "Er staat te weinig tegoed op je Anthropic-account. Vul het aan, of voeg de wijn zelf toe.",
+    rate_limited: "Even te veel verzoeken. Probeer het over een minuut opnieuw.",
+    image_rejected: "Deze foto kan niet gelezen worden. Probeer een andere foto.",
+    refused: "Het etiket kon niet gelezen worden. Probeer een andere foto.",
+    invalid_json: "Het antwoord was onvolledig. Probeer het opnieuw.",
+    network: "Geen verbinding met Claude. Controleer je internet en probeer het opnieuw.",
+    api_error: "Claude gaf een fout terug. Probeer het straks opnieuw, of voeg de wijn zelf toe."
+  };
+  const errText = e => (e && e.ocr ? e.message + " Vul de wijn zelf in; je foto wordt wel bewaard." : "") || ERR[e && e.code] ||
+    (!(e && e.code) ? "Er ging iets mis (" + why(e) + "). Vul de wijn zelf in; je foto wordt wel bewaard." : "") || "Er ging iets mis bij het lezen. Probeer het opnieuw of vul de wijn zelf in.";
+
+  function wineSchemaText() {
+    return `{"isWine": true, "name": "naam van de wijn of cuvée, zonder de producent", "producer": "producent of château", "vintage": 2019, "region": "streek of appellation", "country": "land", "grape": "druif of blend", "color": "rood|wit|rosé|mousserend|dessert|versterkt", "description": "2 tot 3 zinnen in het Nederlands over stijl, geur en smaak (noem hier geen gerechten)", "pairing": "4 tot 6 concrete gerechten in het Nederlands die goed bij deze wijn passen, gescheiden door komma's","drinkFrom": 2025, "drinkTo": 2032, "confidence": "hoog|middel|laag"}`;
+  }
+
+  async function scan(file) {
+    openSheet(`${top("Etiket lezen")}
+      <div id="scanPhoto"></div>
+      <div class="reading"><div class="spinner" aria-hidden="true"></div><span id="readMsg">Foto openen…</span><span class="hint" id="readStep"></span></div>
+      <button class="btn ghost" type="button" data-close>Stoppen</button>`);
+    scanCtl = new AbortController();
+    const ctl = scanCtl;
+    const t0 = Date.now();
+    let step = "Foto";
+    const tick = setInterval(() => {
+      if (ctl.signal.aborted) { clearInterval(tick); return; }
+      const el = $("readStep");
+      if (el) el.textContent = `Stap: ${step} · ${Math.round((Date.now() - t0) / 1000)} s`;
+    }, 1000);
+    const say = (msg, s) => { if (ctl.signal.aborted) return; if (s) step = s; const el = $("readMsg"); if (el) el.textContent = msg; };
+
+    let thumb = "", loaded = null;
+    try {
+      try {
+        loaded = await withTimeout(loadImg(file), 20000, "Foto openen");
+        thumb = scaled(loaded.img, 420).toDataURL("image/jpeg", 0.72);
+      } catch (e) { throw { ocr: true, message: "Deze foto kan niet geopend worden (" + why(e) + ")." }; }
+      if (ctl.signal.aborted) return;
+      $("scanPhoto").innerHTML = `<img class="photo" src="${thumb}" alt="Je foto">`;
+
+      if (!sample) throw { code: "no_key" };
+      const big = await new Promise(r => scaled(loaded.img, 1500).toBlob(r, "image/jpeg", 0.85));
+      URL.revokeObjectURL(loaded.url);
+      if (!big) throw { ocr: true, message: "De foto kon niet worden voorbereid." };
+      await runRecognition(ctl, say, thumb, big);
+    } catch (e) {
+      if (e && e.code === "cancelled") return;
+      if (ctl.signal.aborted) return;
+      scanCtl = null;
+      openForm({ quantity: 1, color: "rood", thumb }, null, errText(e), true);
+    } finally { clearInterval(tick); }
+  }
+
+  async function runRecognition(ctl, say, thumb, big) {
+    const rules = `Regels: "vintage", "drinkFrom" en "drinkTo" zijn getallen of null. Vul wat niet op het etiket staat aan met je wijnkennis als je redelijk zeker bent, anders een lege string. ` +
+      `Het drinkvenster is je beste schatting voor deze jaargang; het huidige jaar is ${YEAR}. `;
+    const askClaude = (prompt, opts) => withTimeout(sample.json(prompt, Object.assign({ signal: ctl.signal }, opts)), 150000, "Het antwoord van Claude")
+      .catch(e => { if (e instanceof Error && !e.code) throw { ocr: true, message: e.message + ". Probeer het nog eens" }; throw e; });
+    say("Claude leest het etiket…", "Claude leest de foto");
+    const r = await askClaude(
+      `Je bekijkt een foto van een wijnfles of wijnetiket. Lees het etiket en antwoord met ALLEEN één JSON-object in precies deze vorm:\n${wineSchemaText()}\n\n` +
+      rules + `Staat er geen wijnetiket op de foto, antwoord dan {"isWine": false}.`,
+      { images: big }
+    );
+    if (ctl.signal.aborted) return;
+    scanCtl = null;
+    if (!r || r.isWine === false) {
+      openForm({ quantity: 1, color: "rood", thumb }, null, "Er werd geen wijnetiket herkend op deze foto. Probeer het opnieuw met het etiket goed in beeld, of vul de wijn zelf in.", true);
+      return;
+    }
+    const w = {
+      name: str(r.name), producer: str(r.producer), vintage: int(r.vintage), region: str(r.region), country: str(r.country),
+      grape: str(r.grape), color: COLORS.some(c => c[0] === r.color) ? r.color : "rood", description: str(r.description), pairing: str(r.pairing),
+      drinkFrom: int(r.drinkFrom), drinkTo: int(r.drinkTo), quantity: 1, thumb
+    };
+    openForm(w, null, r.confidence === "laag" ? "Het etiket was lastig te lezen. Controleer de gegevens even." : "Herkend. Controleer de gegevens en sla op.");
+  }
+  const str = v => (v == null ? "" : String(v)).trim();
+  const int = v => { const n = parseInt(v, 10); return n > 1800 && n < 2200 ? n : null; };
+
+  // ---------- Form ----------
+  function findMatch(w, exceptId) {
+    const key = norm(w.producer) + "|" + norm(w.name) + "|" + (w.vintage || "");
+    if (key === "||") return null;
+    return wines.find(x => x.id !== exceptId && norm(x.producer) + "|" + norm(x.name) + "|" + (x.vintage || "") === key) || null;
+  }
+
+  function openForm(w, id, msg, warn) {
+    openId = null;
+    const opts = COLORS.map(c => `<option value="${c[0]}"${w.color === c[0] ? " selected" : ""}>${c[1]}</option>`).join("");
+    openSheet(`${top(id ? "Wijn bewerken" : "Wijn toevoegen")}
+      <div id="labelBox" class="membox"></div>
+      <input type="file" id="labelIn" accept="image/*" class="vh">
+      ${msg ? `<p class="hint ${warn ? "warn" : "good"}">${esc(msg)}</p>` : ""}
+      <form id="wineForm" novalidate>
+        <div class="field">
+          <span class="section-l" style="margin:0">Cijfer</span>
+          <div id="f-rating">${ratingRow(w.rating || null, "data-frate")}</div>
+        </div>
+        <div class="qtybox">
+          <div><div style="font-weight:600">Aantal flessen</div><div class="hint" id="matchMsg"></div></div>
+          <div class="stepper row">
+            <button class="step" type="button" data-fq="-1" aria-label="Minder">−</button>
+            <span class="qty" id="f-qty">${w.quantity || 0}</span>
+            <button class="step plus" type="button" data-fq="1" aria-label="Meer">+</button>
+          </div>
+        </div>
+        <div class="field"><label for="f-name">Naam</label><input id="f-name" value="${esc(w.name)}" placeholder="Bijv. Clos des Papes"></div>
+        <div class="field"><label for="f-producer">Producent</label><input id="f-producer" value="${esc(w.producer)}"></div>
+        <div class="grid2">
+          <div class="field"><label for="f-vintage">Jaargang</label><select id="f-vintage">${vintageOptions(w.vintage)}</select></div>
+          <div class="field"><label for="f-color">Soort</label><select id="f-color">${opts}</select></div>
+        </div>
+        <div class="grid2">
+          <div class="field"><label for="f-region">Streek</label><input id="f-region" value="${esc(w.region)}"></div>
+          <div class="field"><label for="f-country">Land</label><input id="f-country" value="${esc(w.country)}"></div>
+        </div>
+        <div class="grid2">
+          <div class="field"><label for="f-grape">Druif</label><input id="f-grape" value="${esc(w.grape)}"></div>
+          <div class="field"><label for="f-price">Prijs per fles</label>
+            <div class="euro"><span aria-hidden="true">€</span><input id="f-price" inputmode="decimal" autocomplete="off" value="${w.price != null ? esc(String(w.price.toFixed(2)).replace(".", ",")) : ""}" placeholder="0,00"></div>
+          </div>
+        </div>
+        <div class="grid2">
+          <div class="field"><label for="f-from">Op dronk vanaf</label><select id="f-from">${drinkYearOptions(w.drinkFrom)}</select></div>
+          <div class="field"><label for="f-to">Tot</label><select id="f-to">${drinkYearOptions(w.drinkTo)}</select></div>
+        </div>
+        <span class="hint warn" id="drinkMsg" hidden style="margin-top:-6px">"Tot" ligt vóór "Op dronk vanaf". Kies een later jaar bij Tot.</span>
+        <div class="field">
+          <div class="row-between"><label for="f-desc">Beschrijving</label>${sample ? `<button class="linkbtn" type="button" id="genDesc">Laat Claude schrijven</button>` : ""}</div>
+          <textarea id="f-desc">${esc(w.description)}</textarea>
+          <span class="hint" id="descMsg" hidden></span>
+        </div>
+        <div class="field">
+          <div class="row-between"><label for="f-pairing">Past goed bij</label>${sample ? `<button class="linkbtn" type="button" id="genPair">Laat Claude voorstellen</button>` : ""}</div>
+          <textarea id="f-pairing" style="min-height:80px" placeholder="Bijv. lamsrack, stoofvlees, oude Gouda">${esc(w.pairing)}</textarea>
+          <span class="hint" id="pairMsg" hidden></span>
+        </div>
+        <div class="field">
+          <label for="f-savefor">Bewaar voor</label>
+          <div class="savegrid">
+            <input id="f-savefor" value="${esc(w.saveFor)}" placeholder="Bijv. 50ste verjaardag van Peter">
+            <input id="f-savedate" type="date" value="${esc(w.saveForDate)}" aria-label="Datum">
+          </div>
+        </div>
+        <div class="field">
+          <label for="f-bought">Gekocht bij</label>
+          <div class="boughtrow">
+            <input id="f-bought" value="${esc(w.boughtAt)}" placeholder="Bijv. Wijnhandel De Druif, Utrecht">
+            <a class="mapbtn" id="mapsSearch" href="https://www.google.com/maps" target="_blank" rel="noopener" aria-label="Kies op Google Maps" title="Kies op Google Maps"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${PIN}"/><circle cx="12" cy="10" r="2.5"/></svg></a>
+          </div>
+          <div class="webhelp" id="mapsHelp"${w.boughtMapUrl ? "" : " hidden"}>
+            <p class="hint">Zoek de winkel in Google Maps, tik op <b>Deel</b> en kies <b>Kopieer</b>. Kom terug en plak de link hieronder.</p>
+            <input id="f-mapurl" class="pastebox" value="${esc(w.boughtMapUrl)}" placeholder="Plak hier de link uit Google Maps" inputmode="url" autocomplete="off">
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn ghost" type="button" data-close>Annuleren</button>
+          <button class="btn primary" type="submit">Opslaan</button>
+        </div>
+      </form>`);
+
+    let qty = w.quantity || 0;
+    let rating = w.rating || null;
+    let thumb = w.thumb || "";
+    function imgQuery() {
+      return [$("f-producer").value.trim(), $("f-name").value.trim(), $("f-vintage").value].filter(Boolean).join(" ");
+    }
+    function syncWebHref() {
+      const ws = $("webSearch");
+      if (!ws) return;
+      const q = imgQuery();
+      ws.href = "https://www.google.com/search?tbm=isch&q=" + encodeURIComponent(q ? q + " wijnfles" : "wijnfles");
+    }
+    const drawLabel = () => {
+      $("labelBox").innerHTML = thumb
+        ? `<img class="photo" src="${esc(thumb)}" alt="Foto van de fles">
+           <div class="actions"><label class="btn ghost" for="labelIn">Andere foto</label><button class="btn ghost" type="button" id="labelDel">Foto weghalen</button></div>`
+        : `<div class="photoopts">
+             <label class="btn ghost memadd" for="labelIn"><svg class="house" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4zM12 17a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/></svg>Foto van de fles toevoegen</label>
+             <a class="btn ghost memadd" id="webSearch" href="https://www.google.com/search?tbm=isch&q=wijnfles" target="_blank" rel="noopener"><svg class="house" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13zM15.5 15.5 20 20"/></svg>Zoek online</a>
+           </div>
+           <div class="webhelp" id="webHelp" hidden>
+             <p class="hint">Houd in Google de afbeelding ingedrukt en kies <b>Bewaar in Foto's</b> of <b>Kopieer</b>. Kom daarna terug en tik op <b>Foto van de fles toevoegen</b>, of plak de afbeelding hieronder.</p>
+             <input id="pasteIn" class="pastebox" placeholder="Tik hier en kies Plakken" autocomplete="off" aria-label="Afbeelding plakken">
+           </div>`;
+      const del = $("labelDel");
+      if (del) del.addEventListener("click", () => { thumb = ""; drawLabel(); });
+      const ws = $("webSearch");
+      syncWebHref();
+      if (ws) ws.addEventListener("click", e => {
+        if (!imgQuery()) { e.preventDefault(); toast("Vul eerst een naam of producent in, dan zoek ik op die wijn."); return; }
+        syncWebHref();
+        $("webHelp").hidden = false;
+      });
+      const pi = $("pasteIn");
+      if (pi) {
+        pi.addEventListener("paste", async e => {
+          e.preventDefault();
+          const items = Array.from((e.clipboardData && e.clipboardData.items) || []);
+          const it = items.find(x => x.kind === "file" && x.type.startsWith("image/"));
+          const file = it && it.getAsFile();
+          if (!file) { toast("Er staat geen afbeelding op het klembord. Kies in Google 'Kopieer' bij de afbeelding."); return; }
+          await useLabelFile(file);
+        });
+        pi.addEventListener("input", () => { pi.value = ""; });
+      }
+    };
+    const useLabelFile = async f => {
+      try {
+        const { img, url } = await loadImg(f);
+        thumb = scaled(img, 420).toDataURL("image/jpeg", 0.72);
+        URL.revokeObjectURL(url);
+        drawLabel();
+      } catch { toast("Deze afbeelding kan niet geopend worden."); }
+    };
+    drawLabel();
+    $("labelIn").addEventListener("click", () => { $("labelIn").value = ""; });
+    $("labelIn").addEventListener("change", e => {
+      const f = e.target.files && e.target.files[0];
+      if (f) useLabelFile(f);
+    });
+    // The viewer may follow a link before our click handler runs, so keep hrefs current as the fields change.
+    const syncMapsHref = () => {
+      const q = $("f-bought").value.trim();
+      $("mapsSearch").href = q ? "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q) : "https://www.google.com/maps";
+    };
+    syncMapsHref();
+    $("f-bought").addEventListener("input", syncMapsHref);
+    $("mapsSearch").addEventListener("click", () => { syncMapsHref(); $("mapsHelp").hidden = false; });
+    ["f-name", "f-producer"].forEach(k => $(k).addEventListener("input", syncWebHref));
+    $("f-vintage").addEventListener("change", syncWebHref);
+    $("f-mapurl").addEventListener("input", () => {
+      const v = $("f-mapurl").value;
+      const url = cleanUrl(v);
+      if (!url || url === v.trim()) return;
+      // Google Maps shares "Name, address\nhttps://…": keep the link, use the text as the shop name when empty
+      const rest = v.replace(url, "").trim().split("\n")[0].trim();
+      $("f-mapurl").value = url;
+      if (rest && !$("f-bought").value.trim()) $("f-bought").value = rest;
+    });
+    const form = $("wineForm");
+    const read = () => ({
+      name: $("f-name").value.trim(), producer: $("f-producer").value.trim(), vintage: int($("f-vintage").value),
+      color: $("f-color").value, region: $("f-region").value.trim(), country: $("f-country").value.trim(),
+      grape: $("f-grape").value.trim(), price: parsePrice($("f-price").value), drinkFrom: int($("f-from").value), drinkTo: int($("f-to").value),
+      description: $("f-desc").value.trim(), pairing: $("f-pairing").value.trim(), saveFor: $("f-savefor").value.trim(), saveForDate: $("f-savedate").value || "",
+      boughtAt: $("f-bought").value.trim(), boughtMapUrl: cleanUrl($("f-mapurl").value),
+      thumb, rating
+    });
+    const updateMatch = () => {
+      const m = findMatch(read(), id);
+      $("matchMsg").textContent = m ? `Staat al in je kelder (${m.quantity || 0} fl.). Opslaan telt deze erbij.` : "";
+    };
+    updateMatch();
+    ["f-name", "f-producer", "f-vintage"].forEach(k => $(k).addEventListener("input", updateMatch));
+    $("f-vintage").addEventListener("change", updateMatch);
+    const checkDrink = () => { const f = int($("f-from").value), t = int($("f-to").value); $("drinkMsg").hidden = !(f && t && t < f); };
+    ["f-from", "f-to"].forEach(k => $(k).addEventListener("change", checkDrink));
+    checkDrink();
+    form.addEventListener("click", e => {
+      const b = e.target.closest("[data-fq]");
+      if (b) { qty = Math.max(0, qty + +b.dataset.fq); $("f-qty").textContent = qty; return; }
+      const r = e.target.closest("[data-frate]");
+      if (r) { const n = +r.dataset.frate; rating = rating === n ? null : n; $("f-rating").innerHTML = ratingRow(rating, "data-frate"); }
+    });
+
+    const wireGen = (btnId, fieldId, msgId, busy, ask) => {
+      const btn = $(btnId);
+      if (!btn) return;
+      btn.addEventListener("click", async () => {
+        const d = read();
+        if (!d.name && !d.producer) { showMsg(msgId, "Vul eerst een naam of producent in.", true); return; }
+        btn.disabled = true; showMsg(msgId, busy);
+        try {
+          const facts = [d.producer, d.name, d.vintage, d.region, d.country, d.grape, colorName(d.color)].filter(Boolean).join(", ");
+          const { text } = await sample(ask + `\n\nWijn: ${facts}`, { cache: false, onText: ({ text }) => { $(fieldId).value = text; } });
+          $(fieldId).value = text.trim(); showMsg(msgId, "");
+        } catch (e) { showMsg(msgId, errText(e), true); }
+        finally { btn.disabled = false; }
+      });
+    };
+    wireGen("genDesc", "f-desc", "descMsg", "Claude schrijft een beschrijving…",
+      "Schrijf 2 tot 3 zinnen in het Nederlands over deze wijn: stijl, geur en smaak. Noem geen gerechten. Alleen de beschrijving, geen kop of opsomming.");
+    wireGen("genPair", "f-pairing", "pairMsg", "Claude zoekt gerechten…",
+      "Noem in het Nederlands 4 tot 6 concrete gerechten die goed bij deze wijn passen, gescheiden door komma's, eventueel gevolgd door één korte zin waarom. Geen kop, geen opsomming met streepjes.");
+
+    form.addEventListener("submit", e => {
+      e.preventDefault();
+      const d = read();
+      if (!d.name && !d.producer) { toast("Geef de wijn een naam of producent."); $("f-name").focus(); return; }
+      const m = findMatch(d, id);
+      let saved;
+      if (m && !id) {
+        Object.assign(m, fillBlank(m, d), { quantity: (m.quantity || 0) + qty });
+        if (!m.thumb && w.thumb) m.thumb = w.thumb;
+        saved = m;
+        toast(qty ? `${qty} fl. bijgeteld. Je hebt er nu ${m.quantity}.` : `Gegevens aangevuld. Je hebt er ${m.quantity} fl.`);
+      } else if (id) {
+        saved = wines.find(x => x.id === id);
+        if (!saved) { closeSheet(); return; }
+        Object.assign(saved, d, { quantity: qty });
+        delete saved.example;
+        toast("Opgeslagen");
+      } else {
+        saved = Object.assign({ id: newId(), createdAt: new Date().toISOString(), thumb: w.thumb || "" }, d, { quantity: qty });
+        wines.push(saved);
+        toast("Toegevoegd aan je kelder");
+      }
+      render(); store.put(saved);
+      closeSheet();
+    });
+  }
+  // Drinking-window years, oldest first from a few years back, so the picker opens close to now.
+  function drinkYearOptions(sel) {
+    let h = `<option value=""${sel ? "" : " selected"}>Geen jaartal</option>`;
+    const low = Math.min(YEAR - 15, sel || YEAR), high = Math.max(YEAR + 40, sel || YEAR);
+    for (let y = low; y <= high; y++) h += `<option value="${y}"${y === sel ? " selected" : ""}>${y}</option>`;
+    return h;
+  }
+  function vintageOptions(sel) {
+    let h = `<option value=""${sel ? "" : " selected"}>Geen jaartal</option>`;
+    const low = Math.min(1900, sel || 1900), high = Math.max(YEAR, sel || YEAR);
+    for (let y = high; y >= low; y--) h += `<option value="${y}"${y === sel ? " selected" : ""}>${y}</option>`;
+    return h;
+  }
+  function fillBlank(old, d) { const o = {}; for (const k in d) if (d[k] && !old[k]) o[k] = d[k]; return o; }
+  function showMsg(id, t, warn) { const el = $(id); if (!el) return; el.hidden = !t; el.textContent = t; el.className = "hint" + (warn ? " warn" : ""); }
+
+  // ---------- Detail ----------
+  function logItems(w) {
+    const list = (w.log || []).slice().sort((a, b) => String(b.date).localeCompare(String(a.date)) || String(b.id).localeCompare(String(a.id)));
+    if (!list.length) return `<p class="hint logempty" style="margin:0">Nog niets genoteerd. Tik op <b>Fles geopend</b> als je er een opendoet.</p>`;
+    return list.map(e => `<div class="logitem">
+        <div class="grow">
+          <span class="when">${e.rating ? `<span class="score" aria-label="Cijfer ${e.rating}">${e.rating}</span>` : ""}${esc(fmtDate(e.date))}</span>
+          ${e.with ? `<span class="who">Met ${esc(e.with)}</span>` : ""}
+          ${e.note ? `<p class="lognote">${esc(e.note)}</p>` : ""}
+        </div>
+        <button class="logdel" type="button" data-logdel="${esc(e.id)}" aria-label="Notitie verwijderen">×</button>
+      </div>`).join("");
+  }
+
+  // opts.log opens the "Fles geopend" form straight away; opts.taken means the bottle was already taken off.
+  function openDetail(id, opts) {
+    opts = opts || {};
+    const w = wines.find(x => x.id === id);
+    if (!w) return;
+    openId = id;
+    const drink = w.drinkFrom || w.drinkTo ? `${w.drinkFrom || "…"} – ${w.drinkTo || "…"}${drinkState(w)}` : "";
+    const facts = [["Producent", w.producer], ["Jaargang", w.vintage], ["Druif", w.grape], ["Soort", colorName(w.color)], ["Land", w.country], ["Streek", w.region], ["Prijs per fles", w.price != null ? fmtEur(w.price) : ""], ["Flessen", String(w.quantity || 0), "d-statqty"], ["Op dronk", drink]]
+      .filter(f => f[1]).map(f => f[2] === "d-statqty"
+        ? `<div class="stat"><dt>${f[0]}</dt><dd class="statstep"><button class="step" type="button" data-dq="-1" aria-label="Fles eraf">−</button><span id="d-statqty">${esc(f[1])}</span><button class="step plus" type="button" data-dq="1" aria-label="Fles erbij">+</button></dd></div>`
+        : `<div class="stat"><dt>${f[0]}</dt><dd>${esc(f[1])}</dd></div>`).join("");
+    openSheet(`<div class="sheet-top"><div class="title-l"><button class="homebtn" type="button" data-close aria-label="Terug naar home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${HOUSE}"/></svg>Home</button><h2>${esc(w.name || w.producer || "Wijn")}</h2></div><div class="topbtns"><button class="fav big sharebtn" type="button" id="shareBtn" aria-label="Deel deze wijn" title="Delen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5v11M8 7.5l4-4 4 4M6 11H5v9.5h14V11h-1"/></svg></button>${favBtn(w, true)}</div></div>
+      ${w.example ? '<span class="tag" style="margin:0;align-self:flex-start">Voorbeeld</span>' : ""}
+      ${facts ? `<dl class="stats">${facts}</dl>` : ""}      <div><span class="section-l">Jouw cijfer</span><div id="d-rating">${ratingRow(w.rating, "data-rate")}</div></div>
+      ${w.thumb ? `<img class="photo" src="${esc(w.thumb)}" alt="Etiket van ${esc(w.name)}">` : ""}
+      <div><span class="section-l">Beschrijving</span>${w.description ? `<p class="memo">${esc(w.description)}</p>` : `<p class="hint" style="margin:0">Nog geen beschrijving. Tik op Bewerken om er een te laten schrijven.</p>`}</div>
+      ${w.saveFor || w.saveForDate ? `<div class="savebox"><svg class="house" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v15H5zM5 9.5h14M9 3v4M15 3v4"/></svg><div><span class="section-l" style="margin:0">Bewaar voor</span><div class="savetxt">${esc(w.saveFor || "")}${w.saveFor && w.saveForDate ? " · " : ""}${w.saveForDate ? esc(fmtDate(w.saveForDate)) : ""}</div>${w.saveForDate ? `<div class="hint">${esc(daysLeft(w.saveForDate))}</div>` : ""}</div></div>` : ""}
+      <div id="d-pair">${w.pairing ? `<span class="section-l">Past goed bij</span><p class="memo">${esc(w.pairing)}</p>`
+        : sample ? `<div class="row-between"><span class="section-l" style="margin:0">Past goed bij</span><button class="linkbtn" type="button" id="dGenPair">Laat Claude voorstellen</button></div><span class="hint" id="dPairMsg" hidden></span>` : ""}</div>
+      <section class="logsec" id="memSec" aria-label="Herinneringen">
+        <div class="row-between"><span class="section-l" style="margin:0">Herinneringen</span><button class="linkbtn" type="button" id="memAdd">+ Herinnering</button></div>
+        <div class="logform" id="memForm" hidden>
+          <div class="field"><label for="m-text">Herinnering</label><textarea id="m-text" style="min-height:80px" placeholder="Bijv. gekregen van Anna, gedronken op onze trouwdag, bij de slijter in Gent gekocht"></textarea></div>
+          <div class="field"><span class="section-l" style="margin:0">Foto</span><div id="m-photoBox" class="membox"></div><input type="file" id="m-photoIn" accept="image/*" class="vh"></div>
+          <div class="actions"><button class="btn ghost" type="button" id="memCancel">Annuleren</button><button class="btn primary" type="button" id="memSave">Opslaan</button></div>
+        </div>
+        <div id="memList" class="logsec memrow">${memItems(w)}</div>
+      </section>
+      <section class="logsec" id="logSec" aria-label="Logboek">
+        <div class="row-between"><span class="section-l" style="margin:0">Logboek</span><button class="linkbtn" type="button" id="logAdd">+ Fles geopend</button></div>
+        <div class="logform" id="logForm" hidden>
+          <div class="grid2">
+            <div class="field"><label for="l-date">Datum</label><input id="l-date" type="date" value="${today()}"></div>
+            <div class="field"><label for="l-with">Met wie</label><input id="l-with" placeholder="Bijv. Anna en Peter" autocomplete="off"></div>
+          </div>
+          <div class="field"><label for="l-note">Notitie</label><textarea id="l-note" style="min-height:80px" placeholder="Bijv. verjaardag van Anna, bij de lamsrack. Hoe smaakte hij?"></textarea></div>
+          <div class="field"><span class="section-l" style="margin:0">Foto</span><div id="l-photoBox" class="membox"></div><input type="file" id="l-photoIn" accept="image/*" class="vh"></div>
+          <div class="field"><span class="section-l" style="margin:0">Cijfer voor deze fles</span><span class="hint">Dit wordt ook je cijfer voor de wijn.</span><div id="l-rating">${ratingRow(null, "data-lrate")}</div></div>
+          <label class="check" id="l-takewrap"><input type="checkbox" id="l-take"><span id="l-takelbl"></span></label>
+          <div class="actions"><button class="btn ghost" type="button" id="logCancel">Annuleren</button><button class="btn primary" type="button" id="logSave">Opslaan</button></div>
+        </div>
+        <div id="logList" class="logsec">${logItems(w)}</div>
+      </section>
+      ${w.boughtAt || w.boughtMapUrl ? `<div class="savebox bought"><div class="grow inline"><span class="section-l" style="margin:0">Gekocht bij</span>${w.boughtAt ? `<span class="savetxt">${esc(w.boughtAt)}</span>` : ""}</div><a class="mapbtn" href="${esc(mapsHref(w))}" target="_blank" rel="noopener" aria-label="Open in Google Maps" title="Open in Google Maps"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${PIN}"/><circle cx="12" cy="10" r="2.5"/></svg></a></div>` : ""}
+      <a class="btn ghost gsearch" href="https://www.google.com/search?q=${encodeURIComponent([w.producer, w.name, w.vintage].filter(Boolean).join(" "))}" target="_blank" rel="noopener"><svg class="house" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13zM15.5 15.5 20 20"/></svg>Zoek op Google</a>
+      <div class="actions three">
+        <button class="btn ghost" type="button" data-close><svg class="house" viewBox="0 0 24 24" aria-hidden="true"><path d="${HOUSE}"/></svg>Home</button>
+        <button class="btn ghost" type="button" id="editBtn"><svg class="house" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-4-4L4 16v4zM13.5 6.5l4 4"/></svg>Bewerken</button>
+        <button class="btn danger" type="button" id="delBtn"><svg class="house" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13M10 11v5M14 11v5"/></svg>Verwijderen</button>
+      </div>
+      <div class="confirm" id="confirmBox" hidden>
+        <span>Deze wijn helemaal uit je kelder verwijderen?</span>
+        <div class="actions"><button class="btn ghost" type="button" id="noDel">Nee, bewaren</button><button class="btn primary" type="button" id="yesDel">Ja, verwijderen</button></div>
+      </div>`);
+    $("sheetIn").querySelectorAll("[data-dq]").forEach(b => b.addEventListener("click", () => changeQty(id, +b.dataset.dq)));
+    // Look the wine up again: quantity or rating may have changed since this sheet opened.
+    const current = () => wines.find(x => x.id === id) || w;
+    $("editBtn").addEventListener("click", () => openForm(Object.assign({}, current()), id));
+    $("shareBtn").addEventListener("click", () => openShare(id));
+    const pb = $("dGenPair");
+    if (pb) pb.addEventListener("click", async () => {
+      pb.disabled = true; showMsg("dPairMsg", "Claude zoekt gerechten…");
+      try {
+        const facts = [w.producer, w.name, w.vintage, w.region, w.country, w.grape, colorName(w.color)].filter(Boolean).join(", ");
+        const { text } = await sample("Noem in het Nederlands 4 tot 6 concrete gerechten die goed bij deze wijn passen, gescheiden door komma's, eventueel gevolgd door één korte zin waarom. Geen kop, geen opsomming met streepjes.\n\nWijn: " + facts,
+          { cache: false, onText: ({ text }) => { if (openId === id) showMsg("dPairMsg", text); } });
+        const cw = current();
+        cw.pairing = text.trim();
+        saveSoon(cw);
+        if (openId === id) $("d-pair").innerHTML = `<span class="section-l">Past goed bij</span><p class="memo">${esc(cw.pairing)}</p>`;
+      } catch (e) { pb.disabled = false; showMsg("dPairMsg", errText(e), true); }
+    });
+    // ---- Logbook ----
+    let logRating = null;
+    let logPhoto = "";
+    const drawLogPhoto = () => {
+      $("l-photoBox").innerHTML = logPhoto
+        ? `<img class="memimg" src="${esc(logPhoto)}" alt="Foto bij dit moment">
+           <div class="actions"><label class="btn ghost" for="l-photoIn">Andere foto</label><button class="btn ghost" type="button" id="l-photoDel">Foto weghalen</button></div>`
+        : `<label class="btn ghost memadd" for="l-photoIn"><svg class="house" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4zM12 17a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/></svg>Foto toevoegen</label>`;
+      const del = $("l-photoDel");
+      if (del) del.addEventListener("click", () => { logPhoto = ""; drawLogPhoto(); });
+    };
+    $("l-photoIn").addEventListener("click", () => { $("l-photoIn").value = ""; });
+    $("l-photoIn").addEventListener("change", async e => {
+      const f = e.target.files && e.target.files[0];
+      if (!f) return;
+      try {
+        const { img, url } = await loadImg(f);
+        logPhoto = compactPhoto(img);
+        URL.revokeObjectURL(url);
+        drawLogPhoto();
+      } catch { toast("Deze foto kan niet geopend worden."); }
+    });
+    const showLogForm = taken => {
+      const cw = current(), q = cw.quantity || 0;
+      $("l-date").value = today(); $("l-with").value = ""; $("l-note").value = "";
+      logRating = null; $("l-rating").innerHTML = ratingRow(null, "data-lrate");
+      logPhoto = ""; drawLogPhoto();
+      $("l-take").checked = !taken && q > 0;
+      $("l-take").disabled = !taken && q === 0;
+      $("l-takelbl").textContent = taken ? "De fles is al uit je kelder gehaald" : q > 0 ? `Haal een fles uit de kelder (nu ${q})` : "Er staan geen flessen meer in je kelder";
+      $("l-takewrap").hidden = taken;
+      $("logForm").dataset.taken = taken ? "1" : "";
+      $("logForm").hidden = false; $("logAdd").hidden = true;
+      $("logSec").scrollIntoView({ block: "start", behavior: "smooth" });
+    };
+    const hideLogForm = () => { $("logForm").hidden = true; $("logAdd").hidden = false; };
+    $("logAdd").addEventListener("click", () => showLogForm(false));
+    $("logCancel").addEventListener("click", hideLogForm);
+    $("l-rating").addEventListener("click", e => {
+      const r = e.target.closest("[data-lrate]");
+      if (!r) return;
+      const n = +r.dataset.lrate; logRating = logRating === n ? null : n;
+      $("l-rating").innerHTML = ratingRow(logRating, "data-lrate");
+    });
+    $("logSave").addEventListener("click", () => {
+      const cw = current();
+      if (logPhoto) {
+        const probe = Object.assign({}, cw, { memories: memoriesOf(cw).concat({ id: "x", date: today(), text: $("l-note").value.trim(), photo: logPhoto }), log: (cw.log || []).concat({ id: "x", date: today(), with: $("l-with").value, note: $("l-note").value }) });
+        delete probe.reminder; delete probe.memoryPhoto;
+        if (docBytes(probe) > MAX_DOC) { toast(tooBigMsg(docBytes(probe))); return; }
+      }
+      const entry = { id: newId(), date: $("l-date").value || today(), with: $("l-with").value.trim(), note: $("l-note").value.trim(), rating: logRating };
+      cw.log = (cw.log || []).concat(entry);
+      // A log photo is also kept as a herinnering on the wine.
+      if (logPhoto) {
+        cw.memories = memoriesOf(cw).concat({ id: newId(), date: entry.date, text: entry.note, with: entry.with, photo: logPhoto });
+        delete cw.reminder; delete cw.memoryPhoto;
+        if ($("memList")) $("memList").innerHTML = memItems(cw);
+      }
+      const take = !$("logForm").dataset.taken && $("l-take").checked && (cw.quantity || 0) > 0;
+      if (take) cw.quantity -= 1;
+      // The rating for this bottle becomes the wine's overall rating.
+      if (logRating) { cw.rating = logRating; $("d-rating").innerHTML = ratingRow(cw.rating, "data-rate"); }
+      render(); refreshOpenDetail(); saveNow(cw);
+      hideLogForm();
+      $("logList").innerHTML = logItems(cw);
+      toast((take ? (cw.quantity ? `Genoteerd. Nog ${cw.quantity} fl. in je kelder.` : "Genoteerd. Dit was je laatste fles.") : "Genoteerd in je logboek.") +
+        (logRating ? ` Je cijfer is nu ${logRating}.` : ""));
+    });
+    // Two taps to delete an entry: the first turns the × into "Verwijder".
+    $("logList").addEventListener("click", e => {
+      const b = e.target.closest("[data-logdel]");
+      if (!b) return;
+      if (!b.classList.contains("sure")) {
+        $("logList").querySelectorAll(".logdel.sure").forEach(x => { x.classList.remove("sure"); x.textContent = "×"; });
+        b.classList.add("sure"); b.textContent = "Verwijder"; return;
+      }
+      const cw = current();
+      cw.log = (cw.log || []).filter(x => x.id !== b.dataset.logdel);
+      render(); saveSoon(cw);
+      $("logList").innerHTML = logItems(cw);
+      toast("Notitie verwijderd");
+    });
+    // ---- Herinneringen ----
+    let memPhoto = "";
+    const drawMemPhoto = () => {
+      $("m-photoBox").innerHTML = memPhoto
+        ? `<img class="memimg" src="${esc(memPhoto)}" alt="Foto bij je herinnering">
+           <div class="actions"><label class="btn ghost" for="m-photoIn">Andere foto</label><button class="btn ghost" type="button" id="m-photoDel">Foto weghalen</button></div>`
+        : `<label class="btn ghost memadd" for="m-photoIn"><svg class="house" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4zM12 17a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/></svg>Foto toevoegen</label>`;
+      const del = $("m-photoDel");
+      if (del) del.addEventListener("click", () => { memPhoto = ""; drawMemPhoto(); });
+    };
+    $("m-photoIn").addEventListener("click", () => { $("m-photoIn").value = ""; });
+    $("m-photoIn").addEventListener("change", async e => {
+      const f = e.target.files && e.target.files[0];
+      if (!f) return;
+      try {
+        const { img, url } = await loadImg(f);
+        memPhoto = compactPhoto(img);
+        URL.revokeObjectURL(url);
+        drawMemPhoto();
+      } catch { toast("Deze foto kan niet geopend worden."); }
+    });
+    const hideMemForm = () => { $("memForm").hidden = true; $("memAdd").hidden = false; };
+    $("memAdd").addEventListener("click", () => {
+      $("m-text").value = ""; memPhoto = ""; drawMemPhoto();
+      $("memForm").hidden = false; $("memAdd").hidden = true;
+      $("m-text").focus();
+    });
+    $("memCancel").addEventListener("click", hideMemForm);
+    $("memSave").addEventListener("click", () => {
+      const text = $("m-text").value.trim();
+      if (!text && !memPhoto) { toast("Schrijf iets op of voeg een foto toe."); return; }
+      const cw = current();
+      const probe = Object.assign({}, cw, { memories: memoriesOf(cw).concat({ id: "x", date: today(), text, photo: memPhoto }) });
+      delete probe.reminder; delete probe.memoryPhoto;
+      if (docBytes(probe) > MAX_DOC) { toast(tooBigMsg(docBytes(probe))); return; }
+      cw.memories = memoriesOf(cw).concat({ id: newId(), date: today(), text, photo: memPhoto });
+      delete cw.reminder; delete cw.memoryPhoto;
+      render(); saveNow(cw);
+      hideMemForm();
+      $("memList").innerHTML = memItems(cw);
+      toast("Herinnering toegevoegd");
+    });
+    // Two taps to delete a memory: the first turns the × into "Verwijder".
+    $("memList").addEventListener("click", e => {
+      const b = e.target.closest("[data-memdel]");
+      if (!b) return;
+      if (!b.classList.contains("sure")) {
+        $("memList").querySelectorAll(".logdel.sure").forEach(x => { x.classList.remove("sure"); x.textContent = "×"; });
+        b.classList.add("sure"); b.textContent = "Verwijder"; return;
+      }
+      const cw = current();
+      cw.memories = memoriesOf(cw).filter(x => x.id !== b.dataset.memdel);
+      delete cw.reminder; delete cw.memoryPhoto;
+      render(); saveSoon(cw);
+      $("memList").innerHTML = memItems(cw);
+      toast("Herinnering verwijderd");
+    });
+    if (opts.log) showLogForm(!!opts.taken);
+
+    $("delBtn").addEventListener("click", () => { $("confirmBox").hidden = false; $("confirmBox").scrollIntoView({ block: "nearest" }); });
+    $("noDel").addEventListener("click", () => { $("confirmBox").hidden = true; });
+    $("yesDel").addEventListener("click", () => {
+      wines = wines.filter(x => x.id !== id);
+      render(); store.remove(id); closeSheet(); toast("Verwijderd");
+    });
+  }
+  // Accepts "12,50", "12.50", "€ 1.250,00" and "1250"; returns a number in euros or null.
+  function parsePrice(v) {
+    let s = String(v || "").replace(/[€\s]/g, "");
+    if (!s) return null;
+    if (s.includes(",")) s = s.replace(/\./g, "").replace(",", ".");
+    else if (/^\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, "");
+    const n = Math.round(parseFloat(s) * 100) / 100;
+    return isFinite(n) && n >= 0 ? n : null;
+  }
+  const fmtEur = n => new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR" }).format(n);
+  function cleanUrl(v) {
+    const m = String(v || "").match(/https:\/\/[^\s"'<>]+/);
+    return m ? m[0] : "";
+  }
+  function mapsHref(w) {
+    return w.boughtMapUrl || "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(w.boughtAt || "");
+  }
+  // Several memories per wine. Older wines had one "reminder" + "memoryPhoto"; that shows up as a single memory until edited.
+  function memoriesOf(w) {
+    if (Array.isArray(w.memories)) return w.memories;
+    return w.reminder || w.memoryPhoto ? [{ id: "legacy", date: "", text: w.reminder || "", photo: w.memoryPhoto || "" }] : [];
+  }
+  function memItems(w) {
+    const list = memoriesOf(w);
+    if (!list.length) return `<p class="hint logempty" style="margin:0">Nog geen herinneringen. Tik op <b>+ Herinnering</b> om er een toe te voegen.</p>`;
+    return list.map(m => `<div class="logitem">
+        <div class="grow">
+          ${m.photo ? `<img class="memimg logphoto" src="${esc(m.photo)}" alt="Foto bij je herinnering">` : ""}
+          <div class="memmeta">
+            ${m.date ? `<span class="memdate">${esc(fmtDate(m.date))}</span>` : ""}
+            ${m.text ? `<span class="memnote">${esc(m.text)}</span>` : ""}
+            ${m.with ? `<span class="memwith">Met ${esc(m.with)}</span>` : ""}
+          </div>
+        </div>
+        <button class="logdel" type="button" data-memdel="${esc(m.id)}" aria-label="Herinnering verwijderen">×</button>
+      </div>`).join("");
+  }
+  function fmtDate(s) {
+    const d = new Date(s + "T12:00:00");
+    return isNaN(d) ? s : d.toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" });
+  }
+  function daysUntil(s) {
+    if (!s) return NaN;
+    const d = new Date(s + "T00:00:00"), t = new Date(); t.setHours(0, 0, 0, 0);
+    return Math.round((d - t) / 86400000);
+  }
+  function daysLeft(s) {
+    const n = daysUntil(s);
+    if (isNaN(n)) return "";
+    if (n === 0) return "Vandaag!";
+    if (n === 1) return "Morgen";
+    if (n > 1) return `Nog ${n} dagen`;
+    return n === -1 ? "Gisteren" : `${-n} dagen geleden`;
+  }
+  // A wine is "op dronk" when it has a drinking window and this year falls inside it.
+  function drinkNow(w) {
+    if (!w.drinkFrom && !w.drinkTo) return false;
+    return !(w.drinkFrom && YEAR < w.drinkFrom) && !(w.drinkTo && YEAR > w.drinkTo);
+  }
+  function drinkState(w) {
+    if (w.drinkFrom && YEAR < w.drinkFrom) return " · nog even laten liggen";
+    if (w.drinkTo && YEAR > w.drinkTo) return " · over zijn hoogtepunt";
+    return " · nu op dronk";
+  }
+  function refreshOpenDetail() {
+    if (!openId) return;
+    const w = wines.find(x => x.id === openId);
+    const el = $("d-qty");
+    if (w && el) el.textContent = w.quantity || 0;
+    const st = $("d-statqty");
+    if (w && st) st.textContent = w.quantity || 0;
+  }
+
+  // ---------- Statistics ----------
+  // Distributions count bottles in stock; the logbook parts count opened bottles.
+  const splitNames = s => String(s || "").split(/\s*(?:,|\/|&|\+|;|\ben\b|\band\b)\s*/i).map(x => x.trim()).filter(Boolean);
+  function tallyBy(items) {
+    const m = new Map();
+    for (const { key, label, n } of items) {
+      if (!key || !n) continue;
+      const cur = m.get(key) || { label, value: 0 };
+      cur.value += n; m.set(key, cur);
+    }
+    return [...m.values()].sort((a, b) => b.value - a.value || a.label.localeCompare(b.label, "nl"));
+  }
+  const topWithOther = (rows, k) => rows.length <= k + 1 ? rows
+    : rows.slice(0, k).concat({ label: "Overig", value: rows.slice(k).reduce((a, r) => a + r.value, 0) });
+  // Horizontal bars; rows keep their given order (ranked or chronological).
+  function barRows(rows, unit) {
+    const max = Math.max(1, ...rows.map(r => r.value));
+    return rows.map(r => `<div class="barrow" title="${esc(r.label)}: ${r.value} ${r.value === 1 ? unit[0] : unit[1]}">
+        <span class="lbl">${r.dot ? `<span class="dot" style="background:var(${r.dot})"></span>` : ""}<span>${esc(r.label)}</span></span>
+        <div><div class="sbar" style="width:${Math.max(2, Math.round(r.value / max * 100))}%${r.dot ? `;background:var(${r.dot});box-shadow:inset 0 0 0 1px var(--edge)` : ""}"></div></div>
+        <span class="val">${r.value}</span>
+      </div>`).join("");
+  }
+  const statSec = (title, body, note) => `<section class="statsec"><h3>${title}</h3>${note ? `<p class="hint">${note}</p>` : ""}${body}</section>`;
+
+  function openStats() {
+    const inStock = wines.filter(w => (w.quantity || 0) > 0);
+    const bottles = inStock.reduce((a, w) => a + w.quantity, 0);
+    const priced = inStock.filter(w => typeof w.price === "number");
+    const pricedBottles = priced.reduce((a, w) => a + w.quantity, 0);
+    const value = priced.reduce((a, w) => a + w.price * w.quantity, 0);
+    const rated = wines.filter(w => w.rating);
+    const logs = wines.flatMap(w => (w.log || []).map(e => ({ w, e })));
+    const thisYear = logs.filter(({ e }) => String(e.date).startsWith(String(YEAR))).length;
+    const fmt0 = n => new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
+    const tiles = [
+      ["Flessen", bottles], ["Wijnen", inStock.length],
+      ["Waarde", pricedBottles ? fmt0(value) : "–"], ["Gem. prijs per fles", pricedBottles ? fmtEur(value / pricedBottles) : "–"],
+      ["Gem. cijfer", rated.length ? (rated.reduce((a, w) => a + w.rating, 0) / rated.length).toFixed(1).replace(".", ",") : "–"],
+      ["Geopend in " + YEAR, thisYear]
+    ].map(([k, v]) => `<div class="stat"><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("");
+    const bt = ["fles", "flessen"];
+    let html = `${top("Statistieken")}<dl class="tiles">${tiles}</dl>`;
+
+    if (bottles) {
+      const kinds = COLORS.map(c => ({ label: c[1], dot: c[2], value: inStock.filter(w => w.color === c[0]).reduce((a, w) => a + w.quantity, 0) })).filter(r => r.value);
+      html += statSec("Per soort", barRows(kinds, bt), "Aantal flessen in je kelder.");
+      const countries = tallyBy(inStock.map(w => ({ key: norm(w.country), label: str(w.country), n: w.quantity })));
+      if (countries.length) html += statSec("Landen", barRows(topWithOther(countries, 6), bt));
+      const grapes = tallyBy(inStock.flatMap(w => splitNames(w.grape).map(g => ({ key: norm(g), label: g.charAt(0).toUpperCase() + g.slice(1), n: w.quantity }))));
+      if (grapes.length) html += statSec("Druiven", barRows(topWithOther(grapes, 6), bt), "Bij een blend telt elke druif mee.");
+      const dec = new Map();
+      for (const w of inStock) { const v = +w.vintage; const k = v ? Math.floor(v / 10) * 10 : 0; dec.set(k, (dec.get(k) || 0) + w.quantity); }
+      const decRows = [...dec.entries()].sort((a, b) => (a[0] || 9999) - (b[0] || 9999)).map(([k, n]) => ({ label: k ? `${k}–${k + 9}` : "Geen jaartal", value: n }));
+      html += statSec("Jaargangen", barRows(decRows, bt));
+      const win = [["Nu op dronk", w => drinkNow(w)], ["Nog te jong", w => w.drinkFrom && YEAR < w.drinkFrom], ["Over hoogtepunt", w => w.drinkTo && YEAR > w.drinkTo], ["Onbekend", w => !w.drinkFrom && !w.drinkTo]]
+        .map(([label, test]) => ({ label, value: inStock.filter(test).reduce((a, w) => a + w.quantity, 0) })).filter(r => r.value);
+      html += statSec("Drinkvenster", barRows(win, bt));
+    } else {
+      html += statSec("Je kelder", `<p class="hint" style="margin:0">Er staan nu geen flessen in je kelder.</p>`);
+    }
+
+    // Logbook: opened bottles per month for the last 12 months, who you drink with, best rated.
+    const months = [];
+    const d0 = new Date(); d0.setDate(1);
+    for (let i = 11; i >= 0; i--) { const d = new Date(d0.getFullYear(), d0.getMonth() - i, 1); months.push({ key: d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0"), d, n: 0 }); }
+    for (const { e } of logs) { const m = months.find(x => String(e.date).startsWith(x.key)); if (m) m.n++; }
+    const maxM = Math.max(1, ...months.map(m => m.n));
+    const monthName = d => d.toLocaleDateString("nl-NL", { month: "short" }).replace(".", "");
+    if (logs.length) {
+      html += statSec("Geopende flessen per maand",
+        `<div class="cols">${months.map(m => `<div class="col" title="${esc(monthName(m.d))} ${m.d.getFullYear()}: ${m.n} ${m.n === 1 ? "fles" : "flessen"}">${m.n ? `<b>${m.n}</b>` : ""}<i style="height:${m.n ? Math.max(4, Math.round(m.n / maxM * 85)) : 0}px"></i></div>`).join("")}</div>
+         <div class="colx">${months.map(m => `<span>${esc(monthName(m.d).charAt(0).toUpperCase())}</span>`).join("")}</div>`,
+        "Uit je logboek, de afgelopen 12 maanden.");
+      const people = tallyBy(logs.flatMap(({ e }) => splitNames(e.with).map(p => ({ key: norm(p), label: p, n: 1 }))));
+      if (people.length) html += statSec("Vaakst gedronken met", barRows(people.slice(0, 5), ["keer", "keer"]));
+    } else {
+      html += statSec("Logboek", `<p class="hint" style="margin:0">Nog niets in je logboek. Open een wijn en tik op <b>Fles geopend</b>, dan zie je hier per maand wat je dronk.</p>`);
+    }
+    const best = wines.filter(w => w.rating).sort((a, b) => b.rating - a.rating || String(a.name).localeCompare(String(b.name), "nl")).slice(0, 5);
+    if (best.length) html += statSec("Best beoordeeld",
+      best.map(w => `<div class="toprow"><span class="score">${w.rating}</span><span>${esc([w.name || w.producer, w.vintage].filter(Boolean).join(" "))}</span></div>`).join(""));
+    openSheet(html);
+  }
+
+  // ---------- Sharing a wine: a picture card plus a short text ----------
+  function shareText(w) {
+    const title = [w.name || w.producer, w.vintage].filter(Boolean).join(" ");
+    return [
+      "🍷 " + title + (w.name && w.producer ? " – " + w.producer : ""),
+      [w.region, w.country].filter(Boolean).join(", ") + (w.grape ? " · " + w.grape : ""),
+      w.rating ? `Mijn cijfer: ${w.rating}/10` : "",
+      w.description || ""
+    ].filter(Boolean).join("\n");
+  }
+  function wrapLines(ctx, text, maxW, maxLines) {
+    const words = String(text || "").split(/\s+/).filter(Boolean), lines = [];
+    let line = "";
+    for (const word of words) {
+      const t = line ? line + " " + word : word;
+      if (ctx.measureText(t).width <= maxW) { line = t; continue; }
+      if (line) lines.push(line);
+      line = word;
+      if (lines.length === maxLines) break;
+    }
+    if (line && lines.length < maxLines) lines.push(line);
+    if (lines.length === maxLines && words.join(" ").length > lines.join(" ").length) {
+      let last = lines[maxLines - 1];
+      while (last && ctx.measureText(last + "…").width > maxW) last = last.slice(0, -1);
+      lines[maxLines - 1] = last.replace(/[\s,.;:]+$/, "") + "…";
+    }
+    return lines;
+  }
+  function rrect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+  // Draws the card in the app's current colours (tokens), 1080×1350 like a social post.
+  async function buildShareCard(w) {
+    const cs = getComputedStyle(document.documentElement), tok = n => cs.getPropertyValue(n).trim();
+    const disp = '"Gloock", Georgia, serif', body = '"Instrument Sans", -apple-system, "Segoe UI", sans-serif';
+    await Promise.all([document.fonts.load("72px Gloock"), document.fonts.load('600 40px "Instrument Sans"'), document.fonts.load('400 34px "Instrument Sans"')]).catch(() => {});
+    const W = 1080, H = 1350, P = 72, c = document.createElement("canvas");
+    c.width = W; c.height = H;
+    const g = c.getContext("2d");
+    g.fillStyle = tok("--bg"); g.fillRect(0, 0, W, H);
+    g.fillStyle = tok("--surface"); rrect(g, 40, 40, W - 80, H - 80, 36); g.fill();
+    // Picture: the label photo, else a bottle in the wine's colour.
+    const ph = 560, px = 40 + 32, py = 40 + 32, pw = W - 80 - 64;
+    g.fillStyle = tok("--sunk"); rrect(g, px, py, pw, ph, 24); g.fill();
+    const photo = w.thumb || (memoriesOf(w).find(m => m.photo) || {}).photo;
+    if (photo) {
+      const img = new Image(); img.src = photo;
+      try { await img.decode(); } catch {}
+      if (img.naturalWidth) {
+        const s = Math.min(pw / img.naturalWidth, ph / img.naturalHeight);
+        const iw = img.naturalWidth * s, ih = img.naturalHeight * s;
+        g.save(); rrect(g, px, py, pw, ph, 24); g.clip();
+        g.drawImage(img, px + (pw - iw) / 2, py + (ph - ih) / 2, iw, ih); g.restore();
+      }
+    } else {
+      g.fillStyle = tok(colorVar(w.color)); rrect(g, W / 2 - 60, py + 110, 120, 340, 54); g.fill();
+      g.strokeStyle = tok("--edge"); g.lineWidth = 3; g.stroke();
+    }
+    let y = py + ph + 90;
+    g.fillStyle = tok("--ink"); g.font = `72px ${disp}`;
+    for (const l of wrapLines(g, w.name || w.producer || "Wijn", W - 2 * P - 40, 2)) { g.fillText(l, P + 20, y); y += 80; }
+    g.font = `600 38px ${body}`; g.fillStyle = tok("--muted");
+    const sub = [w.name ? w.producer : "", w.vintage].filter(Boolean).join(" · ");
+    if (sub) { g.fillText(wrapLines(g, sub, W - 2 * P - 40, 1)[0], P + 20, y); y += 54; }
+    g.font = `400 34px ${body}`;
+    const where = [[w.region, w.country].filter(Boolean).join(", "), w.grape].filter(Boolean).join(" · ");
+    if (where) { g.fillText(wrapLines(g, where, W - 2 * P - 40, 1)[0], P + 20, y); y += 56; }
+    if (w.rating) {
+      g.font = `700 34px ${body}`;
+      const t = `${w.rating}/10`, tw = g.measureText(t).width + 36;
+      g.fillStyle = tok("--accent"); rrect(g, P + 20, y - 38, tw, 54, 14); g.fill();
+      g.fillStyle = tok("--accent-ink"); g.fillText(t, P + 38, y);
+      g.fillStyle = tok("--muted"); g.font = `600 30px ${body}`; g.fillText("Mijn cijfer", P + 20 + tw + 18, y - 2);
+      y += 66;
+    }
+    if (w.description) {
+      g.fillStyle = tok("--ink"); g.font = `400 32px ${body}`;
+      const room = Math.max(1, Math.floor((H - 40 - 110 - y) / 44) + 1);
+      for (const l of wrapLines(g, w.description, W - 2 * P - 40, Math.min(5, room))) { g.fillText(l, P + 20, y); y += 44; }
+    }
+    g.fillStyle = tok("--muted"); g.font = `600 28px ${body}`;
+    g.fillText("Uit mijn wijnkelder · Vinventory", P + 20, H - 40 - 44);
+    return new Promise(r => c.toBlob(r, "image/png"));
+  }
+  async function openShare(id) {
+    const w = wines.find(x => x.id === id);
+    if (!w) return;
+    openId = null;
+    openSheet(`${top("Wijn delen")}<div class="reading" id="shareWait"><div class="spinner" aria-hidden="true"></div><span>Kaart maken…</span></div>`);
+    let blob = null;
+    try { blob = await buildShareCard(w); } catch (e) { console.warn("Kaart maken mislukt", e); }
+    if (!$("shareWait") || $("sheet").hidden) return; // the viewer left this sheet meanwhile
+    const text = shareText(w), fname = (norm(w.name || w.producer) || "wijn") + (w.vintage ? "-" + w.vintage : "") + ".png";
+    // A data URL (not a blob URL) so Safari's long-press menu can share it, save it to Photos or copy it.
+    // Long-pressing the picture is the fallback when navigator.share isn't available.
+    const url = blob ? await new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.onerror = () => r(""); fr.readAsDataURL(blob); }) : "";
+    const file = blob ? new File([blob], fname, { type: "image/png" }) : null;
+    const canNative = !!navigator.share;
+    openSheet(`${top("Wijn delen")}
+      ${url ? `<img class="sharecard" src="${url}" alt="Deelkaart van ${esc(w.name || w.producer)}">
+        <p class="hint" style="margin:-6px 0 0">Houd de kaart ingedrukt om hem te delen, in Foto's te bewaren of te kopiëren.</p>` : `<p class="hint warn">De kaart kon niet worden gemaakt. Je kunt de tekst wel delen.</p>`}
+      ${canNative ? `<button class="btn primary" type="button" id="shareGo"><svg class="house" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5v11M8 7.5l4-4 4 4M6 11H5v9.5h14V11h-1"/></svg>Delen…</button>` : ""}
+      <div class="actions">
+        ${url && downloads ? `<button class="btn ghost" type="button" id="shareSave">Afbeelding opslaan</button>` : ""}
+        <button class="btn ghost" type="button" id="shareCopy">Tekst kopiëren</button>
+      </div>
+      <span class="hint" id="shareMsg" hidden></span>
+      <div class="field"><span class="section-l" style="margin:0">Tekst</span><textarea class="sharetxt" id="shareText">${esc(text)}</textarea></div>
+      <button class="btn ghost" type="button" id="shareBack">Terug naar de wijn</button>`);
+    $("shareBack").addEventListener("click", () => openDetail(id));
+    const go = $("shareGo");
+    if (go) go.addEventListener("click", async () => {
+      const t = $("shareText").value;
+      const data = { title: w.name || w.producer || "Wijn", text: t };
+      if (file && (!navigator.canShare || navigator.canShare({ files: [file] }))) data.files = [file];
+      try { await navigator.share(data); }
+      catch (e) {
+        if (e && e.name === "AbortError") return;
+        showMsg("shareMsg", "Delen lukte niet. Houd de kaart hierboven ingedrukt en kies Deel… of Bewaar in Foto's.", true);
+      }
+    });
+    const sv = $("shareSave");
+    if (sv) sv.addEventListener("click", async () => {
+      try { await downloads.save({ filename: fname, data: blob }); showMsg("shareMsg", "Afbeelding opgeslagen."); }
+      catch (e) { if (!e || e.code !== "declined") showMsg("shareMsg", "Opslaan lukte niet" + (e && e.code ? " (" + e.code + ")" : "") + ".", true); }
+    });
+    $("shareCopy").addEventListener("click", async () => {
+      const t = $("shareText").value;
+      try { await navigator.clipboard.writeText(t); showMsg("shareMsg", "Tekst gekopieerd. Plak hem in je bericht."); }
+      catch { const ta = $("shareText"); ta.focus(); ta.select(); showMsg("shareMsg", "Kopiëren lukt hier niet automatisch. De tekst is geselecteerd: kies Kopieer."); }
+    });
+  }
+
+  // ---------- Notices ----------
+  let toastT;
+  // Optional action adds a button to the toast, e.g. { label: "Noteer in logboek", run }.
+  function toast(t, action) {
+    const el = $("toast");
+    el.textContent = t;
+    if (action) {
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "toastbtn"; b.textContent = action.label;
+      b.addEventListener("click", () => { el.hidden = true; clearTimeout(toastT); action.run(); });
+      el.appendChild(b);
+    }
+    el.hidden = false;
+    clearTimeout(toastT);
+    toastT = setTimeout(() => { el.hidden = true; }, action ? 6000 : /^Opslaan lukte|^Je kelder is vol|^Je mag|^Deze wijn bevat/.test(t) ? 9000 : 2600);
+  }
+  function showNotice(t) { $("notice").textContent = t; $("notice").hidden = false; }
+  function hideNotice() { $("notice").hidden = true; }
+
+  // ---------- Accounts ----------
+  let recovering = /type=recovery/.test(location.hash + location.search);
+  let authMode = "in";
+  const authInfo = {
+    in:      { go: "Inloggen",                 pass: "current-password" },
+    up:      { go: "Account maken",            pass: "new-password" },
+    reset:   { go: "Stuur herstelmail",        pass: "" },
+    recover: { go: "Nieuw wachtwoord opslaan", pass: "new-password" }
+  };
+  const authReason = e => {
+    const m = String((e && e.message) || e || "");
+    if (/invalid login credentials/i.test(m)) return "Dit e-mailadres of wachtwoord klopt niet.";
+    if (/email not confirmed/i.test(m)) return "Bevestig eerst je e-mailadres met de link in de mail die we je stuurden.";
+    if (/already registered|already been registered/i.test(m)) return "Dit e-mailadres heeft al een account. Log in, of herstel je wachtwoord.";
+    if (/rate limit|too many|security purposes/i.test(m)) return "Er zijn net te veel mails verstuurd. Probeer het over een paar minuten opnieuw.";
+    if (/password/i.test(m) && /(weak|short|least|characters)/i.test(m)) return "Kies een wachtwoord van minstens 8 tekens.";
+    if (/valid email|invalid email|email address.*invalid/i.test(m)) return "Dit e-mailadres lijkt niet te kloppen.";
+    if (/fetch|network|failed to/i.test(m)) return "Geen verbinding. Controleer je internet en probeer het opnieuw.";
+    return "Er ging iets mis" + (m ? " (" + m.slice(0, 80) + ")" : "") + ".";
+  };
+  function setAuthMode(mode, msg, good) {
+    authMode = mode;
+    $("authWait").hidden = true; $("authBox").hidden = false; $("auth").hidden = false;
+    document.querySelectorAll("[data-auth-tab]").forEach(b => b.setAttribute("aria-checked", String(b.dataset.authTab === mode)));
+    $("authTabs").hidden = mode === "reset" || mode === "recover";
+    $("a-mailwrap").hidden = mode === "recover";
+    $("a-passwrap").hidden = mode === "reset";
+    $("a-pass").setAttribute("autocomplete", authInfo[mode].pass || "off");
+    $("a-go").textContent = authInfo[mode].go;
+    $("a-forgot").hidden = mode !== "in";
+    $("a-back").hidden = mode !== "reset";
+    $("a-lead").textContent = mode === "reset" ? "Vul je e-mailadres in. Je krijgt een mail met een link om een nieuw wachtwoord te kiezen."
+      : mode === "recover" ? "Kies een nieuw wachtwoord voor je account." : "Je eigen wijnkelder, op al je apparaten.";
+    showMsg("a-msg", msg || "", !good && !!msg);
+    if (good && msg) $("a-msg").className = "hint good";
+  }
+  document.querySelectorAll("[data-auth-tab]").forEach(b => b.addEventListener("click", () => setAuthMode(b.dataset.authTab)));
+  $("a-forgot").addEventListener("click", () => setAuthMode("reset"));
+  $("a-back").addEventListener("click", () => setAuthMode("in"));
+  $("authForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const email = $("a-email").value.trim(), pass = $("a-pass").value;
+    if (authMode !== "recover" && !/^\S+@\S+\.\S+$/.test(email)) { showMsg("a-msg", "Vul een geldig e-mailadres in.", true); return; }
+    if ((authMode === "up" || authMode === "recover") && pass.length < 8) { showMsg("a-msg", "Kies een wachtwoord van minstens 8 tekens.", true); return; }
+    if (authMode === "in" && !pass) { showMsg("a-msg", "Vul je wachtwoord in.", true); return; }
+    const go = $("a-go");
+    go.disabled = true; showMsg("a-msg", "");
+    const back = location.origin + location.pathname;
+    try {
+      if (authMode === "in") {
+        const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+        if (error) throw error;
+      } else if (authMode === "up") {
+        const { data, error } = await sb.auth.signUp({ email, password: pass, options: { emailRedirectTo: back } });
+        if (error) throw error;
+        if (!data.session) {
+          // Supabase hides whether an address exists; an empty identities list means it already has an account.
+          if (data.user && data.user.identities && data.user.identities.length === 0) throw new Error("already registered");
+          $("a-pass").value = "";
+          setAuthMode("in", "We hebben een mail gestuurd naar " + email + ". Klik op de link erin om je account te bevestigen, en log daarna hier in.", true);
+        }
+      } else if (authMode === "reset") {
+        const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: back });
+        if (error) throw error;
+        setAuthMode("in", "Als dit adres bij een account hoort, is er een mail onderweg met een link om je wachtwoord te herstellen.", true);
+      } else if (authMode === "recover") {
+        const { error } = await sb.auth.updateUser({ password: pass });
+        if (error) throw error;
+        recovering = false;
+        try { history.replaceState(null, "", location.pathname); } catch {}
+        $("a-pass").value = "";
+        const { data } = await sb.auth.getSession();
+        if (data.session) enterApp(data.session.user);
+      }
+    } catch (err) { showMsg("a-msg", authReason(err), true); }
+    finally { go.disabled = false; }
+  });
+
+  function enterApp(user) {
+    if (me && me.id === user.id) return;
+    me = user; wines = []; loading = true;
+    $("auth").hidden = true;
+    $("acctMail").textContent = user.email || "";
+    refreshSample();
+    store.init();
+  }
+  function leaveApp() {
+    me = null; wines = []; loading = false; filter = "alle"; query = ""; $("search").value = "";
+    if (store.channel) { sb.removeChannel(store.channel); store.channel = null; }
+    closeSheet(); setSettings(false); setMenu(false);
+    try { localStorage.removeItem(KEY_STORE); } catch {}   // a shared device shouldn't keep someone's key
+    refreshSample(); render();
+    $("a-pass").value = "";
+    setAuthMode("in");
+  }
+  $("signOutBtn").addEventListener("click", async () => { await sb.auth.signOut(); });
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && me) store.load().then(l => store.apply(l)).catch(() => {});
+  });
+
+  // ---------- Boot ----------
+  refreshSample();
+  sb.auth.onAuthStateChange((event, session) => {
+    // Don't call Supabase from inside this callback itself; hand over to the next tick.
+    setTimeout(() => {
+      if (event === "PASSWORD_RECOVERY") { recovering = true; setAuthMode("recover"); return; }
+      if (event === "SIGNED_OUT") { leaveApp(); return; }
+      if (session && session.user) { if (!recovering) enterApp(session.user); }
+      else if (event === "INITIAL_SESSION") setAuthMode(recovering ? "recover" : "in");
+    }, 0);
+  });
+})();
+</script>
+</body>
+</html>
