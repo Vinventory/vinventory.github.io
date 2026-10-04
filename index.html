@@ -356,6 +356,18 @@ img { max-width: 100%; }
 .authwait { display: flex; flex-direction: column; align-items: center; gap: 10px; color: var(--muted); }
 .authfoot { font-size: 12px; color: var(--muted); text-align: center; margin: 0; }
 
+/* Welcome guide and account deletion */
+.wel { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; padding: 18px 8px 4px; }
+.wel h3 { font-family: var(--f-display); font-weight: 400; font-size: 26px; line-height: 1.15; margin: 4px 0 0; }
+.wel p { margin: 0; max-width: 34ch; color: var(--muted); font-size: 16px; line-height: 1.5; }
+.wel p b { color: var(--ink); }
+.welicon { width: 72px; height: 72px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-text); display: grid; place-items: center; }
+.welicon svg { width: 34px; height: 34px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.dots { display: flex; justify-content: center; gap: 8px; margin: 6px 0; }
+.dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--line); display: block; }
+.dots i.on { background: var(--accent); }
+.dangerlink { color: var(--danger); align-self: flex-start; padding: 6px 0 0; }
+
 /* Settings menu: account, key, back-up */
 .setmenu { width: min(320px, calc(100vw - 32px)); max-height: calc(100dvh - 90px); overflow-y: auto; }
 .setinput { width: 100%; padding: 11px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); font-size: 16px; }
@@ -407,6 +419,8 @@ img { max-width: 100%; }
             <span class="section-l" style="margin:0">Account</span>
             <p class="hint" style="margin:0">Ingelogd als <b id="acctMail"></b></p>
             <button class="btn ghost backupbtn" type="button" id="signOutBtn">Uitloggen</button>
+            <button class="btn ghost backupbtn" type="button" id="helpBtn">Uitleg bekijken</button>
+            <button class="linkbtn dangerlink" type="button" id="acctDelBtn">Account verwijderen</button>
           </div>
           <div class="setsec" id="keySec">
             <span class="section-l" style="margin:0">Scannen met Claude</span>
@@ -543,11 +557,12 @@ img { max-width: 100%; }
     async init() {
       render();
       try { this.apply(await this.load()); }
-      catch (e) { loading = false; render(); showNotice("Je kelder kon niet worden opgehaald (" + why(e) + "). Controleer je verbinding en herlaad de pagina."); return; }
+      catch (e) { loading = false; render(); showNotice("Je kelder kon niet worden opgehaald (" + why(e) + "). Controleer je verbinding en herlaad de pagina."); return false; }
       if (this.channel) sb.removeChannel(this.channel);
       this.channel = sb.channel("wines-" + me.id)
         .on("postgres_changes", { event: "*", schema: "public", table: "wines", filter: "user_id=eq." + me.id }, p => this.onChange(p))
         .subscribe();
+      return true;
     },
     // Merge a full list from the server; edits that are still being saved (dirty) win.
     apply(list) {
@@ -2080,8 +2095,9 @@ img { max-width: 100%; }
     $("auth").hidden = true;
     $("acctMail").textContent = user.email || "";
     refreshSample();
-    store.init();
+    store.init().then(ok => { if (ok) maybeWelcome(); });
   }
+  let afterLeaveMsg = "";
   function leaveApp() {
     me = null; wines = []; loading = false; filter = "alle"; query = ""; $("search").value = "";
     if (store.channel) { sb.removeChannel(store.channel); store.channel = null; }
@@ -2089,9 +2105,74 @@ img { max-width: 100%; }
     try { localStorage.removeItem(KEY_STORE); } catch {}   // a shared device shouldn't keep someone's key
     refreshSample(); render();
     $("a-pass").value = "";
-    setAuthMode("in");
+    const msg = afterLeaveMsg; afterLeaveMsg = "";
+    setAuthMode("in", msg, !!msg);
   }
   $("signOutBtn").addEventListener("click", async () => { await sb.auth.signOut(); });
+
+  // ---------- Welcome guide: shown once on a device, for an account with an empty cellar ----------
+  const WEL = [
+    { icon: "M7 11V8a5 5 0 0 1 10 0v3M5 11h14v10H5zM12 15v3", t: "Welkom bij Vinventory",
+      p: "Houd je wijnkelder bij: wat je hebt, wat je ervan vindt en wanneer je een fles opendeed. Je kelder is <b>privé</b>: alleen jij ziet je wijnen, op al je apparaten." },
+    { icon: "M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2M12 9.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z", t: "Wijnen toevoegen",
+      p: "Tik rechtsboven op <b>Voeg toe</b>. Met <b>Scan etiket</b> maak je een foto en Claude vult de gegevens in. Dat werkt met je eigen Claude-sleutel (Instellingen, het tandwiel) en kost een klein bedrag op jouw Anthropic-account. Zonder sleutel kies je <b>Handmatig</b>." },
+    { icon: BOOK, t: "Bijhouden",
+      p: "Met <b>+</b> en <b>−</b> pas je het aantal flessen aan. Doe je een fles open, noteer dat dan in het logboek. Met het hartje bewaar je favorieten, en met een tik op de cijfers bovenaan zie je je statistieken." },
+    { icon: "M12 3.5v11M8 7.5l4-4 4 4M6 11H5v9.5h14V11h-1", t: "Altijd bij de hand",
+      p: "Zet Vinventory op je beginscherm: tik in Safari op <b>Deel</b> en kies <b>Zet op beginscherm</b>. Maak af en toe een back-up via het tandwiel." }
+  ];
+  function openWelcome(i) {
+    i = i || 0;
+    const s = WEL[i], last = i === WEL.length - 1;
+    openSheet(`${top("Welkom")}
+      <div class="wel"><div class="welicon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${s.icon}"/></svg></div><h3>${s.t}</h3><p>${s.p}</p></div>
+      <div class="dots" aria-label="Stap ${i + 1} van ${WEL.length}">${WEL.map((_, k) => `<i class="${k === i ? "on" : ""}"></i>`).join("")}</div>
+      <div class="actions">${i ? `<button class="btn ghost" type="button" id="welPrev">Terug</button>` : ""}<button class="btn primary" type="button" id="welNext">${last ? "Aan de slag" : "Volgende"}</button></div>`);
+    if (i) $("welPrev").addEventListener("click", () => openWelcome(i - 1));
+    $("welNext").addEventListener("click", () => last ? closeSheet() : openWelcome(i + 1));
+  }
+  function maybeWelcome() {
+    if (!me || wines.length) return;
+    const key = "wijnkelder.welcome." + me.id;
+    try { if (localStorage.getItem(key)) return; localStorage.setItem(key, "1"); } catch { return; }
+    openWelcome(0);
+  }
+  $("helpBtn").addEventListener("click", () => { setSettings(false); openWelcome(0); });
+
+  // ---------- Delete the account and everything in it ----------
+  function openAccountDelete() {
+    openSheet(`${top("Account verwijderen")}
+      <p class="memo">Hiermee verwijder je je account <b>en al je wijnen</b>, met logboek, herinneringen en foto's. Dit kan niet ongedaan worden gemaakt.</p>
+      <button class="btn ghost" type="button" id="delBackup">Download eerst een back-up</button>
+      <div class="field"><label for="delConfirm">Typ VERWIJDER om te bevestigen</label><input id="delConfirm" autocomplete="off" autocapitalize="characters" spellcheck="false"></div>
+      <span class="hint" id="delMsg" hidden></span>
+      <div class="actions"><button class="btn ghost" type="button" data-close>Annuleren</button><button class="btn danger" type="button" id="delGo" disabled>Verwijder alles</button></div>`);
+    $("delConfirm").addEventListener("input", () => { $("delGo").disabled = $("delConfirm").value.trim().toUpperCase() !== "VERWIJDER"; });
+    $("delBackup").addEventListener("click", async () => {
+      if (!wines.length) { showMsg("delMsg", "Je kelder is leeg; er is niets om te bewaren."); return; }
+      try {
+        await downloads.save({ filename: `vinventory-backup-${today()}.json`, data: JSON.stringify({ app: "Vinventory", version: 1, exportedAt: new Date().toISOString(), wines }, null, 2) });
+        showMsg("delMsg", "Back-up opgeslagen. Controleer dat het bestand is bewaard voordat je verdergaat.");
+      } catch { showMsg("delMsg", "De back-up kon niet worden opgeslagen.", true); }
+    });
+    $("delGo").addEventListener("click", async () => {
+      const btn = $("delGo");
+      btn.disabled = true; showMsg("delMsg", "Account verwijderen…");
+      const { error } = await sb.rpc("delete_my_account");
+      if (error) {
+        const m = String(error.message || "") + String(error.code || "");
+        showMsg("delMsg", /PGRST202|does not exist|not find the function/i.test(m)
+          ? "Verwijderen is nog niet ingesteld in de database. Laat de beheerder van de app het databasebestand opnieuw uitvoeren."
+          : "Verwijderen lukte niet (" + String(error.message || error.code || "onbekend").slice(0, 80) + "). Je account is niet verwijderd.", true);
+        btn.disabled = $("delConfirm").value.trim().toUpperCase() !== "VERWIJDER";
+        return;
+      }
+      afterLeaveMsg = "Je account en al je wijnen zijn verwijderd.";
+      try { Object.keys(localStorage).filter(k => k.startsWith("wijnkelder.")).forEach(k => localStorage.removeItem(k)); } catch {}
+      await sb.auth.signOut({ scope: "local" });
+    });
+  }
+  $("acctDelBtn").addEventListener("click", () => { setSettings(false); openAccountDelete(); });
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible" && me) store.load().then(l => store.apply(l)).catch(() => {});
   });

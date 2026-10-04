@@ -40,6 +40,21 @@ drop trigger if exists wines_touch on public.wines;
 create trigger wines_touch before update on public.wines
   for each row execute function public.wines_touch();
 
+-- Een gebruiker kan zijn eigen account verwijderen. De wijnen gaan mee (on delete cascade hierboven).
+-- Dit is een functie die met extra rechten draait (security definer), maar alleen het account
+-- van de ingelogde gebruiker aanraakt: `auth.uid()` komt uit de sessie, niet uit de aanroep.
+create or replace function public.delete_my_account() returns void
+language plpgsql security definer set search_path = '' as $$
+begin
+  if auth.uid() is null then
+    raise exception 'niet ingelogd' using errcode = '28000';
+  end if;
+  delete from auth.users where id = auth.uid();
+end $$;
+
+revoke all on function public.delete_my_account() from public, anon;
+grant execute on function public.delete_my_account() to authenticated;
+
 -- Live bijwerken op andere apparaten van dezelfde gebruiker.
 do $$ begin
   alter publication supabase_realtime add table public.wines;
