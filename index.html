@@ -367,6 +367,10 @@ img { max-width: 100%; }
 .dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--line); display: block; }
 .dots i.on { background: var(--accent); }
 .dangerlink { color: var(--danger); align-self: flex-start; padding: 6px 0 0; }
+.check a, .authfoot a, .legallinks a { color: var(--accent-text); }
+.legallinks { margin: 4px 0 0; text-align: center; font-size: 13px; color: var(--muted); }
+.demobar { display: flex; gap: 12px; align-items: center; justify-content: space-between; padding: 10px 10px 10px 14px; border-radius: var(--r); background: var(--accent-soft); font-size: 14px; line-height: 1.35; }
+.demobar .btn { flex: none; padding: 9px 12px; font-size: 14px; border-radius: 10px; }
 
 /* Settings menu: account, key, back-up */
 .setmenu { width: min(320px, calc(100vw - 32px)); max-height: calc(100dvh - 90px); overflow-y: auto; }
@@ -388,17 +392,20 @@ img { max-width: 100%; }
       <form id="authForm" novalidate>
         <div class="field" id="a-mailwrap"><label for="a-email">E-mailadres</label><input id="a-email" type="email" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false"></div>
         <div class="field" id="a-passwrap"><label for="a-pass">Wachtwoord</label><input id="a-pass" type="password" autocomplete="current-password"></div>
+        <label class="check" id="a-agreewrap" hidden><input type="checkbox" id="a-agree"><span>Ik ga akkoord met de <a href="voorwaarden.html" target="_blank" rel="noopener">voorwaarden</a> en de <a href="privacy.html" target="_blank" rel="noopener">privacyverklaring</a>.</span></label>
         <p class="hint" id="a-msg" hidden></p>
         <button class="btn primary" id="a-go" type="submit">Inloggen</button>
         <button class="linkbtn" type="button" id="a-forgot">Wachtwoord vergeten?</button>
         <button class="linkbtn" type="button" id="a-back" hidden>Terug naar inloggen</button>
       </form>
-      <p class="authfoot">Je wijnen zijn privé: alleen jij ziet je kelder.</p>
+      <button class="btn ghost" type="button" id="demoGo">Eerst rondkijken? Bekijk een voorbeeld</button>
+      <p class="authfoot">Je wijnen zijn privé: alleen jij ziet je kelder.<br><a href="privacy.html" target="_blank" rel="noopener">Privacy</a> · <a href="voorwaarden.html" target="_blank" rel="noopener">Voorwaarden</a></p>
     </div>
   </div>
 </div>
 
 <main class="wrap">
+  <div class="demobar" id="demoBar" hidden><span><b>Voorbeeld:</b> dit zijn voorbeeldwijnen. Wat je hier doet, wordt niet bewaard.</span><button class="btn primary" type="button" id="demoUp">Maak een account</button></div>
   <header class="head">
     <div class="headrow">
       <h1>Vinventory</h1>
@@ -415,6 +422,12 @@ img { max-width: 100%; }
             <button type="button" role="radio" data-theme-pick="dark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>Donker</button>
           </div>
           <p class="hint" style="margin:0">Automatisch volgt de instelling van je telefoon of computer.</p>
+          <div class="setsec" id="demoSec" hidden>
+            <span class="section-l" style="margin:0">Voorbeeld</span>
+            <p class="hint" style="margin:0">Je kijkt rond met voorbeeldwijnen. Niets wordt bewaard.</p>
+            <button class="btn primary backupbtn" type="button" id="demoUp2">Maak een account</button>
+            <button class="btn ghost backupbtn" type="button" id="demoIn">Ik heb al een account</button>
+          </div>
           <div class="setsec" id="acctSec">
             <span class="section-l" style="margin:0">Account</span>
             <p class="hint" style="margin:0">Ingelogd als <b id="acctMail"></b></p>
@@ -447,6 +460,7 @@ img { max-width: 100%; }
               <button class="linkbtn" type="button" id="restoreCancel" style="align-self:center">Annuleren</button>
             </div>
           </div>
+          <p class="legallinks"><a href="privacy.html" target="_blank" rel="noopener">Privacy</a> · <a href="voorwaarden.html" target="_blank" rel="noopener">Voorwaarden</a></p>
         </div>
       </div>
       <div class="addwrap">
@@ -540,6 +554,7 @@ img { max-width: 100%; }
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4Z2tuZHZtanN4cXVjdWZneGNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTExMTc0MTgsImV4cCI6MjEwNjY5MzQxOH0.ZjKBL8_ouEPDdrCv36COBeMJ8WYItWTxUXy0Ei0dXH4";
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
   let me = null;      // the signed-in user
+  let demo = false;   // looking around with example wines, nothing is saved
   let loading = true;
   const saveErrText = e => {
     const code = e && (e.code || e.status), m = String((e && e.message) || "");
@@ -585,6 +600,7 @@ img { max-width: 100%; }
       render(); refreshOpenDetail();
     },
     put(w) {
+      if (demo || !me) return Promise.resolve();   // the example cellar is never saved
       const { id, ...data } = w;
       const bytes = docBytes(w);
       if (bytes > MAX_DOC) { toast(tooBigMsg(bytes)); return Promise.resolve(); }
@@ -602,6 +618,7 @@ img { max-width: 100%; }
     },
     remove(id) {
       clearTimeout(timers[id]); delete timers[id];
+      if (demo || !me) return Promise.resolve();
       // Delete after any save that is still running, or that save would bring the wine back.
       const prev = this.chains[id] || Promise.resolve();
       const next = prev.then(async () => {
@@ -662,7 +679,7 @@ img { max-width: 100%; }
     $("keyState").textContent = has ? "Sleutel opgeslagen op dit apparaat." : "Nog geen sleutel. Zonder sleutel kun je wijnen alleen met de hand toevoegen.";
     $("keyDel").hidden = !has; $("keyIn").value = "";
   }
-  function refreshSample() { sample = getKey() ? sampleFn : null; refreshKeyUi(); }
+  function refreshSample() { sample = !demo && getKey() ? sampleFn : null; refreshKeyUi(); }
   $("keySave").addEventListener("click", () => {
     const k = $("keyIn").value.trim();
     if (!/^sk-ant-[\w-]{20,}$/.test(k)) { showMsg("keyMsg", "Dit lijkt geen Anthropic-sleutel. Zo'n sleutel begint met sk-ant-.", true); return; }
@@ -1082,6 +1099,11 @@ img { max-width: 100%; }
   document.addEventListener("click", e => { if (!$("addMenu").hidden && !e.target.closest(".addwrap")) setMenu(false); });
   document.addEventListener("keydown", e => { if (e.key === "Escape") setMenu(false); });
   $("scanBtn").addEventListener("click", e => {
+    if (demo) {
+      e.preventDefault(); setMenu(false);
+      toast("Maak een account om etiketten te scannen en je eigen wijnen te bewaren.");
+      return;
+    }
     // Scanning needs the user's own Claude key; point them to the settings before the camera opens.
     if (!sample) {
       e.preventDefault();
@@ -2040,6 +2062,9 @@ img { max-width: 100%; }
     $("a-passwrap").hidden = mode === "reset";
     $("a-pass").setAttribute("autocomplete", authInfo[mode].pass || "off");
     $("a-go").textContent = authInfo[mode].go;
+    $("a-agreewrap").hidden = mode !== "up";
+    if (mode !== "up") $("a-agree").checked = false;
+    $("demoGo").hidden = mode === "reset" || mode === "recover";
     $("a-forgot").hidden = mode !== "in";
     $("a-back").hidden = mode !== "reset";
     $("a-lead").textContent = mode === "reset" ? "Vul je e-mailadres in. Je krijgt een mail met een link om een nieuw wachtwoord te kiezen."
@@ -2056,6 +2081,7 @@ img { max-width: 100%; }
     if (authMode !== "recover" && !/^\S+@\S+\.\S+$/.test(email)) { showMsg("a-msg", "Vul een geldig e-mailadres in.", true); return; }
     if ((authMode === "up" || authMode === "recover") && pass.length < 8) { showMsg("a-msg", "Kies een wachtwoord van minstens 8 tekens.", true); return; }
     if (authMode === "in" && !pass) { showMsg("a-msg", "Vul je wachtwoord in.", true); return; }
+    if (authMode === "up" && !$("a-agree").checked) { showMsg("a-msg", "Ga akkoord met de voorwaarden en de privacyverklaring om een account te maken.", true); return; }
     const go = $("a-go");
     go.disabled = true; showMsg("a-msg", "");
     const back = location.origin + location.pathname;
@@ -2091,12 +2117,70 @@ img { max-width: 100%; }
 
   function enterApp(user) {
     if (me && me.id === user.id) return;
+    endDemoUi();
     me = user; wines = []; loading = true;
     $("auth").hidden = true;
     $("acctMail").textContent = user.email || "";
     refreshSample();
     store.init().then(ok => { if (ok) maybeWelcome(); });
   }
+  // ---------- Demo: look around with example wines; nothing is saved ----------
+  function demoWines() {
+    const d = n => { const x = new Date(); x.setDate(x.getDate() + n); return x.getFullYear() + "-" + String(x.getMonth() + 1).padStart(2, "0") + "-" + String(x.getDate()).padStart(2, "0"); };
+    let k = 0;
+    const L = (ago, who, note, rating) => ({ id: "dl" + (++k), date: d(-ago), with: who, note, rating: rating || null });
+    const Y = YEAR;
+    return [
+      { name: "Chianti Classico Riserva", producer: "Cantina Esempio", vintage: 2018, color: "rood", country: "Italië", region: "Toscane", grape: "Sangiovese", quantity: 4, price: 24, rating: 8, favorite: true, drinkFrom: Y - 2, drinkTo: Y + 6,
+        description: "Elegant en sappig, met kers, viooltjes en een lange, droge afdronk.", pairing: "Pasta met ragù, gegrild vlees, oude kaas",
+        log: [L(20, "Anna en Peter", "Bij de pasta. Prachtig.", 8), L(95, "Anna", "", null)] },
+      { name: "Rioja Reserva", producer: "Bodegas Muestra", vintage: 2015, color: "rood", country: "Spanje", region: "Rioja", grape: "Tempranillo", quantity: 3, price: 18, rating: 9, favorite: true, drinkFrom: Y - 4, drinkTo: Y + 1,
+        description: "Zacht en rijp, met vanille, pruim en een vleugje leer.", pairing: "Lamsrack, gestoofd vlees", log: [L(40, "Peter", "Bij het stoofvlees.", 9)] },
+      { name: "Chablis", producer: "Domaine d'Exemple", vintage: 2022, color: "wit", country: "Frankrijk", region: "Bourgogne", grape: "Chardonnay", quantity: 6, price: 21, rating: 7, drinkFrom: Y, drinkTo: Y + 6,
+        description: "Strak en mineraal, met citrus en een zilte afdronk.", pairing: "Oesters, vis, geitenkaas" },
+      { name: "Picpoul de Pinet", producer: "Domaine Exemple", vintage: 2023, color: "wit", country: "Frankrijk", region: "Languedoc", grape: "Picpoul", quantity: 2, price: 9, drinkFrom: Y, drinkTo: Y + 2,
+        description: "Fris en droog, perfect als aperitief.", pairing: "Schaaldieren, salade" },
+      { name: "Rosé de Provence", producer: "Mas Exemple", vintage: Y - 2, color: "rosé", country: "Frankrijk", region: "Provence", grape: "Grenache, Cinsault", quantity: 3, price: 14, rating: 7, drinkFrom: Y - 1, drinkTo: Y + 1,
+        description: "Bleek en elegant, met aardbei en grapefruit.", saveFor: "Verjaardag van Anna", saveForDate: d(12), log: [L(10, "Anna", "Op het terras.", 7)] },
+      { name: "Riesling Spätlese", producer: "Weingut Beispiel", vintage: 2019, color: "wit", country: "Duitsland", region: "Mosel", grape: "Riesling", quantity: 2, price: 19, rating: 8, drinkFrom: Y - 1, drinkTo: Y + 12,
+        description: "Een vleugje zoet met veel zuur, perzik en steenkool.", pairing: "Pittig eten, Aziatische gerechten" },
+      { name: "Prosecco Extra Dry", producer: "Casa Esempio", color: "mousserend", country: "Italië", region: "Veneto", grape: "Glera", quantity: 4, price: 11, drinkFrom: Y - 1, drinkTo: Y,
+        description: "Licht, fris en fruitig met peer en appel.", pairing: "Aperitief, antipasti" },
+      { name: "Sauternes", producer: "Château d'Exemple", vintage: 2016, color: "dessert", country: "Frankrijk", region: "Bordeaux", grape: "Sémillon", quantity: 1, price: 32, drinkFrom: Y - 1, drinkTo: Y + 20,
+        description: "Rijk en zoet, met abrikoos, honing en saffraan.", pairing: "Foie gras, blauwe kaas, fruittaart" },
+      { name: "Tawny Port 20 jaar", producer: "Quinta Exemplo", color: "versterkt", country: "Portugal", region: "Douro", quantity: 1, price: 38, rating: 9, drinkFrom: Y, drinkTo: Y + 15,
+        description: "Noten, gedroogd fruit en karamel.", pairing: "Chocolade, noten, oude kaas" },
+      { name: "Barolo", producer: "Cantina d'Esempio", vintage: 2013, color: "rood", country: "Italië", region: "Piemonte", grape: "Nebbiolo", quantity: 2, price: 45, rating: 8, drinkFrom: Y - 3, drinkTo: Y - 1,
+        description: "Roos, teer en kers; op zijn hoogtepunt geweest." },
+      { name: "Pinot Noir", producer: "Domaine d'Exemple", vintage: 2020, color: "rood", country: "Frankrijk", region: "Bourgogne", grape: "Pinot Noir", quantity: 0, price: 28, rating: 8,
+        description: "Licht en zijdeachtig, met rood fruit.", log: [L(60, "Familie", "De laatste fles, bij het kerstdiner.", 8)] }
+    ].map((w, i) => Object.assign({ id: "demo" + (i + 1), example: true }, w));
+  }
+  const CAN_HIDE = ["acctSec", "keySec", "backupSec"];
+  function endDemoUi() {
+    demo = false; dirty.clear();
+    $("demoBar").hidden = true; $("demoSec").hidden = true;
+    CAN_HIDE.forEach(id => $(id).hidden = false);
+  }
+  function enterDemo() {
+    demo = true; me = null; dirty.clear();
+    wines = demoWines(); loading = false; filter = "alle"; query = ""; $("search").value = "";
+    $("auth").hidden = true; $("demoBar").hidden = false; $("demoSec").hidden = false;
+    CAN_HIDE.forEach(id => $(id).hidden = true);
+    refreshSample(); render();
+  }
+  function leaveDemo(mode) {
+    endDemoUi();
+    wines = []; loading = false;
+    closeSheet(); setSettings(false); setMenu(false);
+    refreshSample(); render();
+    setAuthMode(mode || "up");
+  }
+  $("demoGo").addEventListener("click", enterDemo);
+  $("demoUp").addEventListener("click", () => leaveDemo("up"));
+  $("demoUp2").addEventListener("click", () => leaveDemo("up"));
+  $("demoIn").addEventListener("click", () => leaveDemo("in"));
+
   let afterLeaveMsg = "";
   function leaveApp() {
     me = null; wines = []; loading = false; filter = "alle"; query = ""; $("search").value = "";
