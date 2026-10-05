@@ -1884,6 +1884,7 @@ img { max-width: 100%; }
   }
 
   // ---------- Sharing a wine: a picture card plus a short text ----------
+  const APP_URL = "https://vinventory.github.io/";
   function shareText(w) {
     const title = [w.name || w.producer, w.vintage].filter(Boolean).join(" ");
     return [
@@ -1891,7 +1892,7 @@ img { max-width: 100%; }
       [w.region, w.country].filter(Boolean).join(", ") + (w.grape ? " · " + w.grape : ""),
       w.rating ? `Mijn cijfer: ${w.rating}/10` : "",
       w.description || ""
-    ].filter(Boolean).join("\n");
+    ].filter(Boolean).join("\n") + "\n\nBeheer je eigen wijnkelder gratis met Vinventory:\n" + APP_URL;
   }
   function wrapLines(ctx, text, maxW, maxLines) {
     const words = String(text || "").split(/\s+/).filter(Boolean), lines = [];
@@ -1962,7 +1963,7 @@ img { max-width: 100%; }
       for (const l of wrapLines(g, w.description, W - 2 * P - 40, Math.min(5, room))) { g.fillText(l, P + 20, y); y += 44; }
     }
     g.fillStyle = tok("--muted"); g.font = `600 28px ${body}`;
-    g.fillText("Uit mijn wijnkelder · Vinventory", P + 20, H - 40 - 44);
+    g.fillText("Uit mijn wijnkelder · vinventory.github.io", P + 20, H - 40 - 44);
     return new Promise(r => c.toBlob(r, "image/png"));
   }
   async function openShare(id) {
@@ -1986,6 +1987,7 @@ img { max-width: 100%; }
       <div class="actions">
         ${url && downloads ? `<button class="btn ghost" type="button" id="shareSave">Afbeelding opslaan</button>` : ""}
         <button class="btn ghost" type="button" id="shareCopy">Tekst kopiëren</button>
+        <button class="btn ghost" type="button" id="shareLink">Alleen de link kopiëren</button>
       </div>
       <span class="hint" id="shareMsg" hidden></span>
       <div class="field"><span class="section-l" style="margin:0">Tekst</span><textarea class="sharetxt" id="shareText">${esc(text)}</textarea></div>
@@ -2006,6 +2008,10 @@ img { max-width: 100%; }
     if (sv) sv.addEventListener("click", async () => {
       try { await downloads.save({ filename: fname, data: blob }); showMsg("shareMsg", "Afbeelding opgeslagen."); }
       catch (e) { if (!e || e.code !== "declined") showMsg("shareMsg", "Opslaan lukte niet" + (e && e.code ? " (" + e.code + ")" : "") + ".", true); }
+    });
+    $("shareLink").addEventListener("click", async () => {
+      try { await navigator.clipboard.writeText(APP_URL); showMsg("shareMsg", "Link gekopieerd."); }
+      catch { showMsg("shareMsg", "Kopiëren lukt niet automatisch. De link is " + APP_URL, true); }
     });
     $("shareCopy").addEventListener("click", async () => {
       const t = $("shareText").value;
