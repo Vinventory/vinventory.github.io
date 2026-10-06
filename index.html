@@ -1981,8 +1981,7 @@ img { max-width: 100%; }
     const file = blob ? new File([blob], fname, { type: "image/png" }) : null;
     const canNative = !!navigator.share;
     openSheet(`${top("Wijn delen")}
-      ${url ? `<img class="sharecard" src="${url}" alt="Deelkaart van ${esc(w.name || w.producer)}">
-        <p class="hint" style="margin:-6px 0 0">Houd de kaart ingedrukt om hem te delen, in Foto's te bewaren of te kopiëren.</p>` : `<p class="hint warn">De kaart kon niet worden gemaakt. Je kunt de tekst wel delen.</p>`}
+      ${url ? `<img class="sharecard" src="${url}" alt="Deelkaart van ${esc(w.name || w.producer)}">` : `<p class="hint warn">De kaart kon niet worden gemaakt. Je kunt de tekst wel delen.</p>`}
       <button class="btn primary" type="button" id="shareGo"><svg class="house" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5v11M8 7.5l4-4 4 4M6 11H5v9.5h14V11h-1"/></svg>Delen…</button>
       <span class="hint" id="shareMsg" hidden></span>
       <div class="field"><span class="section-l" style="margin:0">Tekst</span><textarea class="sharetxt" id="shareText">${esc(text)}</textarea></div>
