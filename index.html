@@ -1891,7 +1891,7 @@ img { max-width: 100%; }
       "🍷 " + title + (w.name && w.producer ? " – " + w.producer : ""),
       [w.region, w.country].filter(Boolean).join(", ") + (w.grape ? " · " + w.grape : ""),
       w.rating ? `Mijn cijfer: ${w.rating}/10` : ""
-    ].filter(Boolean).join("\n") + "\n\nBeheer je eigen wijnkelder gratis met Vinventory:\n" + APP_URL;
+    ].filter(Boolean).join("\n") + "\nBeheer je eigen wijnkelder gratis met Vinventory:\n" + APP_URL;
   }
   function wrapLines(ctx, text, maxW, maxLines) {
     const words = String(text || "").split(/\s+/).filter(Boolean), lines = [];
