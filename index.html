@@ -313,8 +313,9 @@ form { display: flex; flex-direction: column; gap: 12px; }
 
 /* Statistics: the tally opens them; single-series bars in the accent, value at the bar tip */
 .tally { cursor: pointer; }
-.tallymore { grid-column: 1 / -1; display: flex; justify-content: center; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; color: var(--muted); margin-top: -2px; }
-.tallymore svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+/* The arrow is a sixth column, right of "waarde". */
+.tally { grid-template-columns: repeat(5, auto) 14px; }
+.tallymore { align-self: center; width: 14px; height: 14px; fill: none; stroke: var(--muted); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 .statsec { display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow); }
 .statsec h3 { margin: 0; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
 .statsec .hint { margin: -4px 0 0; }
@@ -489,7 +490,7 @@ img { max-width: 100%; }
       <div><b id="t-countries">0</b><span>landen</span></div>
       <div><b id="t-oldest">–</b><span>oudste jaar</span></div>
       <div><b id="t-value">–</b><span>waarde</span></div>
-      <p class="tallymore" style="margin-bottom:0">Statistieken<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></p>
+      <svg class="tallymore" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
     </div>
   </header>
 
