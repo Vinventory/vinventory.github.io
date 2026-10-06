@@ -1983,19 +1983,19 @@ img { max-width: 100%; }
     openSheet(`${top("Wijn delen")}
       ${url ? `<img class="sharecard" src="${url}" alt="Deelkaart van ${esc(w.name || w.producer)}">
         <p class="hint" style="margin:-6px 0 0">Houd de kaart ingedrukt om hem te delen, in Foto's te bewaren of te kopiëren.</p>` : `<p class="hint warn">De kaart kon niet worden gemaakt. Je kunt de tekst wel delen.</p>`}
-      ${canNative ? `<button class="btn primary" type="button" id="shareGo"><svg class="house" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5v11M8 7.5l4-4 4 4M6 11H5v9.5h14V11h-1"/></svg>Delen…</button>` : ""}
-      <div class="actions">
-        ${url && downloads ? `<button class="btn ghost" type="button" id="shareSave">Afbeelding opslaan</button>` : ""}
-        <button class="btn ghost" type="button" id="shareCopy">Tekst kopiëren</button>
-        <button class="btn ghost" type="button" id="shareLink">Alleen de link kopiëren</button>
-      </div>
+      <button class="btn primary" type="button" id="shareGo"><svg class="house" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5v11M8 7.5l4-4 4 4M6 11H5v9.5h14V11h-1"/></svg>Delen…</button>
       <span class="hint" id="shareMsg" hidden></span>
       <div class="field"><span class="section-l" style="margin:0">Tekst</span><textarea class="sharetxt" id="shareText">${esc(text)}</textarea></div>
       <button class="btn ghost" type="button" id="shareBack">Terug naar de wijn</button>`);
     $("shareBack").addEventListener("click", () => openDetail(id));
-    const go = $("shareGo");
-    if (go) go.addEventListener("click", async () => {
+    $("shareGo").addEventListener("click", async () => {
       const t = $("shareText").value;
+      // Without a share sheet (some desktop browsers) the one button copies the text, link included.
+      if (!canNative) {
+        try { await navigator.clipboard.writeText(t); showMsg("shareMsg", "Tekst met link gekopieerd. Plak hem in je bericht."); }
+        catch { const ta = $("shareText"); ta.focus(); ta.select(); showMsg("shareMsg", "De tekst is geselecteerd: kies Kopieer."); }
+        return;
+      }
       const data = { title: w.name || w.producer || "Wijn", text: t };
       if (file && (!navigator.canShare || navigator.canShare({ files: [file] }))) data.files = [file];
       try { await navigator.share(data); }
@@ -2003,20 +2003,6 @@ img { max-width: 100%; }
         if (e && e.name === "AbortError") return;
         showMsg("shareMsg", "Delen lukte niet. Houd de kaart hierboven ingedrukt en kies Deel… of Bewaar in Foto's.", true);
       }
-    });
-    const sv = $("shareSave");
-    if (sv) sv.addEventListener("click", async () => {
-      try { await downloads.save({ filename: fname, data: blob }); showMsg("shareMsg", "Afbeelding opgeslagen."); }
-      catch (e) { if (!e || e.code !== "declined") showMsg("shareMsg", "Opslaan lukte niet" + (e && e.code ? " (" + e.code + ")" : "") + ".", true); }
-    });
-    $("shareLink").addEventListener("click", async () => {
-      try { await navigator.clipboard.writeText(APP_URL); showMsg("shareMsg", "Link gekopieerd."); }
-      catch { showMsg("shareMsg", "Kopiëren lukt niet automatisch. De link is " + APP_URL, true); }
-    });
-    $("shareCopy").addEventListener("click", async () => {
-      const t = $("shareText").value;
-      try { await navigator.clipboard.writeText(t); showMsg("shareMsg", "Tekst gekopieerd. Plak hem in je bericht."); }
-      catch { const ta = $("shareText"); ta.focus(); ta.select(); showMsg("shareMsg", "Kopiëren lukt hier niet automatisch. De tekst is geselecteerd: kies Kopieer."); }
     });
   }
 
