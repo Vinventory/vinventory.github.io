@@ -911,16 +911,20 @@ img { max-width: 100%; }
 
   // The Logboek page (from the button at the bottom of Kelder): every opened bottle, newest first; tapping one opens that wine.
   function openLog() {
-    openSheet(`${top("Logboek")}<div class="list" id="logPage">${logHtml()}</div>`);
+    openSheet(`${top("Logboek")}<input class="search" id="logSearch" type="search" placeholder="Zoek op wijn, datum, met wie of notitie" autocomplete="off" aria-label="Zoeken in je logboek"><div class="list" id="logPage">${logHtml("")}</div>`);
+    $("logSearch").addEventListener("input", e => { $("logPage").innerHTML = logHtml(norm(e.target.value)); });
     $("logPage").addEventListener("click", e => { const c = e.target.closest("[data-open]"); if (c) openDetail(c.dataset.open); });
     $("logPage").addEventListener("keydown", e => {
       if ((e.key === "Enter" || e.key === " ") && e.target.matches("[data-open]")) { e.preventDefault(); openDetail(e.target.dataset.open); }
     });
   }
-  function logHtml() {
+  function logHtml(q) {
     const rows = cellar().flatMap(w => (w.log || []).map(e => ({ w, e })))
+      .filter(({ w, e }) => !q || norm([w.name, w.producer, w.vintage, e.with, e.note, fmtDate(e.date)].join(" ")).includes(q))
       .sort((a, b) => String(b.e.date).localeCompare(String(a.e.date)) || String(b.e.id).localeCompare(String(a.e.id)));
-    if (!rows.length) return `<div class="empty"><p>Je logboek is nog leeg. Open een wijn en tik op <b>Fles geopend</b> om bij te houden wanneer en met wie je hem dronk.</p></div>`;
+    if (!rows.length) return q
+      ? `<div class="empty"><p>Niets in je logboek gevonden voor deze zoekopdracht.</p></div>`
+      : `<div class="empty"><p>Je logboek is nog leeg. Open een wijn en tik op <b>Fles geopend</b> om bij te houden wanneer en met wie je hem dronk.</p></div>`;
     return rows.map(({ w, e }) => `
       <div class="card logcard" data-open="${esc(w.id)}" role="button" tabindex="0">
         ${visual(w)}
