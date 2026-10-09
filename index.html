@@ -163,8 +163,16 @@ h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(34px, 9vw
 .savegrid { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; }
 .field .datebtn { position: relative; width: 44px; height: 44px; overflow: hidden; cursor: pointer; color: var(--accent-ink); }
 .field .datebtn input[type="date"] { position: absolute; inset: 0; width: 100%; height: 100%; min-height: 0; max-width: none; padding: 0; border: 0; opacity: 0; cursor: pointer; }
-.savedate { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; font-size: 14px; color: var(--muted); }
-.savedate .linkbtn { font-size: 14px; }
+/* A chosen date shows in the text field's place (its placeholder), with "Wis datum" at the right inside the field */
+.saveinput { position: relative; min-width: 0; }
+.saveinput.has-date input { padding-right: 96px; }
+.saveinput.has-date input::placeholder { color: var(--ink); opacity: 1; }
+.savewis { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 14px; }
+.savedate { font-size: 14px; color: var(--muted); }
+/* "Aantal flessen" in the form as tall as the text fields */
+#f-qtybox { padding: 7px 8px 7px 12px; min-height: 48px; }
+#f-qtybox .qty { font-size: 24px; }
+#f-qtybox .step { width: 32px; height: 32px; }
 /* "Bewaar in" (Mijn kelder / Wishlist) as tall as the text fields */
 #f-dest button { min-height: 48px; font-size: 16px; }
 .savebox { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border-radius: var(--r); background: var(--accent-soft); }
@@ -1407,10 +1415,10 @@ img { max-width: 100%; }
         <div class="field">
           <label for="f-savefor">Bewaar voor</label>
           <div class="savegrid">
-            <input id="f-savefor" value="${esc(w.saveFor)}" placeholder="Bijv. 50ste verjaardag van Peter">
+            <div class="saveinput" id="f-saveinput"><input id="f-savefor" value="${esc(w.saveFor)}" placeholder="Bijv. 50ste verjaardag van Peter"><button class="linkbtn savewis" type="button" id="f-savedateClear" hidden>Wis datum</button></div>
             <label class="mapbtn datebtn" title="Kies een datum"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v15H5zM5 9.5h14M9 3v4M15 3v4"/></svg><input id="f-savedate" type="date" value="${esc(w.saveForDate)}" aria-label="Datum"></label>
           </div>
-          <div class="savedate" id="f-savedateRow" hidden><span id="f-savedateTxt"></span><button class="linkbtn" type="button" id="f-savedateClear">Wis datum</button></div>
+          <div class="savedate" id="f-savedateRow" hidden><span id="f-savedateTxt"></span></div>
         </div>
         <div class="field" id="f-boughtField">
           <label for="f-bought" id="f-boughtLbl">${dest === "wish" ? "Gedronken bij" : "Gekocht bij"}</label>
@@ -1482,13 +1490,18 @@ img { max-width: 100%; }
       else form.querySelector(".actions").before($("f-boughtField"));
     };
     placeBought();
-    // The chosen "Bewaar voor" date shows under the row; the round button turns it on.
+    // A chosen "Bewaar voor" date takes the place of the field's example text, with "Wis datum" inside the field.
+    // When the field also holds text, the date shows under it as well.
     const showSaveDate = () => {
-      const v = $("f-savedate").value;
-      $("f-savedateRow").hidden = !v;
+      const v = $("f-savedate").value, typed = !!$("f-savefor").value.trim();
+      $("f-savefor").placeholder = v ? fmtDate(v) : "Bijv. 50ste verjaardag van Peter";
+      $("f-saveinput").classList.toggle("has-date", !!v);
+      $("f-savedateClear").hidden = !v;
+      $("f-savedateRow").hidden = !v || !typed;
       $("f-savedateTxt").textContent = v ? "Datum: " + fmtDate(v) : "";
     };
     showSaveDate();
+    $("f-savefor").addEventListener("input", showSaveDate);
     $("f-savedate").addEventListener("change", showSaveDate);
     $("f-savedate").addEventListener("input", showSaveDate);
     $("f-savedate").addEventListener("click", e => { try { if (e.target.showPicker) e.target.showPicker(); } catch {} });
