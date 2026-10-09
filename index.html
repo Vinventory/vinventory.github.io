@@ -1674,7 +1674,7 @@ img { max-width: 100%; }
         </div>
         <div id="logList" class="logsec">${logItems(w)}</div>
       </section>
-      <div class="savebox bought"><div class="grow"><label class="section-l" for="d-bought" style="margin:0">${w.wish ? "Gedronken bij" : "Gekocht bij"}</label><input class="boughtin" id="d-bought" value="${esc(w.boughtAt || "")}" placeholder="Bijv. Wijnhandel De Druif, Utrecht" autocomplete="off"></div><a class="mapbtn" id="d-map" href="${esc(mapsHref(w))}" target="_blank" rel="noopener" aria-label="Open in Google Maps" title="Open in Google Maps"${w.boughtAt || w.boughtMapUrl ? "" : " hidden"}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${PIN}"/><circle cx="12" cy="10" r="2.5"/></svg></a></div>
+      <div class="savebox bought"><div class="grow"><label class="section-l" for="d-bought" style="margin:0">${w.wish ? "Gedronken bij" : "Gekocht bij"}</label><input class="boughtin" id="d-bought" value="${esc(w.boughtAt || "")}" placeholder="Bijv. Wijnhandel De Druif, Utrecht" autocomplete="off"></div><a class="mapbtn" id="d-map" href="${esc(mapsHref(w))}" target="_blank" rel="noopener" aria-label="Open in Google Maps" title="Open in Google Maps"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${PIN}"/><circle cx="12" cy="10" r="2.5"/></svg></a></div>
       <a class="btn ghost gsearch" href="https://www.google.com/search?q=${encodeURIComponent([w.producer, w.name, w.vintage].filter(Boolean).join(" "))}" target="_blank" rel="noopener"><svg class="house" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13zM15.5 15.5 20 20"/></svg>Zoek op Google</a>
       <div class="actions three">
         <button class="btn ghost" type="button" data-close><svg class="house" viewBox="0 0 24 24" aria-hidden="true"><path d="${HOUSE}"/></svg>Home</button>
@@ -1690,14 +1690,12 @@ img { max-width: 100%; }
     const current = () => wines.find(x => x.id === id) || w;
     $("editBtn").addEventListener("click", () => openForm(Object.assign({}, current()), id));
     $("shareBtn").addEventListener("click", () => openShare(id));
-    // "Gekocht bij" can always be changed right here; the map button follows what is typed.
+    // "Gekocht bij" can always be changed right here; the map button (always there) follows what is typed.
     $("d-bought").addEventListener("input", e => {
       const cw = current();
       cw.boughtAt = e.target.value.trim();
       saveSoon(cw);
-      const m = $("d-map");
-      m.hidden = !(cw.boughtAt || cw.boughtMapUrl);
-      m.href = mapsHref(cw);
+      $("d-map").href = mapsHref(cw);
     });
     const pb = $("dGenPair");
     if (pb) pb.addEventListener("click", async () => {
@@ -1876,6 +1874,7 @@ img { max-width: 100%; }
     return m ? m[0] : "";
   }
   function mapsHref(w) {
+    if (!w.boughtMapUrl && !w.boughtAt) return "https://www.google.com/maps";
     return w.boughtMapUrl || "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(w.boughtAt || "");
   }
   // Several memories per wine. Older wines had one "reminder" + "memoryPhoto"; that shows up as a single memory until edited.
