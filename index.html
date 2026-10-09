@@ -1023,21 +1023,11 @@ img { max-width: 100%; }
           ${w.description ? `<span class="desc">${esc(w.description)}</span>` : ""}
         </div>
         <div class="wishacts">
-          <button class="btn primary" type="button" data-wbuy="${esc(w.id)}">Gekocht</button>
           <button class="logdel" type="button" data-wdel="${esc(w.id)}" aria-label="Van wishlist halen">×</button>
         </div>
       </div>`).join("");
   }
   $("wishList").addEventListener("click", e => {
-    const buy = e.target.closest("[data-wbuy]");
-    if (buy) {
-      const w = wines.find(x => x.id === buy.dataset.wbuy);
-      if (!w) return;
-      delete w.wish; w.quantity = Math.max(1, w.quantity || 0);
-      saveNow(w); render();
-      openForm(Object.assign({}, w), w.id, "Staat nu in je kelder. Pas het aantal flessen en de prijs aan als dat nodig is.");
-      return;
-    }
     const del = e.target.closest("[data-wdel]");
     if (del) {
       if (!del.classList.contains("sure")) {
@@ -1435,6 +1425,7 @@ img { max-width: 100%; }
           <button class="btn ghost" type="button" data-close>Annuleren</button>
           <button class="btn primary" type="submit">Opslaan</button>
         </div>
+        ${id && w.wish ? `<button class="btn ghost" type="button" id="f-gekocht"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>Gekocht: zet in mijn kelder</button>` : ""}
       </form>`);
 
     let qty = w.quantity || 0;
@@ -1490,6 +1481,9 @@ img { max-width: 100%; }
       else form.querySelector(".actions").before($("f-boughtField"));
     };
     placeBought();
+    // "Gekocht" on a wishlist wine saves the form and moves the wine to the cellar (at least 1 bottle).
+    const gekocht = $("f-gekocht");
+    if (gekocht) gekocht.addEventListener("click", () => { dest = "kelder"; qty = Math.max(1, qty); form.requestSubmit(); });
     // A chosen "Bewaar voor" date takes the place of the field's example text, with "Wis datum" inside the field.
     // When the field also holds text, the date shows under it as well.
     const showSaveDate = () => {
