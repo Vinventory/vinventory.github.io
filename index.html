@@ -159,8 +159,9 @@ h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(34px, 9vw
 .euro { position: relative; display: flex; }
 .euro span { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
 .euro input { padding-left: 28px !important; font-variant-numeric: tabular-nums; }
-.savegrid { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
-.savegrid input[type="date"] { min-width: 0; width: auto; }
+/* "Bewaar voor": the text on one line, the date on its own full-width line below (side by side the date was tiny on an iPhone) */
+.savegrid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+.savegrid input[type="date"] { min-width: 0; width: 100%; }
 .savebox { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border-radius: var(--r); background: var(--accent-soft); }
 .savebox .house { width: 22px; height: 22px; color: var(--accent-text); margin-top: 2px; }
 .savetxt { font-weight: 600; overflow-wrap: anywhere; }
@@ -1405,7 +1406,7 @@ img { max-width: 100%; }
             <input id="f-savedate" type="date" value="${esc(w.saveForDate)}" aria-label="Datum">
           </div>
         </div>
-        <div class="field">
+        <div class="field" id="f-boughtField">
           <label for="f-bought" id="f-boughtLbl">${dest === "wish" ? "Gedronken bij" : "Gekocht bij"}</label>
           <div class="boughtrow">
             <input id="f-bought" value="${esc(w.boughtAt)}" placeholder="${dest === "wish" ? "Bijv. Restaurant De Proeverij, Utrecht" : "Bijv. Wijnhandel De Druif, Utrecht"}">
@@ -1469,6 +1470,13 @@ img { max-width: 100%; }
       if (rest && !$("f-bought").value.trim()) $("f-bought").value = rest;
     });
     const form = $("wineForm");
+    // For a wishlist wine "Gedronken bij" is the main thing, so it moves up, right under "Bewaar in".
+    const placeBought = () => {
+      const pick = $("f-dest");
+      if (dest === "wish" && pick) pick.closest(".field").after($("f-boughtField"));
+      else form.querySelector(".actions").before($("f-boughtField"));
+    };
+    placeBought();
     const read = () => ({
       name: $("f-name").value.trim(), producer: $("f-producer").value.trim(), vintage: int($("f-vintage").value),
       color: $("f-color").value, region: $("f-region").value.trim(), country: $("f-country").value.trim(),
@@ -1494,6 +1502,7 @@ img { max-width: 100%; }
         form.querySelectorAll("[data-dest]").forEach(x => x.setAttribute("aria-checked", String(x === dp)));
         $("f-qtybox").hidden = dest === "wish";
         $("f-boughtLbl").textContent = dest === "wish" ? "Gedronken bij" : "Gekocht bij";
+        placeBought();
         $("f-bought").placeholder = dest === "wish" ? "Bijv. Restaurant De Proeverij, Utrecht" : "Bijv. Wijnhandel De Druif, Utrecht";
         if (dest === "kelder" && !qty) { qty = 1; $("f-qty").textContent = qty; }
         updateMatch();
