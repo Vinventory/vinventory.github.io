@@ -180,6 +180,8 @@ h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(34px, 9vw
 .savebox .grow { min-width: 0; display: flex; flex-direction: column; gap: 2px; align-items: flex-start; }
 .savebox.bought { background: var(--surface); box-shadow: var(--shadow); align-items: center; }
 .savebox.bought .house { margin-top: 0; }
+.savebox.bought .grow { flex: 1; align-items: stretch; gap: 6px; }
+.boughtin { width: 100%; min-height: 44px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); font-size: 16px; }
 .savebox .grow.inline { flex: 1; flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
 .boughtrow { display: flex; gap: 8px; align-items: center; }
 .boughtrow input { flex: 1; min-width: 0; }
@@ -1672,7 +1674,7 @@ img { max-width: 100%; }
         </div>
         <div id="logList" class="logsec">${logItems(w)}</div>
       </section>
-      <div class="savebox bought"><div class="grow inline"><span class="section-l" style="margin:0">${w.wish ? "Gedronken bij" : "Gekocht bij"}</span><span class="savetxt">${w.boughtAt ? esc(w.boughtAt) : "–"}</span></div>${w.boughtAt || w.boughtMapUrl ? `<a class="mapbtn" href="${esc(mapsHref(w))}" target="_blank" rel="noopener" aria-label="Open in Google Maps" title="Open in Google Maps"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${PIN}"/><circle cx="12" cy="10" r="2.5"/></svg></a>` : ""}</div>
+      <div class="savebox bought"><div class="grow"><label class="section-l" for="d-bought" style="margin:0">${w.wish ? "Gedronken bij" : "Gekocht bij"}</label><input class="boughtin" id="d-bought" value="${esc(w.boughtAt || "")}" placeholder="Bijv. Wijnhandel De Druif, Utrecht" autocomplete="off"></div><a class="mapbtn" id="d-map" href="${esc(mapsHref(w))}" target="_blank" rel="noopener" aria-label="Open in Google Maps" title="Open in Google Maps"${w.boughtAt || w.boughtMapUrl ? "" : " hidden"}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${PIN}"/><circle cx="12" cy="10" r="2.5"/></svg></a></div>
       <a class="btn ghost gsearch" href="https://www.google.com/search?q=${encodeURIComponent([w.producer, w.name, w.vintage].filter(Boolean).join(" "))}" target="_blank" rel="noopener"><svg class="house" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13zM15.5 15.5 20 20"/></svg>Zoek op Google</a>
       <div class="actions three">
         <button class="btn ghost" type="button" data-close><svg class="house" viewBox="0 0 24 24" aria-hidden="true"><path d="${HOUSE}"/></svg>Home</button>
@@ -1688,6 +1690,15 @@ img { max-width: 100%; }
     const current = () => wines.find(x => x.id === id) || w;
     $("editBtn").addEventListener("click", () => openForm(Object.assign({}, current()), id));
     $("shareBtn").addEventListener("click", () => openShare(id));
+    // "Gekocht bij" can always be changed right here; the map button follows what is typed.
+    $("d-bought").addEventListener("input", e => {
+      const cw = current();
+      cw.boughtAt = e.target.value.trim();
+      saveSoon(cw);
+      const m = $("d-map");
+      m.hidden = !(cw.boughtAt || cw.boughtMapUrl);
+      m.href = mapsHref(cw);
+    });
     const pb = $("dGenPair");
     if (pb) pb.addEventListener("click", async () => {
       pb.disabled = true; showMsg("dPairMsg", "Claude zoekt gerechten…");
