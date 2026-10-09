@@ -407,6 +407,9 @@ img { max-width: 100%; }
 .setpage > .legallinks { margin: 0; }
 .keydone { margin: 0; line-height: 1.4; }
 .statsbody { display: flex; flex-direction: column; gap: var(--space); }
+.logbtn { justify-content: flex-start; padding: 14px 16px; }
+.logbtn span:first-of-type { flex: 1; text-align: left; }
+.logbtn .n { color: var(--muted); font-weight: 500; font-variant-numeric: tabular-nums; }
 .wishlead { margin: 0; }
 .wishacts { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .wishacts .btn { padding: 8px 12px; font-size: 14px; border-radius: 10px; flex: none; }
@@ -809,7 +812,6 @@ img { max-width: 100%; }
     const byColor = c => inStock.filter(w => w.color === c);
     const favs = all.filter(w => w.favorite);
     const archived = all.filter(w => !(w.quantity > 0));
-    const logCount = all.reduce((a, w) => a + (w.log || []).length, 0);
     const ready = inStock.filter(drinkNow);
     $("chips").innerHTML = `<button class="chip" type="button" data-f="alle" aria-pressed="${filter === "alle"}">Alles</button>` +
       `<button class="chip" type="button" data-f="fav" aria-pressed="${filter === "fav"}"><svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><path d="${HEART}"/></svg>Favorieten <span class="n">${favs.length}</span></button>` +
@@ -817,8 +819,7 @@ img { max-width: 100%; }
       COLORS.filter(c => byColor(c[0]).length || filter === c[0]).map(c =>
         `<button class="chip" type="button" data-f="${c[0]}" aria-pressed="${filter === c[0]}"><span class="dot" style="background:var(${c[2]})"></span>${c[1]} ${tally(byColor(c[0]))}</button>`
       ).join("") +
-      ((archived.length || filter === "archief") ? `<button class="chip" type="button" data-f="archief" aria-pressed="${filter === "archief"}"><svg class="heart" viewBox="0 0 24 24" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2.2"><path d="M4 5h16v4H4zM5.5 9v10h13V9M10 13h4"/></svg>Archief ${tally(archived)}</button>` : "") +
-      ((logCount || filter === "logboek") ? `<button class="chip" type="button" data-f="logboek" aria-pressed="${filter === "logboek"}"><svg class="heart" viewBox="0 0 24 24" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2.2;stroke-linejoin:round"><path d="${BOOK}"/></svg>Logboek <span class="n">${logCount}</span></button>` : "");
+      ((archived.length || filter === "archief") ? `<button class="chip" type="button" data-f="archief" aria-pressed="${filter === "archief"}"><svg class="heart" viewBox="0 0 24 24" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2.2"><path d="M4 5h16v4H4zM5.5 9v10h13V9M10 13h4"/></svg>Archief ${tally(archived)}</button>` : "");
 
     const q = norm(query);
     const list = all
@@ -852,7 +853,6 @@ img { max-width: 100%; }
       $("list").innerHTML = `<div class="empty"><h2>Je kelder is nog leeg</h2><p>Tik onderaan op de ronde <b>scanknop</b> om een foto van een fles te maken. De wijn wordt herkend en je krijgt er een korte beschrijving bij.</p></div>`;
       return;
     }
-    if (filter === "logboek") { renderLog(q); return; }
     if (!list.length) {
       $("list").innerHTML = filter === "fav" && !q
         ? `<div class="empty"><p>Nog geen favorieten. Tik op het hartje bij een wijn om hem hier te bewaren.</p></div>`
@@ -909,18 +909,19 @@ img { max-width: 100%; }
       </div>`).join("");
   }
 
-  // Every opened bottle across the cellar, newest first; tapping one opens that wine.
-  function renderLog(q) {
-    const rows = wines.flatMap(w => (w.log || []).map(e => ({ w, e })))
-      .filter(({ w, e }) => !q || norm([w.name, w.producer, w.vintage, e.with, e.note, fmtDate(e.date)].join(" ")).includes(q))
+  // The Logboek page (from the button at the bottom of Kelder): every opened bottle, newest first; tapping one opens that wine.
+  function openLog() {
+    openSheet(`${top("Logboek")}<div class="list" id="logPage">${logHtml()}</div>`);
+    $("logPage").addEventListener("click", e => { const c = e.target.closest("[data-open]"); if (c) openDetail(c.dataset.open); });
+    $("logPage").addEventListener("keydown", e => {
+      if ((e.key === "Enter" || e.key === " ") && e.target.matches("[data-open]")) { e.preventDefault(); openDetail(e.target.dataset.open); }
+    });
+  }
+  function logHtml() {
+    const rows = cellar().flatMap(w => (w.log || []).map(e => ({ w, e })))
       .sort((a, b) => String(b.e.date).localeCompare(String(a.e.date)) || String(b.e.id).localeCompare(String(a.e.id)));
-    if (!rows.length) {
-      $("list").innerHTML = q
-        ? `<div class="empty"><p>Niets in je logboek gevonden voor deze zoekopdracht.</p></div>`
-        : `<div class="empty"><p>Je logboek is nog leeg. Open een wijn en tik op <b>Fles geopend</b> om bij te houden wanneer en met wie je hem dronk.</p></div>`;
-      return;
-    }
-    $("list").innerHTML = rows.map(({ w, e }) => `
+    if (!rows.length) return `<div class="empty"><p>Je logboek is nog leeg. Open een wijn en tik op <b>Fles geopend</b> om bij te houden wanneer en met wie je hem dronk.</p></div>`;
+    return rows.map(({ w, e }) => `
       <div class="card logcard" data-open="${esc(w.id)}" role="button" tabindex="0">
         ${visual(w)}
         <div class="meta">
@@ -1050,6 +1051,7 @@ img { max-width: 100%; }
     const card = e.target.closest("[data-wedit]");
     if (card) { const w = wines.find(x => x.id === card.dataset.wedit); if (w) openForm(Object.assign({}, w), w.id); }
   });
+  $("statsBody").addEventListener("click", e => { if (e.target.closest("#openLog")) openLog(); });
   $("wishList").addEventListener("keydown", e => {
     if ((e.key === "Enter" || e.key === " ") && e.target.matches("[data-wedit]")) { e.preventDefault(); e.target.click(); }
   });
@@ -2006,6 +2008,7 @@ img { max-width: 100%; }
     const best = cel.filter(w => w.rating).sort((a, b) => b.rating - a.rating || String(a.name).localeCompare(String(b.name), "nl")).slice(0, 5);
     if (best.length) html += statSec("Best beoordeeld",
       best.map(w => `<div class="toprow"><span class="score">${w.rating}</span><span>${esc([w.name || w.producer, w.vintage].filter(Boolean).join(" "))}</span></div>`).join(""));
+    html += `<button class="btn ghost logbtn" type="button" id="openLog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${BOOK}"/></svg><span>Logboek</span><span class="n">${logs.length}</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button>`;
     $("statsBody").innerHTML = html;
   }
 
