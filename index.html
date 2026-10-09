@@ -487,28 +487,6 @@ img { max-width: 100%; }
       </div>
       <p class="hint" style="margin:0">Automatisch volgt de instelling van je telefoon of computer.</p>
       </div>
-      <div class="setsec" id="demoSec" hidden>
-        <span class="section-l" style="margin:0">Voorbeeld</span>
-        <p class="hint" style="margin:0">Je kijkt rond met voorbeeldwijnen. Niets wordt bewaard.</p>
-        <button class="btn primary backupbtn" type="button" id="demoUp2">Maak een account</button>
-        <button class="btn ghost backupbtn" type="button" id="demoIn">Ik heb al een account</button>
-      </div>
-      <div class="setsec" id="acctSec">
-        <span class="section-l" style="margin:0">Account</span>
-        <p class="hint" style="margin:0">Ingelogd als <b id="acctMail"></b></p>
-        <button class="btn ghost backupbtn" type="button" id="signOutBtn">Uitloggen</button>
-        <button class="btn ghost backupbtn" type="button" id="helpBtn">Uitleg bekijken</button>
-        <button class="btn danger backupbtn" type="button" id="acctDelBtn">Account verwijderen</button>
-      </div>
-      <div class="setsec" id="keySec">
-        <span class="section-l" style="margin:0">Scannen met Claude</span>
-        <p class="hint" style="margin:0" id="keyState"></p>
-        <input class="setinput" id="keyIn" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="sk-ant-…" aria-label="Claude-sleutel">
-        <p class="setinput keydone" id="keyDone" hidden>Sleutel opgeslagen. Je kunt nu etiketten scannen.</p>
-        <div class="actions"><button class="btn ghost backupbtn" type="button" id="keyDel" hidden>Verwijderen</button><button class="btn primary backupbtn" type="button" id="keySave">Bewaar sleutel</button></div>
-        <span class="hint" id="keyMsg" hidden></span>
-        <p class="hint" style="margin:0">Dit is je eigen Anthropic-sleutel: elke scan kost een klein bedrag op jouw account. De sleutel blijft op dit apparaat en komt nooit in je kelder. Uitloggen haalt hem hier weg. <a class="linkbtn" href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener" style="padding:0">Sleutel maken</a></p>
-      </div>
       <div class="setsec" id="backupSec">
         <button class="btn ghost backupbtn backuptoggle" type="button" id="backupToggle" aria-expanded="false" aria-controls="backupOpts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7.5 12 4l8 3.5v9L12 20l-8-3.5zM4 7.5l8 3.5 8-3.5M12 11v9"/></svg><span>Back-up</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
         <div class="backupopts" id="backupOpts" hidden>
@@ -525,6 +503,32 @@ img { max-width: 100%; }
           </div>
           <button class="linkbtn" type="button" id="restoreCancel" style="align-self:center">Annuleren</button>
         </div>
+      </div>
+      <div class="setsec" id="demoSec" hidden>
+        <span class="section-l" style="margin:0">Voorbeeld</span>
+        <p class="hint" style="margin:0">Je kijkt rond met voorbeeldwijnen. Niets wordt bewaard.</p>
+        <button class="btn primary backupbtn" type="button" id="demoUp2">Maak een account</button>
+        <button class="btn ghost backupbtn" type="button" id="demoIn">Ik heb al een account</button>
+      </div>
+      <div class="setsec" id="acctSec">
+        <span class="section-l" style="margin:0">Account</span>
+        <p class="hint" style="margin:0">Ingelogd als <b id="acctMail"></b></p>
+        <button class="btn ghost backupbtn" type="button" id="signOutBtn">Uitloggen</button>
+        <button class="btn danger backupbtn" type="button" id="acctDelBtn">Account verwijderen</button>
+      </div>
+      <div class="setsec" id="helpSec">
+        <span class="section-l" style="margin:0">Uitleg</span>
+        <p class="hint" style="margin:0">Een korte rondleiding: wijnen toevoegen, bijhouden en Vinventory op je beginscherm zetten.</p>
+        <button class="btn ghost backupbtn" type="button" id="helpBtn">Uitleg bekijken</button>
+      </div>
+      <div class="setsec" id="keySec">
+        <span class="section-l" style="margin:0">Scannen met Claude</span>
+        <p class="hint" style="margin:0" id="keyState"></p>
+        <input class="setinput" id="keyIn" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="sk-ant-…" aria-label="Claude-sleutel">
+        <p class="setinput keydone" id="keyDone" hidden>Sleutel opgeslagen. Je kunt nu etiketten scannen.</p>
+        <div class="actions"><button class="btn ghost backupbtn" type="button" id="keyDel" hidden>Verwijderen</button><button class="btn primary backupbtn" type="button" id="keySave">Bewaar sleutel</button></div>
+        <span class="hint" id="keyMsg" hidden></span>
+        <p class="hint" style="margin:0">Dit is je eigen Anthropic-sleutel: elke scan kost een klein bedrag op jouw account. De sleutel blijft op dit apparaat en komt nooit in je kelder. Uitloggen haalt hem hier weg. <a class="linkbtn" href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener" style="padding:0">Sleutel maken</a></p>
       </div>
       <p class="legallinks"><a href="privacy.html" target="_blank" rel="noopener">Privacy</a> · <a href="voorwaarden.html" target="_blank" rel="noopener">Voorwaarden</a></p>
     </div>
