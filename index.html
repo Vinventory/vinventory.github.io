@@ -180,7 +180,15 @@ h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(34px, 9vw
 .savebox .grow { min-width: 0; display: flex; flex-direction: column; gap: 2px; align-items: flex-start; }
 .savebox.bought { background: var(--surface); box-shadow: var(--shadow); align-items: center; }
 .savebox.bought .house { margin-top: 0; }
+.savebox.bought { align-items: flex-end; }
+.savebox.bought .mapbtn { width: 44px; height: 44px; }
 .savebox.bought .grow { flex: 1; align-items: stretch; gap: 6px; }
+/* Herinneringen and Logboek follow "Past goed bij": label, then boxed text at 15px */
+#memSec, #logSec { gap: 6px; }
+#memSec > .row-between .linkbtn, #logSec > .row-between .linkbtn { padding: 0; }
+#memList, #logList { gap: 8px; }
+.logempty { margin: 0 !important; padding: 12px 14px; border-radius: var(--r); background: var(--sunk); font-size: 15px; }
+#logList .logitem .when { font-size: 15px; }
 .boughtin { width: 100%; min-height: 44px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); font-size: 16px; }
 .savebox .grow.inline { flex: 1; flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
 .boughtrow { display: flex; gap: 8px; align-items: center; }
