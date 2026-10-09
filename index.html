@@ -430,32 +430,6 @@ img { max-width: 100%; }
   <header class="head">
     <div class="headrow">
       <h1 id="wijnenTitle">Wijnen</h1>
-      <div class="headbtns">
-      <div class="addwrap">
-        <button class="btn primary addtoggle" id="addToggle" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="addMenu">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-          Voeg toe
-        </button>
-        <div class="addmenu" id="addMenu" hidden>
-          <label class="menuitem" id="scanBtn" for="fileIn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3.2"/></svg>
-            <span><b>Scan etiket</b><small>Maak een foto, Claude herkent de wijn</small></span>
-          </label>
-          <button class="menuitem" id="addBtn" type="button">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-4-4L4 16v4zM13.5 6.5l4 4"/></svg>
-            <span><b>Handmatig</b><small>Vul de gegevens zelf in</small></span>
-          </button>
-        </div>
-      </div>
-      </div>
-    </div>
-    <div class="tally" id="tally" role="button" tabindex="0" aria-label="Bekijk statistieken">
-      <div><b id="t-bottles">0</b><span>flessen</span></div>
-      <div><b id="t-wines">0</b><span>wijnen</span></div>
-      <div><b id="t-countries">0</b><span>landen</span></div>
-      <div><b id="t-oldest">–</b><span>oudste jaar</span></div>
-      <div><b id="t-value">–</b><span>waarde</span></div>
-      <svg class="tallymore" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
     </div>
   </header>
 
@@ -723,7 +697,7 @@ img { max-width: 100%; }
   let canImages = true;
   function refreshKeyUi() {
     const has = !!getKey();
-    $("keyState").textContent = has ? "Sleutel opgeslagen op dit apparaat." : "Nog geen sleutel. Zonder sleutel kun je wijnen alleen met de hand toevoegen.";
+    $("keyState").textContent = has ? "Sleutel opgeslagen op dit apparaat." : "Nog geen sleutel. Zonder sleutel opent de scanknop een formulier om de wijn zelf in te vullen.";
     $("keyDel").hidden = !has; $("keyIn").value = "";
   }
   function refreshSample() { sample = !demo && getKey() ? sampleFn : null; refreshKeyUi(); }
@@ -790,15 +764,6 @@ img { max-width: 100%; }
   function renderList() {
     const all = cellar();
     const inStock = all.filter(w => (w.quantity || 0) > 0);
-    $("t-bottles").textContent = inStock.reduce((a, w) => a + (w.quantity || 0), 0);
-    $("t-wines").textContent = inStock.length;
-    const years = inStock.map(w => +w.vintage).filter(Boolean);
-    $("t-oldest").textContent = years.length ? Math.min(...years) : "–";
-    const priced = inStock.filter(w => typeof w.price === "number");
-    $("t-value").textContent = priced.length
-      ? new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(priced.reduce((a, w) => a + w.price * (w.quantity || 0), 0))
-      : "–";
-    $("t-countries").textContent = new Set(inStock.map(w => norm(w.country)).filter(Boolean)).size;
     renderReminders(inStock);
 
     // Each chip shows "<wines>/<bottles>" for the wines it would list.
@@ -849,7 +814,7 @@ img { max-width: 100%; }
       return;
     }
     if (!all.length) {
-      $("list").innerHTML = `<div class="empty"><h2>Je kelder is nog leeg</h2><p>Tik onderaan op de ronde <b>scanknop</b> om een foto van een fles te maken. De wijn wordt herkend en je krijgt er een korte beschrijving bij. Liever zelf invullen? Tik rechtsboven op <b>Voeg toe</b>.</p></div>`;
+      $("list").innerHTML = `<div class="empty"><h2>Je kelder is nog leeg</h2><p>Tik onderaan op de ronde <b>scanknop</b> om een foto van een fles te maken. De wijn wordt herkend en je krijgt er een korte beschrijving bij.</p></div>`;
       return;
     }
     if (filter === "logboek") { renderLog(q); return; }
@@ -998,8 +963,6 @@ img { max-width: 100%; }
     const c = e.target.closest("[data-open]");
     if (c) openDetail(c.dataset.open);
   });
-  $("tally").addEventListener("click", () => showTab("kelder"));
-  $("tally").addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); showTab("kelder"); } });
 
   // ---------- Bottom tab bar ----------
   const VIEWS = { kelder: "vKelder", wijnen: "vWijnen", wish: "vWish", set: "vSet" };
@@ -1009,7 +972,6 @@ img { max-width: 100%; }
     tab = t;
     for (const [k, id] of Object.entries(VIEWS)) $(id).hidden = k !== t;
     document.querySelectorAll("[data-tab]").forEach(b => { if (b.dataset.tab === t) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
-    setMenu(false);
     if (t !== "set") { resetRestore(); setBackupOpen(false); }
     if (t === "kelder") renderStats();
     if (t === "wish") renderWish();
@@ -1214,36 +1176,25 @@ img { max-width: 100%; }
   // Settings are a page now: "open" switches to it; closing only folds the back-up part away.
   const setSettings = open => { if (open) showTab("set"); else { resetRestore(); setBackupOpen(false); } };
 
-  const setMenu = open => { $("addMenu").hidden = !open; $("addToggle").setAttribute("aria-expanded", String(open)); };
-  $("addToggle").addEventListener("click", e => { e.stopPropagation(); setMenu($("addMenu").hidden); });
-  document.addEventListener("click", e => { if (!$("addMenu").hidden && !e.target.closest(".addwrap")) setMenu(false); });
-  document.addEventListener("keydown", e => { if (e.key === "Escape") setMenu(false); });
-  // Both scan buttons (the round one in the tab bar and "Scan etiket" under Voeg toe) are labels for #fileIn.
+  // The round scan button in the tab bar is a label for #fileIn.
   // On the Wishlist page a scan goes to the wishlist; everywhere else it goes to the cellar.
   function onScanTap(e, target) {
     if (demo) {
-      e.preventDefault(); setMenu(false);
+      e.preventDefault();
       toast("Maak een account om etiketten te scannen en je eigen wijnen te bewaren.");
       return;
     }
-    // Scanning needs the user's own Claude key; point them to the settings before the camera opens.
+    addTarget = target;
+    // Scanning needs the user's own Claude key; without one the button opens the form to fill in by hand.
     if (!sample) {
       e.preventDefault();
-      setMenu(false);
-      setTimeout(() => {
-        showTab("set");
-        showMsg("keyMsg", "Vul hier je Claude-sleutel in om etiketten te scannen. Zonder sleutel kun je wijnen met de hand toevoegen.", true);
-        $("keySec").scrollIntoView({ block: "center" });
-        $("keyIn").focus();
-      }, 0);
+      openForm({ quantity: target === "wish" ? 0 : 1, color: "rood" }, null,
+        "Scannen kan met je eigen Claude-sleutel (zet hem bij Instellingen). Vul de wijn nu zelf in.", true);
       return;
     }
-    addTarget = target;
-    $("fileIn").value = ""; setTimeout(() => setMenu(false), 0);
+    $("fileIn").value = "";
   }
-  $("scanBtn").addEventListener("click", e => onScanTap(e, "kelder"));
   $("scanTab").addEventListener("click", e => onScanTap(e, tab === "wish" ? "wish" : "kelder"));
-  $("addBtn").addEventListener("click", () => { setMenu(false); addTarget = "kelder"; openForm({ quantity: 1, color: "rood" }, null); });
   $("fileIn").addEventListener("change", e => { const f = e.target.files && e.target.files[0]; if (f) scan(f); });
 
   // ---------- Sheet helpers ----------
@@ -2320,7 +2271,7 @@ img { max-width: 100%; }
   function leaveDemo(mode) {
     endDemoUi();
     wines = []; loading = false;
-    closeSheet(); setSettings(false); setMenu(false); showTab("wijnen");
+    closeSheet(); setSettings(false); showTab("wijnen");
     refreshSample(); render();
     setAuthMode(mode || "up");
   }
@@ -2333,7 +2284,7 @@ img { max-width: 100%; }
   function leaveApp() {
     me = null; wines = []; loading = false; filter = "alle"; query = ""; $("search").value = "";
     if (store.channel) { sb.removeChannel(store.channel); store.channel = null; }
-    closeSheet(); setSettings(false); setMenu(false); showTab("wijnen");
+    closeSheet(); setSettings(false); showTab("wijnen");
     try { localStorage.removeItem(KEY_STORE); } catch {}   // a shared device shouldn't keep someone's key
     refreshSample(); render();
     $("a-pass").value = "";
@@ -2347,7 +2298,7 @@ img { max-width: 100%; }
     { icon: "M7 11V8a5 5 0 0 1 10 0v3M5 11h14v10H5zM12 15v3", t: "Welkom bij Vinventory",
       p: "Houd je wijnkelder bij: wat je hebt, wat je ervan vindt en wanneer je een fles opendeed. Je kelder is <b>privé</b>: alleen jij ziet je wijnen, op al je apparaten." },
     { icon: "M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2M12 9.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z", t: "Wijnen toevoegen",
-      p: "Tik onderaan op de ronde <b>scanknop</b> en maak een foto van het etiket: Claude vult de gegevens in. Dat werkt met je eigen Claude-sleutel (onder <b>Instellingen</b>) en kost een klein bedrag op jouw Anthropic-account. Zonder sleutel tik je bij <b>Wijnen</b> op <b>Voeg toe</b> en kies je <b>Handmatig</b>." },
+      p: "Tik onderaan op de ronde <b>scanknop</b> en maak een foto van het etiket: Claude vult de gegevens in. Dat werkt met je eigen Claude-sleutel (onder <b>Instellingen</b>) en kost een klein bedrag op jouw Anthropic-account. Zonder sleutel opent de scanknop een formulier om de wijn zelf in te vullen." },
     { icon: BOOK, t: "Bijhouden",
       p: "Met <b>+</b> en <b>−</b> pas je het aantal flessen aan. Doe je een fles open, noteer dat dan in het logboek. Met het hartje bewaar je favorieten. Onder <b>Kelder</b> zie je je statistieken, en op je <b>Wishlist</b> zet je wijnen die je later wilt kopen." },
     { icon: "M12 3.5v11M8 7.5l4-4 4 4M6 11H5v9.5h14V11h-1", t: "Altijd bij de hand",
