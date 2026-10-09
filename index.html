@@ -381,7 +381,10 @@ img { max-width: 100%; }
 /* Pages behind the bottom tab bar: Kelder (statistics), Wijnen (the list), Wishlist, Instellingen */
 .view { display: flex; flex-direction: column; gap: var(--space); }
 .wrap { padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px)); }
-.setpage { display: flex; flex-direction: column; gap: 10px; padding: 16px; background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow); }
+/* Each settings group is its own card */
+.setpage { display: flex; flex-direction: column; gap: var(--space); }
+.setpage > .setsec { gap: 10px; margin: 0; padding: 16px; border-top: 0; background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow); }
+.setpage > .legallinks { margin: 0; }
 .statsbody { display: flex; flex-direction: column; gap: var(--space); }
 .wishlead { margin: 0; }
 .wishacts { display: flex; flex-direction: column; align-items: center; gap: 6px; }
@@ -474,6 +477,7 @@ img { max-width: 100%; }
   <section class="view" id="vSet" hidden aria-labelledby="setTitle">
     <div class="headrow"><h1 id="setTitle">Instellingen</h1></div>
     <div class="setpage" id="setMenu">
+      <div class="setsec" id="themeSec">
       <span class="section-l" style="margin:0">Weergave</span>
       <div class="seg" id="themeSeg" role="radiogroup" aria-label="Weergave">
         <button type="button" role="radio" data-theme-pick="auto"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17a8.5 8.5 0 0 0 0-17z" fill="currentColor" stroke="none"/></svg>Automatisch</button>
@@ -481,6 +485,7 @@ img { max-width: 100%; }
         <button type="button" role="radio" data-theme-pick="dark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>Donker</button>
       </div>
       <p class="hint" style="margin:0">Automatisch volgt de instelling van je telefoon of computer.</p>
+      </div>
       <div class="setsec" id="demoSec" hidden>
         <span class="section-l" style="margin:0">Voorbeeld</span>
         <p class="hint" style="margin:0">Je kijkt rond met voorbeeldwijnen. Niets wordt bewaard.</p>
@@ -492,7 +497,7 @@ img { max-width: 100%; }
         <p class="hint" style="margin:0">Ingelogd als <b id="acctMail"></b></p>
         <button class="btn ghost backupbtn" type="button" id="signOutBtn">Uitloggen</button>
         <button class="btn ghost backupbtn" type="button" id="helpBtn">Uitleg bekijken</button>
-        <button class="linkbtn dangerlink" type="button" id="acctDelBtn">Account verwijderen</button>
+        <button class="btn danger backupbtn" type="button" id="acctDelBtn">Account verwijderen</button>
       </div>
       <div class="setsec" id="keySec">
         <span class="section-l" style="margin:0">Scannen met Claude</span>
