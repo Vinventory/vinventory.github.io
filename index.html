@@ -159,9 +159,14 @@ h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(34px, 9vw
 .euro { position: relative; display: flex; }
 .euro span { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
 .euro input { padding-left: 28px !important; font-variant-numeric: tabular-nums; }
-/* "Bewaar voor": the text on one line, the date on its own full-width line below (side by side the date was tiny on an iPhone) */
-.savegrid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
-.savegrid input[type="date"] { min-width: 0; width: 100%; }
+/* "Bewaar voor": the text, and beside it a round calendar button; the real date input lies invisibly over the button */
+.savegrid { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+.field .datebtn { position: relative; width: 44px; height: 44px; overflow: hidden; cursor: pointer; color: var(--accent-ink); }
+.field .datebtn input[type="date"] { position: absolute; inset: 0; width: 100%; height: 100%; min-height: 0; max-width: none; padding: 0; border: 0; opacity: 0; cursor: pointer; }
+.savedate { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; font-size: 14px; color: var(--muted); }
+.savedate .linkbtn { font-size: 14px; }
+/* "Bewaar in" (Mijn kelder / Wishlist) as tall as the text fields */
+#f-dest button { min-height: 48px; font-size: 16px; }
 .savebox { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border-radius: var(--r); background: var(--accent-soft); }
 .savebox .house { width: 22px; height: 22px; color: var(--accent-text); margin-top: 2px; }
 .savetxt { font-weight: 600; overflow-wrap: anywhere; }
@@ -472,7 +477,7 @@ img { max-width: 100%; }
       <h1 id="wishTitle">Wishlist</h1>
       <div class="headbtns"><button class="btn primary addtoggle" id="wishAdd" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Voeg toe</button></div>
     </div>
-    <p class="hint wishlead">Wijnen die je later wilt kopen. Zie je er een in de winkel of op de kaart? Tik hier onderaan op de scanknop, dan komt hij op deze lijst.</p>
+    <p class="hint wishlead">Wijnen die je later wilt kopen. Zie je er een in de winkel of op de kaart? Tik op <b>Voeg toe</b>, of scan het etiket met de knop onderaan en kies in het formulier <b>Wishlist</b>.</p>
     <section class="list" id="wishList" aria-live="polite"></section>
   </section>
 
@@ -997,7 +1002,7 @@ img { max-width: 100%; }
   function renderWish() {
     const items = wines.filter(w => w.wish).sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
     if (!items.length) {
-      $("wishList").innerHTML = `<div class="empty"><h2>Je wishlist is leeg</h2><p>Zie je ergens een wijn die je later wilt kopen? Tik op deze pagina onderaan op de <b>scanknop</b> en maak een foto van het etiket, of tik op <b>Voeg toe</b> om hem zelf in te vullen.</p></div>`;
+      $("wishList").innerHTML = `<div class="empty"><h2>Je wishlist is leeg</h2><p>Zie je ergens een wijn die je later wilt kopen? Tik op <b>Voeg toe</b> om hem in te vullen, of scan het etiket met de ronde knop onderaan en kies in het formulier <b>Wishlist</b>.</p></div>`;
       return;
     }
     $("wishList").innerHTML = items.map(w => `
@@ -1191,7 +1196,7 @@ img { max-width: 100%; }
   const setSettings = open => { if (open) showTab("set"); else { resetRestore(); setBackupOpen(false); } };
 
   // The round scan button in the tab bar is a label for #fileIn.
-  // On the Wishlist page a scan goes to the wishlist; everywhere else it goes to the cellar.
+  // A scan always starts on "Mijn kelder"; the form can switch it to the wishlist.
   function onScanTap(e, target) {
     if (demo) {
       e.preventDefault();
@@ -1208,7 +1213,7 @@ img { max-width: 100%; }
     }
     $("fileIn").value = "";
   }
-  $("scanTab").addEventListener("click", e => onScanTap(e, tab === "wish" ? "wish" : "kelder"));
+  $("scanTab").addEventListener("click", e => onScanTap(e, "kelder"));
   $("fileIn").addEventListener("change", e => { const f = e.target.files && e.target.files[0]; if (f) scan(f); });
 
   // ---------- Sheet helpers ----------
@@ -1403,8 +1408,9 @@ img { max-width: 100%; }
           <label for="f-savefor">Bewaar voor</label>
           <div class="savegrid">
             <input id="f-savefor" value="${esc(w.saveFor)}" placeholder="Bijv. 50ste verjaardag van Peter">
-            <input id="f-savedate" type="date" value="${esc(w.saveForDate)}" aria-label="Datum">
+            <label class="mapbtn datebtn" title="Kies een datum"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v15H5zM5 9.5h14M9 3v4M15 3v4"/></svg><input id="f-savedate" type="date" value="${esc(w.saveForDate)}" aria-label="Datum"></label>
           </div>
+          <div class="savedate" id="f-savedateRow" hidden><span id="f-savedateTxt"></span><button class="linkbtn" type="button" id="f-savedateClear">Wis datum</button></div>
         </div>
         <div class="field" id="f-boughtField">
           <label for="f-bought" id="f-boughtLbl">${dest === "wish" ? "Gedronken bij" : "Gekocht bij"}</label>
@@ -1470,13 +1476,23 @@ img { max-width: 100%; }
       if (rest && !$("f-bought").value.trim()) $("f-bought").value = rest;
     });
     const form = $("wineForm");
-    // For a wishlist wine "Gedronken bij" is the main thing, so it moves up, right under "Bewaar in".
+    // For a wishlist wine "Gedronken bij" is the main thing, so it moves up, right under the rating.
     const placeBought = () => {
-      const pick = $("f-dest");
-      if (dest === "wish" && pick) pick.closest(".field").after($("f-boughtField"));
+      if (dest === "wish") $("f-rating").closest(".field").after($("f-boughtField"));
       else form.querySelector(".actions").before($("f-boughtField"));
     };
     placeBought();
+    // The chosen "Bewaar voor" date shows under the row; the round button turns it on.
+    const showSaveDate = () => {
+      const v = $("f-savedate").value;
+      $("f-savedateRow").hidden = !v;
+      $("f-savedateTxt").textContent = v ? "Datum: " + fmtDate(v) : "";
+    };
+    showSaveDate();
+    $("f-savedate").addEventListener("change", showSaveDate);
+    $("f-savedate").addEventListener("input", showSaveDate);
+    $("f-savedate").addEventListener("click", e => { try { if (e.target.showPicker) e.target.showPicker(); } catch {} });
+    $("f-savedateClear").addEventListener("click", () => { $("f-savedate").value = ""; showSaveDate(); });
     const read = () => ({
       name: $("f-name").value.trim(), producer: $("f-producer").value.trim(), vintage: int($("f-vintage").value),
       color: $("f-color").value, region: $("f-region").value.trim(), country: $("f-country").value.trim(),
