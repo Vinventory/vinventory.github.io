@@ -113,7 +113,7 @@ h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(34px, 9vw
 
 /* Tools */
 .tools { display: flex; flex-direction: column; gap: var(--space); }
-.chipset { display: flex; gap: 8px; flex: none; }
+.chipset { display: flex; flex-wrap: wrap; gap: 5px; flex: 1 1 100%; min-width: 0; }
 .chips { align-items: center; }
 /* Icon-only round sort button, same height as the chips (7px padding + 20px line + border) */
 .sortchip { position: relative; flex: none; display: inline-flex; align-items: center; justify-content: center; padding: 7px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; cursor: pointer; }
@@ -123,9 +123,15 @@ h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(34px, 9vw
 .sortchip.on svg { stroke: var(--accent-text); }
 .sort { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; font-size: 16px; cursor: pointer; -webkit-appearance: none; appearance: none; }
 .search { width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); }
-.chips { display: flex; gap: 8px; overflow-x: auto; padding-block: 2px; margin-block: -2px; scrollbar-width: none; } /* padding keeps focus rings visible without adding space */
+.chips { display: flex; padding-block: 2px; margin-block: -2px; } /* padding keeps focus rings visible without adding space */
 .chips::-webkit-scrollbar { display: none; }
-.chip { flex: none; display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; font-weight: 500; }
+/* All filters fit on screen: smaller chips that wrap onto several rows */
+.chip { flex: none; display: inline-flex; align-items: center; gap: 4px; height: 32px; padding: 0 9px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: 13px; font-weight: 500; white-space: nowrap; }
+/* The sort button sits beside the search field, as tall as it */
+.searchrow { display: flex; gap: 8px; }
+.searchrow .search { flex: 1; min-width: 0; }
+.searchrow .sortchip { width: 48px; padding: 0; border-radius: 12px; }
+.searchrow .sortchip svg { width: 18px; height: 18px; margin: 0; }
 .chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .chip .n { font-variant-numeric: tabular-nums; opacity: .65; }
 .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; box-shadow: inset 0 0 0 1px var(--edge); }
@@ -454,8 +460,8 @@ img { max-width: 100%; }
   <section class="reminders" id="reminders" aria-label="Herinneringen" hidden></section>
 
   <div class="tools">
+    <div class="searchrow">
     <input class="search" id="search" type="search" placeholder="Zoek op naam, producent, streek of druif" autocomplete="off">
-    <div class="chips" role="toolbar" aria-label="Sorteren en filteren">
       <label class="sortchip" id="sortChip" title="Sorteer">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4v16M3.5 16.5 7 20l3.5-3.5M17 20V4M13.5 7.5 17 4l3.5 3.5"/></svg>
         <select id="sort" class="sort" aria-label="Sorteer">
@@ -467,6 +473,8 @@ img { max-width: 100%; }
           <option value="priceAsc">Laagste prijs</option>
         </select>
       </label>
+    </div>
+    <div class="chips" role="toolbar" aria-label="Filteren">
       <div class="chipset" id="chips"></div>
     </div>
   </div>
