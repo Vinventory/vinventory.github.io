@@ -337,6 +337,11 @@ form { display: flex; flex-direction: column; gap: 12px; }
 .memwith { font-size: 14px; color: var(--muted); overflow-wrap: anywhere; }
 .memrow .logdel { position: absolute; top: 11px; right: 11px; background: rgba(0,0,0,.5); color: #fff; }
 .memrow .logdel.sure { background: var(--danger); }
+/* A memory without a photo: the × sits in the corner like in the logbook, not as a dark button over a photo */
+.memrow .logitem.nophoto { padding: 12px 14px; }
+.memrow .logitem.nophoto .memmeta { padding: 0; }
+.memrow .logitem.nophoto .logdel { position: static; background: none; color: var(--muted); }
+.memrow .logitem.nophoto .logdel.sure { background: var(--danger); color: #fff; }
 .card.logcard .desc { -webkit-line-clamp: 3; }
 
 /* Statistics: the tally opens them; single-series bars in the accent, value at the bar tip */
@@ -1897,7 +1902,7 @@ img { max-width: 100%; }
   function memItems(w) {
     const list = memoriesOf(w);
     if (!list.length) return `<p class="hint logempty" style="margin:0">Nog geen herinneringen. Tik op <b>+ Herinnering</b> om er een toe te voegen.</p>`;
-    return list.map(m => `<div class="logitem">
+    return list.map(m => `<div class="logitem${m.photo ? "" : " nophoto"}">
         <div class="grow">
           ${m.photo ? `<img class="memimg logphoto" src="${esc(m.photo)}" alt="Foto bij je herinnering">` : ""}
           <div class="memmeta">
