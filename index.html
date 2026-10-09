@@ -385,6 +385,7 @@ img { max-width: 100%; }
 .setpage { display: flex; flex-direction: column; gap: var(--space); }
 .setpage > .setsec { gap: 10px; margin: 0; padding: 16px; border-top: 0; background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow); }
 .setpage > .legallinks { margin: 0; }
+.keydone { margin: 0; line-height: 1.4; }
 .statsbody { display: flex; flex-direction: column; gap: var(--space); }
 .wishlead { margin: 0; }
 .wishacts { display: flex; flex-direction: column; align-items: center; gap: 6px; }
@@ -503,6 +504,7 @@ img { max-width: 100%; }
         <span class="section-l" style="margin:0">Scannen met Claude</span>
         <p class="hint" style="margin:0" id="keyState"></p>
         <input class="setinput" id="keyIn" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="sk-ant-…" aria-label="Claude-sleutel">
+        <p class="setinput keydone" id="keyDone" hidden>Sleutel opgeslagen. Je kunt nu etiketten scannen.</p>
         <div class="actions"><button class="btn ghost backupbtn" type="button" id="keyDel" hidden>Verwijderen</button><button class="btn primary backupbtn" type="button" id="keySave">Bewaar sleutel</button></div>
         <span class="hint" id="keyMsg" hidden></span>
         <p class="hint" style="margin:0">Dit is je eigen Anthropic-sleutel: elke scan kost een klein bedrag op jouw account. De sleutel blijft op dit apparaat en komt nooit in je kelder. Uitloggen haalt hem hier weg. <a class="linkbtn" href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener" style="padding:0">Sleutel maken</a></p>
@@ -704,13 +706,15 @@ img { max-width: 100%; }
     const has = !!getKey();
     $("keyState").textContent = has ? "Sleutel opgeslagen op dit apparaat." : "Nog geen sleutel. Zonder sleutel opent de scanknop een formulier om de wijn zelf in te vullen.";
     $("keyDel").hidden = !has; $("keyIn").value = "";
+    // With a key saved, the field's place shows that scanning works; "Verwijderen" brings the field back.
+    $("keyIn").hidden = has; $("keySave").hidden = has; $("keyDone").hidden = !has; $("keyState").hidden = has;
   }
   function refreshSample() { sample = !demo && getKey() ? sampleFn : null; refreshKeyUi(); }
   $("keySave").addEventListener("click", () => {
     const k = $("keyIn").value.trim();
     if (!/^sk-ant-[\w-]{20,}$/.test(k)) { showMsg("keyMsg", "Dit lijkt geen Anthropic-sleutel. Zo'n sleutel begint met sk-ant-.", true); return; }
     try { localStorage.setItem(KEY_STORE, k); } catch { showMsg("keyMsg", "Opslaan op dit apparaat lukte niet.", true); return; }
-    refreshSample(); showMsg("keyMsg", "Sleutel opgeslagen. Je kunt nu etiketten scannen.");
+    refreshSample(); showMsg("keyMsg", "");
   });
   $("keyDel").addEventListener("click", () => {
     try { localStorage.removeItem(KEY_STORE); } catch {}
