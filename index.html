@@ -377,6 +377,24 @@ img { max-width: 100%; }
 /* Settings menu: account, key, back-up */
 .setmenu { width: min(320px, calc(100vw - 32px)); max-height: calc(100dvh - 90px); overflow-y: auto; }
 .setinput { width: 100%; padding: 11px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); font-size: 16px; }
+
+/* Pages behind the bottom tab bar: Kelder (statistics), Wijnen (the list), Wishlist, Instellingen */
+.view { display: flex; flex-direction: column; gap: var(--space); }
+.wrap { padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px)); }
+.setpage { display: flex; flex-direction: column; gap: 10px; padding: 16px; background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow); }
+.statsbody { display: flex; flex-direction: column; gap: var(--space); }
+.wishlead { margin: 0; }
+.wishacts { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.wishacts .btn { padding: 8px 12px; font-size: 14px; border-radius: 10px; flex: none; }
+.tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; background: var(--surface); border-top: 1px solid var(--line); padding: 4px 8px env(safe-area-inset-bottom, 0px); }
+.tabbar-in { max-width: 640px; margin: 0 auto; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: end; }
+.tab { border: 0; background: none; min-height: 54px; padding: 6px 0 8px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 2px; font-size: 11px; font-weight: 600; color: var(--muted); min-width: 0; }
+.tab svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.tab[aria-current="page"] { color: var(--accent-text); }
+.scantab { justify-self: center; align-self: center; width: 60px; height: 60px; margin-top: -26px; border-radius: 50%; border: 4px solid var(--bg); background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; cursor: pointer; box-shadow: var(--shadow); -webkit-user-select: none; user-select: none; }
+.scantab svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.scantab:focus-within, .scantab:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
+.toast { bottom: calc(86px + env(safe-area-inset-bottom, 0px)); }
 </style>
 </head>
 <body>
@@ -408,63 +426,11 @@ img { max-width: 100%; }
 
 <main class="wrap">
   <div class="demobar" id="demoBar" hidden><span><b>Voorbeeld:</b> dit zijn voorbeeldwijnen. Wat je hier doet, wordt niet bewaard.</span><button class="btn primary" type="button" id="demoUp">Maak een account</button></div>
+  <section class="view" id="vWijnen" aria-labelledby="wijnenTitle">
   <header class="head">
     <div class="headrow">
-      <h1>Vinventory</h1>
+      <h1 id="wijnenTitle">Wijnen</h1>
       <div class="headbtns">
-      <div class="setwrap">
-        <button class="setbtn" id="setToggle" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="setMenu" aria-label="Instellingen" title="Instellingen">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
-        </button>
-        <div class="addmenu setmenu" id="setMenu" hidden>
-          <span class="section-l" style="margin:0">Weergave</span>
-          <div class="seg" id="themeSeg" role="radiogroup" aria-label="Weergave">
-            <button type="button" role="radio" data-theme-pick="auto"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17a8.5 8.5 0 0 0 0-17z" fill="currentColor" stroke="none"/></svg>Automatisch</button>
-            <button type="button" role="radio" data-theme-pick="light"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6 6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></svg>Licht</button>
-            <button type="button" role="radio" data-theme-pick="dark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>Donker</button>
-          </div>
-          <p class="hint" style="margin:0">Automatisch volgt de instelling van je telefoon of computer.</p>
-          <div class="setsec" id="demoSec" hidden>
-            <span class="section-l" style="margin:0">Voorbeeld</span>
-            <p class="hint" style="margin:0">Je kijkt rond met voorbeeldwijnen. Niets wordt bewaard.</p>
-            <button class="btn primary backupbtn" type="button" id="demoUp2">Maak een account</button>
-            <button class="btn ghost backupbtn" type="button" id="demoIn">Ik heb al een account</button>
-          </div>
-          <div class="setsec" id="acctSec">
-            <span class="section-l" style="margin:0">Account</span>
-            <p class="hint" style="margin:0">Ingelogd als <b id="acctMail"></b></p>
-            <button class="btn ghost backupbtn" type="button" id="signOutBtn">Uitloggen</button>
-            <button class="btn ghost backupbtn" type="button" id="helpBtn">Uitleg bekijken</button>
-            <button class="linkbtn dangerlink" type="button" id="acctDelBtn">Account verwijderen</button>
-          </div>
-          <div class="setsec" id="keySec">
-            <span class="section-l" style="margin:0">Scannen met Claude</span>
-            <p class="hint" style="margin:0" id="keyState"></p>
-            <input class="setinput" id="keyIn" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="sk-ant-…" aria-label="Claude-sleutel">
-            <div class="actions"><button class="btn ghost backupbtn" type="button" id="keyDel" hidden>Verwijderen</button><button class="btn primary backupbtn" type="button" id="keySave">Bewaar sleutel</button></div>
-            <span class="hint" id="keyMsg" hidden></span>
-            <p class="hint" style="margin:0">Dit is je eigen Anthropic-sleutel: elke scan kost een klein bedrag op jouw account. De sleutel blijft op dit apparaat en komt nooit in je kelder. Uitloggen haalt hem hier weg. <a class="linkbtn" href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener" style="padding:0">Sleutel maken</a></p>
-          </div>
-          <div class="setsec" id="backupSec">
-            <button class="btn ghost backupbtn backuptoggle" type="button" id="backupToggle" aria-expanded="false" aria-controls="backupOpts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7.5 12 4l8 3.5v9L12 20l-8-3.5zM4 7.5l8 3.5 8-3.5M12 11v9"/></svg><span>Back-up</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
-            <div class="backupopts" id="backupOpts" hidden>
-            <button class="btn ghost backupbtn" type="button" id="backupBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19h14"/></svg>Download back-up</button>
-            <label class="btn ghost backupbtn" for="restoreIn" id="restoreBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M5 19h14"/></svg>Back-up terugzetten</label>
-            <input type="file" id="restoreIn" accept=".json,application/json" class="vh">
-            <p class="hint" style="margin:0" id="backupMsg">Eén bestand met al je wijnen, je logboek en je foto's.</p>
-            </div>
-            <div class="restorebox" id="restoreBox" hidden>
-              <p class="restoretxt" id="restoreTxt"></p>
-              <div class="restoreacts" id="restoreActs">
-                <button class="btn primary" type="button" id="restoreAdd">Toevoegen</button>
-                <button class="btn danger" type="button" id="restoreReplace">Vervangen</button>
-              </div>
-              <button class="linkbtn" type="button" id="restoreCancel" style="align-self:center">Annuleren</button>
-            </div>
-          </div>
-          <p class="legallinks"><a href="privacy.html" target="_blank" rel="noopener">Privacy</a> · <a href="voorwaarden.html" target="_blank" rel="noopener">Voorwaarden</a></p>
-        </div>
-      </div>
       <div class="addwrap">
         <button class="btn primary addtoggle" id="addToggle" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="addMenu">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
@@ -480,7 +446,6 @@ img { max-width: 100%; }
             <span><b>Handmatig</b><small>Vul de gegevens zelf in</small></span>
           </button>
         </div>
-        <input type="file" id="fileIn" accept="image/*" class="vh">
       </div>
       </div>
     </div>
@@ -516,7 +481,85 @@ img { max-width: 100%; }
 
   <div id="notice" class="notice" hidden></div>
   <section class="list" id="list" aria-live="polite"></section>
+  </section>
+
+  <section class="view" id="vKelder" hidden aria-labelledby="kelderTitle">
+    <div class="headrow"><h1 id="kelderTitle">Kelder</h1></div>
+    <div class="statsbody" id="statsBody"></div>
+  </section>
+
+  <section class="view" id="vWish" hidden aria-labelledby="wishTitle">
+    <div class="headrow">
+      <h1 id="wishTitle">Wishlist</h1>
+      <div class="headbtns"><button class="btn primary addtoggle" id="wishAdd" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Voeg toe</button></div>
+    </div>
+    <p class="hint wishlead">Wijnen die je later wilt kopen. Zie je er een in de winkel of op de kaart? Tik hier onderaan op de scanknop, dan komt hij op deze lijst.</p>
+    <section class="list" id="wishList" aria-live="polite"></section>
+  </section>
+
+  <section class="view" id="vSet" hidden aria-labelledby="setTitle">
+    <div class="headrow"><h1 id="setTitle">Instellingen</h1></div>
+    <div class="setpage" id="setMenu">
+      <span class="section-l" style="margin:0">Weergave</span>
+      <div class="seg" id="themeSeg" role="radiogroup" aria-label="Weergave">
+        <button type="button" role="radio" data-theme-pick="auto"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17a8.5 8.5 0 0 0 0-17z" fill="currentColor" stroke="none"/></svg>Automatisch</button>
+        <button type="button" role="radio" data-theme-pick="light"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6 6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></svg>Licht</button>
+        <button type="button" role="radio" data-theme-pick="dark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>Donker</button>
+      </div>
+      <p class="hint" style="margin:0">Automatisch volgt de instelling van je telefoon of computer.</p>
+      <div class="setsec" id="demoSec" hidden>
+        <span class="section-l" style="margin:0">Voorbeeld</span>
+        <p class="hint" style="margin:0">Je kijkt rond met voorbeeldwijnen. Niets wordt bewaard.</p>
+        <button class="btn primary backupbtn" type="button" id="demoUp2">Maak een account</button>
+        <button class="btn ghost backupbtn" type="button" id="demoIn">Ik heb al een account</button>
+      </div>
+      <div class="setsec" id="acctSec">
+        <span class="section-l" style="margin:0">Account</span>
+        <p class="hint" style="margin:0">Ingelogd als <b id="acctMail"></b></p>
+        <button class="btn ghost backupbtn" type="button" id="signOutBtn">Uitloggen</button>
+        <button class="btn ghost backupbtn" type="button" id="helpBtn">Uitleg bekijken</button>
+        <button class="linkbtn dangerlink" type="button" id="acctDelBtn">Account verwijderen</button>
+      </div>
+      <div class="setsec" id="keySec">
+        <span class="section-l" style="margin:0">Scannen met Claude</span>
+        <p class="hint" style="margin:0" id="keyState"></p>
+        <input class="setinput" id="keyIn" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="sk-ant-…" aria-label="Claude-sleutel">
+        <div class="actions"><button class="btn ghost backupbtn" type="button" id="keyDel" hidden>Verwijderen</button><button class="btn primary backupbtn" type="button" id="keySave">Bewaar sleutel</button></div>
+        <span class="hint" id="keyMsg" hidden></span>
+        <p class="hint" style="margin:0">Dit is je eigen Anthropic-sleutel: elke scan kost een klein bedrag op jouw account. De sleutel blijft op dit apparaat en komt nooit in je kelder. Uitloggen haalt hem hier weg. <a class="linkbtn" href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener" style="padding:0">Sleutel maken</a></p>
+      </div>
+      <div class="setsec" id="backupSec">
+        <button class="btn ghost backupbtn backuptoggle" type="button" id="backupToggle" aria-expanded="false" aria-controls="backupOpts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7.5 12 4l8 3.5v9L12 20l-8-3.5zM4 7.5l8 3.5 8-3.5M12 11v9"/></svg><span>Back-up</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="backupopts" id="backupOpts" hidden>
+        <button class="btn ghost backupbtn" type="button" id="backupBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19h14"/></svg>Download back-up</button>
+        <label class="btn ghost backupbtn" for="restoreIn" id="restoreBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M5 19h14"/></svg>Back-up terugzetten</label>
+        <input type="file" id="restoreIn" accept=".json,application/json" class="vh">
+        <p class="hint" style="margin:0" id="backupMsg">Eén bestand met al je wijnen, je logboek en je foto's.</p>
+        </div>
+        <div class="restorebox" id="restoreBox" hidden>
+          <p class="restoretxt" id="restoreTxt"></p>
+          <div class="restoreacts" id="restoreActs">
+            <button class="btn primary" type="button" id="restoreAdd">Toevoegen</button>
+            <button class="btn danger" type="button" id="restoreReplace">Vervangen</button>
+          </div>
+          <button class="linkbtn" type="button" id="restoreCancel" style="align-self:center">Annuleren</button>
+        </div>
+      </div>
+      <p class="legallinks"><a href="privacy.html" target="_blank" rel="noopener">Privacy</a> · <a href="voorwaarden.html" target="_blank" rel="noopener">Voorwaarden</a></p>
+    </div>
+  </section>
 </main>
+
+<input type="file" id="fileIn" accept="image/*" class="vh">
+<nav class="tabbar" id="tabbar" aria-label="Hoofdmenu">
+  <div class="tabbar-in">
+    <button class="tab" type="button" data-tab="kelder"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 10.5 12 3.5l8.5 7M5.5 9v11h13V9"/></svg>Kelder</button>
+    <button class="tab" type="button" data-tab="wijnen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3h8l-.4 6.2a3.6 3.6 0 0 1-7.2 0zM12 13v7.5M8.5 20.5h7"/></svg>Wijnen</button>
+    <label class="scantab" id="scanTab" for="fileIn" aria-label="Etiket scannen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3.2"/></svg></label>
+    <button class="tab" type="button" data-tab="wish"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h10v17l-5-3.5-5 3.5z"/></svg>Wishlist</button>
+    <button class="tab" type="button" data-tab="set"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Instellingen</button>
+  </div>
+</nav>
 
 
 <div class="sheet" id="sheet" hidden role="dialog" aria-modal="true"><div class="sheet-in" id="sheetIn"></div></div>
@@ -543,6 +586,8 @@ img { max-width: 100%; }
   const norm = s => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]/g, "");
 
   let wines = [];
+  let tab = "wijnen";          // the page the bottom tab bar shows: kelder, wijnen, wish or set
+  let addTarget = "kelder";    // where a new scan or manual add goes: kelder or wish
   let filter = "alle";
   let query = "";
   let sortBy = "std";
@@ -735,8 +780,16 @@ img { max-width: 100%; }
     return `<span class="glass" aria-hidden="true"><i style="background:var(${colorVar(w.color)})"></i></span>`;
   }
 
+  // Wishlist wines (wish: true) live in the same store but never count as part of the cellar.
+  const cellar = () => wines.filter(w => !w.wish);
   function render() {
-    const inStock = wines.filter(w => (w.quantity || 0) > 0);
+    renderList();
+    if (tab === "kelder") renderStats();
+    if (tab === "wish") renderWish();
+  }
+  function renderList() {
+    const all = cellar();
+    const inStock = all.filter(w => (w.quantity || 0) > 0);
     $("t-bottles").textContent = inStock.reduce((a, w) => a + (w.quantity || 0), 0);
     $("t-wines").textContent = inStock.length;
     const years = inStock.map(w => +w.vintage).filter(Boolean);
@@ -754,9 +807,9 @@ img { max-width: 100%; }
       return `<span class="n" title="${n} ${n === 1 ? "wijn" : "wijnen"}, ${b} ${b === 1 ? "fles" : "flessen"}">${n}/${b}</span>`;
     };
     const byColor = c => inStock.filter(w => w.color === c);
-    const favs = wines.filter(w => w.favorite);
-    const archived = wines.filter(w => !(w.quantity > 0));
-    const logCount = wines.reduce((a, w) => a + (w.log || []).length, 0);
+    const favs = all.filter(w => w.favorite);
+    const archived = all.filter(w => !(w.quantity > 0));
+    const logCount = all.reduce((a, w) => a + (w.log || []).length, 0);
     const ready = inStock.filter(drinkNow);
     $("chips").innerHTML = `<button class="chip" type="button" data-f="alle" aria-pressed="${filter === "alle"}">Alles</button>` +
       `<button class="chip" type="button" data-f="fav" aria-pressed="${filter === "fav"}"><svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><path d="${HEART}"/></svg>Favorieten <span class="n">${favs.length}</span></button>` +
@@ -768,7 +821,7 @@ img { max-width: 100%; }
       ((logCount || filter === "logboek") ? `<button class="chip" type="button" data-f="logboek" aria-pressed="${filter === "logboek"}"><svg class="heart" viewBox="0 0 24 24" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2.2;stroke-linejoin:round"><path d="${BOOK}"/></svg>Logboek <span class="n">${logCount}</span></button>` : "");
 
     const q = norm(query);
-    const list = wines
+    const list = all
       .filter(w => filter === "archief" ? !(w.quantity > 0)
         : filter === "fav" ? w.favorite
         : filter === "opdronk" ? w.quantity > 0 && drinkNow(w)
@@ -795,8 +848,8 @@ img { max-width: 100%; }
       $("list").innerHTML = `<div class="empty"><div class="spinner" aria-hidden="true"></div><p>Je kelder wordt geladen…</p></div>`;
       return;
     }
-    if (!wines.length) {
-      $("list").innerHTML = `<div class="empty"><h2>Je kelder is nog leeg</h2><p>Tik rechtsboven op <b>Voeg toe</b> en kies <b>Scan etiket</b> om een foto van een fles te maken. De wijn wordt herkend en je krijgt er een korte beschrijving bij.</p></div>`;
+    if (!all.length) {
+      $("list").innerHTML = `<div class="empty"><h2>Je kelder is nog leeg</h2><p>Tik onderaan op de ronde <b>scanknop</b> om een foto van een fles te maken. De wijn wordt herkend en je krijgt er een korte beschrijving bij. Liever zelf invullen? Tik rechtsboven op <b>Voeg toe</b>.</p></div>`;
       return;
     }
     if (filter === "logboek") { renderLog(q); return; }
@@ -945,8 +998,75 @@ img { max-width: 100%; }
     const c = e.target.closest("[data-open]");
     if (c) openDetail(c.dataset.open);
   });
-  $("tally").addEventListener("click", () => openStats());
-  $("tally").addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openStats(); } });
+  $("tally").addEventListener("click", () => showTab("kelder"));
+  $("tally").addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); showTab("kelder"); } });
+
+  // ---------- Bottom tab bar ----------
+  const VIEWS = { kelder: "vKelder", wijnen: "vWijnen", wish: "vWish", set: "vSet" };
+  function showTab(t) {
+    if (!VIEWS[t]) t = "wijnen";
+    const changed = t !== tab;
+    tab = t;
+    for (const [k, id] of Object.entries(VIEWS)) $(id).hidden = k !== t;
+    document.querySelectorAll("[data-tab]").forEach(b => { if (b.dataset.tab === t) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
+    setMenu(false);
+    if (t !== "set") { resetRestore(); setBackupOpen(false); }
+    if (t === "kelder") renderStats();
+    if (t === "wish") renderWish();
+    if (changed) window.scrollTo(0, 0);
+  }
+  $("tabbar").addEventListener("click", e => { const b = e.target.closest("[data-tab]"); if (b) showTab(b.dataset.tab); });
+
+  // ---------- Wishlist: wines to buy later, kept as wish: true ----------
+  function renderWish() {
+    const items = wines.filter(w => w.wish).sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
+    if (!items.length) {
+      $("wishList").innerHTML = `<div class="empty"><h2>Je wishlist is leeg</h2><p>Zie je ergens een wijn die je later wilt kopen? Tik op deze pagina onderaan op de <b>scanknop</b> en maak een foto van het etiket, of tik op <b>Voeg toe</b> om hem zelf in te vullen.</p></div>`;
+      return;
+    }
+    $("wishList").innerHTML = items.map(w => `
+      <div class="card" data-wedit="${esc(w.id)}" role="button" tabindex="0">
+        ${visual(w)}
+        <div class="meta">
+          <span class="name">${esc(w.name || w.producer || "Naamloze wijn")}${w.example ? '<span class="tag">Voorbeeld</span>' : ""}</span>
+          <span class="sub">${esc([w.name ? w.producer : "", w.vintage, w.region].filter(Boolean).join(" · "))}</span>
+          ${typeof w.price === "number" || w.boughtAt ? `<span class="saveline">${esc([typeof w.price === "number" ? fmtEur(w.price) : "", w.boughtAt ? "Gezien bij " + w.boughtAt : ""].filter(Boolean).join(" · "))}</span>` : ""}
+          ${w.description ? `<span class="desc">${esc(w.description)}</span>` : ""}
+        </div>
+        <div class="wishacts">
+          <button class="btn primary" type="button" data-wbuy="${esc(w.id)}">Gekocht</button>
+          <button class="logdel" type="button" data-wdel="${esc(w.id)}" aria-label="Van wishlist halen">×</button>
+        </div>
+      </div>`).join("");
+  }
+  $("wishList").addEventListener("click", e => {
+    const buy = e.target.closest("[data-wbuy]");
+    if (buy) {
+      const w = wines.find(x => x.id === buy.dataset.wbuy);
+      if (!w) return;
+      delete w.wish; w.quantity = Math.max(1, w.quantity || 0);
+      saveNow(w); render();
+      openForm(Object.assign({}, w), w.id, "Staat nu in je kelder. Pas het aantal flessen en de prijs aan als dat nodig is.");
+      return;
+    }
+    const del = e.target.closest("[data-wdel]");
+    if (del) {
+      if (!del.classList.contains("sure")) {
+        $("wishList").querySelectorAll(".logdel.sure").forEach(x => { x.classList.remove("sure"); x.textContent = "×"; });
+        del.classList.add("sure"); del.textContent = "Verwijder"; return;
+      }
+      const id = del.dataset.wdel;
+      wines = wines.filter(x => x.id !== id);
+      store.remove(id); render(); toast("Van je wishlist gehaald");
+      return;
+    }
+    const card = e.target.closest("[data-wedit]");
+    if (card) { const w = wines.find(x => x.id === card.dataset.wedit); if (w) openForm(Object.assign({}, w), w.id); }
+  });
+  $("wishList").addEventListener("keydown", e => {
+    if ((e.key === "Enter" || e.key === " ") && e.target.matches("[data-wedit]")) { e.preventDefault(); e.target.click(); }
+  });
+  $("wishAdd").addEventListener("click", () => { addTarget = "wish"; openForm({ quantity: 0, color: "rood", wish: true }, null); });
   $("reminders").addEventListener("click", e => {
     const x = e.target.closest("[data-remdel]");
     if (x) {
@@ -1091,16 +1211,16 @@ img { max-width: 100%; }
     } finally { btn.disabled = false; }
   });
 
-  const setSettings = open => { $("setMenu").hidden = !open; $("setToggle").setAttribute("aria-expanded", String(open)); if (!open) { resetRestore(); setBackupOpen(false); } };
-  $("setToggle").addEventListener("click", e => { e.stopPropagation(); setMenu(false); setSettings($("setMenu").hidden); });
-  document.addEventListener("click", e => { if (!$("setMenu").hidden && !e.target.closest(".setwrap")) setSettings(false); });
-  document.addEventListener("keydown", e => { if (e.key === "Escape") setSettings(false); });
+  // Settings are a page now: "open" switches to it; closing only folds the back-up part away.
+  const setSettings = open => { if (open) showTab("set"); else { resetRestore(); setBackupOpen(false); } };
 
   const setMenu = open => { $("addMenu").hidden = !open; $("addToggle").setAttribute("aria-expanded", String(open)); };
-  $("addToggle").addEventListener("click", e => { e.stopPropagation(); setSettings(false); setMenu($("addMenu").hidden); });
+  $("addToggle").addEventListener("click", e => { e.stopPropagation(); setMenu($("addMenu").hidden); });
   document.addEventListener("click", e => { if (!$("addMenu").hidden && !e.target.closest(".addwrap")) setMenu(false); });
   document.addEventListener("keydown", e => { if (e.key === "Escape") setMenu(false); });
-  $("scanBtn").addEventListener("click", e => {
+  // Both scan buttons (the round one in the tab bar and "Scan etiket" under Voeg toe) are labels for #fileIn.
+  // On the Wishlist page a scan goes to the wishlist; everywhere else it goes to the cellar.
+  function onScanTap(e, target) {
     if (demo) {
       e.preventDefault(); setMenu(false);
       toast("Maak een account om etiketten te scannen en je eigen wijnen te bewaren.");
@@ -1110,17 +1230,20 @@ img { max-width: 100%; }
     if (!sample) {
       e.preventDefault();
       setMenu(false);
-      // Open it after this click has finished bubbling, or the outside-click handler closes it again.
       setTimeout(() => {
-        setSettings(true);
+        showTab("set");
         showMsg("keyMsg", "Vul hier je Claude-sleutel in om etiketten te scannen. Zonder sleutel kun je wijnen met de hand toevoegen.", true);
+        $("keySec").scrollIntoView({ block: "center" });
         $("keyIn").focus();
       }, 0);
       return;
     }
+    addTarget = target;
     $("fileIn").value = ""; setTimeout(() => setMenu(false), 0);
-  });
-  $("addBtn").addEventListener("click", () => { setMenu(false); openForm({ quantity: 1, color: "rood" }, null); });
+  }
+  $("scanBtn").addEventListener("click", e => onScanTap(e, "kelder"));
+  $("scanTab").addEventListener("click", e => onScanTap(e, tab === "wish" ? "wish" : "kelder"));
+  $("addBtn").addEventListener("click", () => { setMenu(false); addTarget = "kelder"; openForm({ quantity: 1, color: "rood" }, null); });
   $("fileIn").addEventListener("change", e => { const f = e.target.files && e.target.files[0]; if (f) scan(f); });
 
   // ---------- Sheet helpers ----------
@@ -1161,8 +1284,8 @@ img { max-width: 100%; }
 
   // ---------- Scan ----------
   const ERR = {
-    no_key: "Vul eerst je Claude-sleutel in bij Instellingen (het tandwiel). Voeg de wijn nu zelf toe.",
-    invalid_key: "Je Claude-sleutel is ongeldig of ingetrokken. Controleer hem bij Instellingen (het tandwiel).",
+    no_key: "Vul eerst je Claude-sleutel in bij Instellingen (onderaan). Voeg de wijn nu zelf toe.",
+    invalid_key: "Je Claude-sleutel is ongeldig of ingetrokken. Controleer hem bij Instellingen (onderaan).",
     no_credit: "Er staat te weinig tegoed op je Anthropic-account. Vul het aan, of voeg de wijn zelf toe.",
     rate_limited: "Even te veel verzoeken. Probeer het over een minuut opnieuw.",
     image_rejected: "Deze foto kan niet gelezen worden. Probeer een andere foto.",
@@ -1247,22 +1370,32 @@ img { max-width: 100%; }
   function findMatch(w, exceptId) {
     const key = norm(w.producer) + "|" + norm(w.name) + "|" + (w.vintage || "");
     if (key === "||") return null;
-    return wines.find(x => x.id !== exceptId && norm(x.producer) + "|" + norm(x.name) + "|" + (x.vintage || "") === key) || null;
+    return wines.find(x => x.id !== exceptId && !x.wish && norm(x.producer) + "|" + norm(x.name) + "|" + (x.vintage || "") === key) || null;
   }
 
   function openForm(w, id, msg, warn) {
     openId = null;
     const opts = COLORS.map(c => `<option value="${c[0]}"${w.color === c[0] ? " selected" : ""}>${c[1]}</option>`).join("");
+    // A new wine, or one on the wishlist, can go either to the cellar or to the wishlist.
+    let dest = id ? (w.wish ? "wish" : "kelder") : (w.wish || addTarget === "wish" ? "wish" : "kelder");
+    const destPick = !id || w.wish;
     openSheet(`${top(id ? "Wijn bewerken" : "Wijn toevoegen")}
       <div id="labelBox" class="membox"></div>
       <input type="file" id="labelIn" accept="image/*" class="vh">
       ${msg ? `<p class="hint ${warn ? "warn" : "good"}">${esc(msg)}</p>` : ""}
       <form id="wineForm" novalidate>
+        ${destPick ? `<div class="field">
+          <span class="section-l" style="margin:0">Bewaar in</span>
+          <div class="seg two" id="f-dest" role="radiogroup" aria-label="Bewaar in">
+            <button type="button" role="radio" data-dest="kelder" aria-checked="${dest === "kelder"}">Mijn kelder</button>
+            <button type="button" role="radio" data-dest="wish" aria-checked="${dest === "wish"}">Wishlist</button>
+          </div>
+        </div>` : ""}
         <div class="field">
           <span class="section-l" style="margin:0">Cijfer</span>
           <div id="f-rating">${ratingRow(w.rating || null, "data-frate")}</div>
         </div>
-        <div class="qtybox">
+        <div class="qtybox" id="f-qtybox"${dest === "wish" ? " hidden" : ""}>
           <div><div style="font-weight:600">Aantal flessen</div><div class="hint" id="matchMsg"></div></div>
           <div class="stepper row">
             <button class="step" type="button" data-fq="-1" aria-label="Minder">−</button>
@@ -1424,6 +1557,15 @@ img { max-width: 100%; }
     ["f-from", "f-to"].forEach(k => $(k).addEventListener("change", checkDrink));
     checkDrink();
     form.addEventListener("click", e => {
+      const dp = e.target.closest("[data-dest]");
+      if (dp) {
+        dest = dp.dataset.dest;
+        form.querySelectorAll("[data-dest]").forEach(x => x.setAttribute("aria-checked", String(x === dp)));
+        $("f-qtybox").hidden = dest === "wish";
+        if (dest === "kelder" && !qty) { qty = 1; $("f-qty").textContent = qty; }
+        updateMatch();
+        return;
+      }
       const b = e.target.closest("[data-fq]");
       if (b) { qty = Math.max(0, qty + +b.dataset.fq); $("f-qty").textContent = qty; return; }
       const r = e.target.closest("[data-frate]");
@@ -1454,9 +1596,16 @@ img { max-width: 100%; }
       e.preventDefault();
       const d = read();
       if (!d.name && !d.producer) { toast("Geef de wijn een naam of producent."); $("f-name").focus(); return; }
-      const m = findMatch(d, id);
+      const m = dest === "wish" ? null : findMatch(d, id);
       let saved;
-      if (m && !id) {
+      if (dest === "wish") {
+        saved = id ? wines.find(x => x.id === id) : null;
+        if (id && !saved) { closeSheet(); return; }
+        if (!saved) { saved = { id: newId(), createdAt: new Date().toISOString(), thumb: w.thumb || "" }; wines.push(saved); }
+        Object.assign(saved, d, { wish: true, quantity: 0 });
+        delete saved.example;
+        toast(id ? "Opgeslagen" : "Op je wishlist gezet");
+      } else if (m && !id) {
         Object.assign(m, fillBlank(m, d), { quantity: (m.quantity || 0) + qty });
         if (!m.thumb && w.thumb) m.thumb = w.thumb;
         saved = m;
@@ -1464,9 +1613,10 @@ img { max-width: 100%; }
       } else if (id) {
         saved = wines.find(x => x.id === id);
         if (!saved) { closeSheet(); return; }
+        const wasWish = !!saved.wish;
         Object.assign(saved, d, { quantity: qty });
-        delete saved.example;
-        toast("Opgeslagen");
+        delete saved.example; delete saved.wish;
+        toast(wasWish ? "Staat nu in je kelder" : "Opgeslagen");
       } else {
         saved = Object.assign({ id: newId(), createdAt: new Date().toISOString(), thumb: w.thumb || "" }, d, { quantity: qty });
         wines.push(saved);
@@ -1825,14 +1975,15 @@ img { max-width: 100%; }
   }
   const statSec = (title, body, note) => `<section class="statsec"><h3>${title}</h3>${note ? `<p class="hint">${note}</p>` : ""}${body}</section>`;
 
-  function openStats() {
-    const inStock = wines.filter(w => (w.quantity || 0) > 0);
+  function renderStats() {
+    const cel = cellar();
+    const inStock = cel.filter(w => (w.quantity || 0) > 0);
     const bottles = inStock.reduce((a, w) => a + w.quantity, 0);
     const priced = inStock.filter(w => typeof w.price === "number");
     const pricedBottles = priced.reduce((a, w) => a + w.quantity, 0);
     const value = priced.reduce((a, w) => a + w.price * w.quantity, 0);
-    const rated = wines.filter(w => w.rating);
-    const logs = wines.flatMap(w => (w.log || []).map(e => ({ w, e })));
+    const rated = cel.filter(w => w.rating);
+    const logs = cel.flatMap(w => (w.log || []).map(e => ({ w, e })));
     const thisYear = logs.filter(({ e }) => String(e.date).startsWith(String(YEAR))).length;
     const fmt0 = n => new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
     const tiles = [
@@ -1842,7 +1993,7 @@ img { max-width: 100%; }
       ["Geopend in " + YEAR, thisYear]
     ].map(([k, v]) => `<div class="stat"><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("");
     const bt = ["fles", "flessen"];
-    let html = `${top("Statistieken")}<dl class="tiles">${tiles}</dl>`;
+    let html = `<section class="statsec"><dl class="tiles">${tiles}</dl></section>`;
 
     if (bottles) {
       const kinds = COLORS.map(c => ({ label: c[1], dot: c[2], value: inStock.filter(w => w.color === c[0]).reduce((a, w) => a + w.quantity, 0) })).filter(r => r.value);
@@ -1879,10 +2030,10 @@ img { max-width: 100%; }
     } else {
       html += statSec("Logboek", `<p class="hint" style="margin:0">Nog niets in je logboek. Open een wijn en tik op <b>Fles geopend</b>, dan zie je hier per maand wat je dronk.</p>`);
     }
-    const best = wines.filter(w => w.rating).sort((a, b) => b.rating - a.rating || String(a.name).localeCompare(String(b.name), "nl")).slice(0, 5);
+    const best = cel.filter(w => w.rating).sort((a, b) => b.rating - a.rating || String(a.name).localeCompare(String(b.name), "nl")).slice(0, 5);
     if (best.length) html += statSec("Best beoordeeld",
       best.map(w => `<div class="toprow"><span class="score">${w.rating}</span><span>${esc([w.name || w.producer, w.vintage].filter(Boolean).join(" "))}</span></div>`).join(""));
-    openSheet(html);
+    $("statsBody").innerHTML = html;
   }
 
   // ---------- Sharing a wine: a picture card plus a short text ----------
@@ -2113,6 +2264,7 @@ img { max-width: 100%; }
     me = user; wines = []; loading = true;
     $("auth").hidden = true;
     $("acctMail").textContent = user.email || "";
+    showTab("wijnen");
     refreshSample();
     store.init().then(ok => { if (ok) maybeWelcome(); });
   }
@@ -2145,7 +2297,11 @@ img { max-width: 100%; }
       { name: "Barolo", producer: "Cantina d'Esempio", vintage: 2013, color: "rood", country: "Italië", region: "Piemonte", grape: "Nebbiolo", quantity: 2, price: 45, rating: 8, drinkFrom: Y - 3, drinkTo: Y - 1,
         description: "Roos, teer en kers; op zijn hoogtepunt geweest." },
       { name: "Pinot Noir", producer: "Domaine d'Exemple", vintage: 2020, color: "rood", country: "Frankrijk", region: "Bourgogne", grape: "Pinot Noir", quantity: 0, price: 28, rating: 8,
-        description: "Licht en zijdeachtig, met rood fruit.", log: [L(60, "Familie", "De laatste fles, bij het kerstdiner.", 8)] }
+        description: "Licht en zijdeachtig, met rood fruit.", log: [L(60, "Familie", "De laatste fles, bij het kerstdiner.", 8)] },
+      { name: "Brunello di Montalcino", producer: "Tenuta Esempio", vintage: 2019, color: "rood", country: "Italië", region: "Toscane", grape: "Sangiovese", quantity: 0, price: 42,
+        wish: true, createdAt: d(-3) + "T12:00:00Z", boughtAt: "Restaurant De Proeverij", description: "Krachtig en fijn, met kers, leer en kruiden." },
+      { name: "Grüner Veltliner Smaragd", producer: "Weingut Beispiel", vintage: 2022, color: "wit", country: "Oostenrijk", region: "Wachau", grape: "Grüner Veltliner", quantity: 0, price: 23,
+        wish: true, createdAt: d(-10) + "T12:00:00Z", boughtAt: "Wijnhandel om de hoek", description: "Fris en kruidig, met witte peper en groene appel." }
     ].map((w, i) => Object.assign({ id: "demo" + (i + 1), example: true }, w));
   }
   const CAN_HIDE = ["acctSec", "keySec", "backupSec"];
@@ -2159,12 +2315,12 @@ img { max-width: 100%; }
     wines = demoWines(); loading = false; filter = "alle"; query = ""; $("search").value = "";
     $("auth").hidden = true; $("demoBar").hidden = false; $("demoSec").hidden = false;
     CAN_HIDE.forEach(id => $(id).hidden = true);
-    refreshSample(); render();
+    refreshSample(); render(); showTab("wijnen");
   }
   function leaveDemo(mode) {
     endDemoUi();
     wines = []; loading = false;
-    closeSheet(); setSettings(false); setMenu(false);
+    closeSheet(); setSettings(false); setMenu(false); showTab("wijnen");
     refreshSample(); render();
     setAuthMode(mode || "up");
   }
@@ -2177,7 +2333,7 @@ img { max-width: 100%; }
   function leaveApp() {
     me = null; wines = []; loading = false; filter = "alle"; query = ""; $("search").value = "";
     if (store.channel) { sb.removeChannel(store.channel); store.channel = null; }
-    closeSheet(); setSettings(false); setMenu(false);
+    closeSheet(); setSettings(false); setMenu(false); showTab("wijnen");
     try { localStorage.removeItem(KEY_STORE); } catch {}   // a shared device shouldn't keep someone's key
     refreshSample(); render();
     $("a-pass").value = "";
@@ -2191,11 +2347,11 @@ img { max-width: 100%; }
     { icon: "M7 11V8a5 5 0 0 1 10 0v3M5 11h14v10H5zM12 15v3", t: "Welkom bij Vinventory",
       p: "Houd je wijnkelder bij: wat je hebt, wat je ervan vindt en wanneer je een fles opendeed. Je kelder is <b>privé</b>: alleen jij ziet je wijnen, op al je apparaten." },
     { icon: "M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2M12 9.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z", t: "Wijnen toevoegen",
-      p: "Tik rechtsboven op <b>Voeg toe</b>. Met <b>Scan etiket</b> maak je een foto en Claude vult de gegevens in. Dat werkt met je eigen Claude-sleutel (Instellingen, het tandwiel) en kost een klein bedrag op jouw Anthropic-account. Zonder sleutel kies je <b>Handmatig</b>." },
+      p: "Tik onderaan op de ronde <b>scanknop</b> en maak een foto van het etiket: Claude vult de gegevens in. Dat werkt met je eigen Claude-sleutel (onder <b>Instellingen</b>) en kost een klein bedrag op jouw Anthropic-account. Zonder sleutel tik je bij <b>Wijnen</b> op <b>Voeg toe</b> en kies je <b>Handmatig</b>." },
     { icon: BOOK, t: "Bijhouden",
-      p: "Met <b>+</b> en <b>−</b> pas je het aantal flessen aan. Doe je een fles open, noteer dat dan in het logboek. Met het hartje bewaar je favorieten, en met een tik op de cijfers bovenaan zie je je statistieken." },
+      p: "Met <b>+</b> en <b>−</b> pas je het aantal flessen aan. Doe je een fles open, noteer dat dan in het logboek. Met het hartje bewaar je favorieten. Onder <b>Kelder</b> zie je je statistieken, en op je <b>Wishlist</b> zet je wijnen die je later wilt kopen." },
     { icon: "M12 3.5v11M8 7.5l4-4 4 4M6 11H5v9.5h14V11h-1", t: "Altijd bij de hand",
-      p: "Zet Vinventory op je beginscherm: tik in Safari op <b>Deel</b> en kies <b>Zet op beginscherm</b>. Maak af en toe een back-up via het tandwiel." }
+      p: "Zet Vinventory op je beginscherm: tik in Safari op <b>Deel</b> en kies <b>Zet op beginscherm</b>. Maak af en toe een back-up via <b>Instellingen</b>." }
   ];
   function openWelcome(i) {
     i = i || 0;
