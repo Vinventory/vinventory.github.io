@@ -1636,16 +1636,16 @@ img { max-width: 100%; }
     if (!w) return;
     openId = id;
     const drink = w.drinkFrom || w.drinkTo ? `${w.drinkFrom || "…"} – ${w.drinkTo || "…"}${drinkState(w)}` : "";
-    const facts = [["Producent", w.producer], ["Jaargang", w.vintage], ["Druif", w.grape], ["Soort", colorName(w.color)], ["Land", w.country], ["Streek", w.region], ["Prijs per fles", w.price != null ? fmtEur(w.price) : ""], ["Flessen", String(w.quantity || 0), "d-statqty"], ["Op dronk", drink]]
+    const facts = [["Producent", w.producer], ["Jaargang", w.vintage], ["Druif", w.grape], ["Soort", colorName(w.color)], ["Land", w.country], ["Streek", w.region], ["Prijs per fles", w.price != null ? fmtEur(w.price) : ""], ["Flessen", String(w.quantity || 0), "d-statqty"], ["Op dronk", drink], ["Bewaar voor", [w.saveFor, w.saveForDate ? fmtDate(w.saveForDate) : ""].filter(Boolean).join(" · "), "", w.saveForDate ? daysLeft(w.saveForDate) : ""]]
       .map(f => f[2] === "d-statqty"
         ? `<div class="stat"><dt>${f[0]}</dt><dd class="statstep"><button class="step" type="button" data-dq="-1" aria-label="Fles eraf">−</button><span id="d-statqty">${esc(f[1])}</span><button class="step plus" type="button" data-dq="1" aria-label="Fles erbij">+</button></dd></div>`
-        : `<div class="stat"><dt>${f[0]}</dt><dd>${f[1] ? esc(f[1]) : "–"}</dd></div>`).join("");
+        : `<div class="stat"><dt>${f[0]}</dt><dd>${f[1] ? esc(f[1]) : "–"}</dd>${f[3] ? `<div class="hint">${esc(f[3])}</div>` : ""}</div>`).join("");
     openSheet(`<div class="sheet-top"><div class="title-l"><button class="homebtn" type="button" data-close aria-label="Terug naar home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${HOUSE}"/></svg>Home</button><h2>${esc(w.name || w.producer || "Wijn")}</h2></div><div class="topbtns"><button class="fav big sharebtn" type="button" id="shareBtn" aria-label="Deel deze wijn" title="Delen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5v11M8 7.5l4-4 4 4M6 11H5v9.5h14V11h-1"/></svg></button>${favBtn(w, true)}</div></div>
       ${w.example ? '<span class="tag" style="margin:0;align-self:flex-start">Voorbeeld</span>' : ""}
       ${facts ? `<dl class="stats">${facts}</dl>` : ""}      <div><span class="section-l">Jouw cijfer</span><div id="d-rating">${ratingRow(w.rating, "data-rate")}</div></div>
       ${w.thumb ? `<img class="photo" src="${esc(w.thumb)}" alt="Etiket van ${esc(w.name)}">` : ""}
       <div><span class="section-l">Beschrijving</span>${w.description ? `<p class="memo">${esc(w.description)}</p>` : `<p class="hint" style="margin:0">Nog geen beschrijving. Tik op Bewerken om er een te laten schrijven.</p>`}</div>
-      <div class="savebox"><svg class="house" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v15H5zM5 9.5h14M9 3v4M15 3v4"/></svg><div><span class="section-l" style="margin:0">Bewaar voor</span><div class="savetxt">${w.saveFor || w.saveForDate ? `${esc(w.saveFor || "")}${w.saveFor && w.saveForDate ? " · " : ""}${w.saveForDate ? esc(fmtDate(w.saveForDate)) : ""}` : "–"}</div>${w.saveForDate ? `<div class="hint">${esc(daysLeft(w.saveForDate))}</div>` : ""}</div></div>
+      
       <div id="d-pair">${w.pairing ? `<span class="section-l">Past goed bij</span><p class="memo">${esc(w.pairing)}</p>`
         : sample ? `<div class="row-between"><span class="section-l" style="margin:0">Past goed bij</span><button class="linkbtn" type="button" id="dGenPair">Laat Claude voorstellen</button></div><span class="hint" id="dPairMsg" hidden></span>` : ""}</div>
       <section class="logsec" id="memSec" aria-label="Herinneringen">
