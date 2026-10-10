@@ -191,6 +191,7 @@ h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(34px, 9vw
 #logList .logitem .when { font-size: 15px; }
 .boughtin { width: 100%; min-height: 44px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); font-size: 16px; }
 .savebox .grow.inline { flex: 1; flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.receivedbox { display: flex; flex-direction: column; gap: 6px; }
 .boughtrow { display: flex; gap: 8px; align-items: center; }
 .boughtrow input { flex: 1; min-width: 0; }
 .boughtrow .mapbtn { width: 44px; height: 44px; }
@@ -509,7 +510,7 @@ img { max-width: 100%; }
       <h1 id="wishTitle">Wishlist</h1>
       <div class="headbtns"><button class="btn primary addtoggle" id="wishAdd" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Voeg toe</button></div>
     </div>
-    <p class="hint wishlead">Wijnen die je later wilt kopen. Zie je er een in de winkel of op de kaart? Tik op <b>Voeg toe</b>, of scan het etiket met de knop onderaan en kies in het formulier <b>Wishlist</b>.</p>
+    <p class="hint wishlead">Een lekkere wijn gedronken? Sla hem op in je wishlist. Tik op <b>Voeg toe</b>, of scan het etiket met de knop onderaan en kies in het formulier <b>Wishlist</b>.</p>
     <section class="list" id="wishList" aria-live="polite"></section>
   </section>
 
@@ -1701,6 +1702,7 @@ img { max-width: 100%; }
         <div id="logList" class="logsec">${logItems(w)}</div>
       </section>
       <div class="savebox bought"><div class="grow"><label class="section-l" for="d-bought" style="margin:0">${w.wish ? "Gedronken bij" : "Gekocht bij"}</label><input class="boughtin" id="d-bought" value="${esc(w.boughtAt || "")}" placeholder="Bijv. Wijnhandel De Druif, Utrecht" autocomplete="off"></div><a class="mapbtn" id="d-map" href="${esc(mapsHref(w))}" target="_blank" rel="noopener" aria-label="Open in Google Maps" title="Open in Google Maps"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${PIN}"/><circle cx="12" cy="10" r="2.5"/></svg></a></div>
+      ${w.wish ? "" : `<div class="receivedbox"><label class="section-l" for="d-received" style="margin:0">Gekregen van</label><input class="boughtin" id="d-received" value="${esc(w.receivedFrom || "")}" placeholder="Bijv. Anna, voor onze verjaardag" autocomplete="off"></div>`}
       <div class="actions four">
         <button class="btn ghost" type="button" data-close><svg class="house" viewBox="0 0 24 24" aria-hidden="true"><path d="${HOUSE}"/></svg>Home</button>
         <button class="btn ghost" type="button" id="editBtn"><svg class="house" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-4-4L4 16v4zM13.5 6.5l4 4"/></svg>Bewerken</button>
@@ -1722,6 +1724,13 @@ img { max-width: 100%; }
       cw.boughtAt = e.target.value.trim();
       saveSoon(cw);
       $("d-map").href = mapsHref(cw);
+    });
+    // "Gekregen van" is edited right here too (not shown for wishlist wines).
+    const dr = $("d-received");
+    if (dr) dr.addEventListener("input", e => {
+      const cw = current();
+      cw.receivedFrom = e.target.value.trim();
+      saveSoon(cw);
     });
     const pb = $("dGenPair");
     if (pb) pb.addEventListener("click", async () => {
