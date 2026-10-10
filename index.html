@@ -206,6 +206,9 @@ a.btn { text-decoration: none; color: inherit; }
 .webhelp { display: flex; flex-direction: column; gap: 8px; }
 .pastebox { width: 100%; padding: 12px; border-radius: 10px; border: 1px dashed var(--line); background: var(--surface); font-size: 16px; text-align: center; }
 .memadd { align-self: flex-start; font-size: 15px; padding: 10px 14px; }
+/* Add form: "Foto van de fles toevoegen" and "Scan wijnfles" side by side, laid out like the "Bewaar in" buttons below them */
+.photoopts.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.photoopts.two .btn { align-self: stretch; min-width: 0; height: 48px; min-height: 48px; padding: 4px 8px; font-size: 14px; line-height: 1.15; text-align: center; gap: 6px; border-radius: 10px; background: var(--bg); }
 .memimg { width: 100%; max-height: 50vh; object-fit: cover; border-radius: var(--r); display: block; background: var(--sunk); }
 .memsec { display: flex; flex-direction: column; gap: 8px; }
 .memsec .section-l { margin-bottom: 0; }
@@ -1471,11 +1474,15 @@ img { max-width: 100%; }
       $("labelBox").innerHTML = thumb
         ? `<img class="photo" src="${esc(thumb)}" alt="Foto van de fles">
            <div class="actions"><label class="btn ghost" for="labelIn">Andere foto</label><button class="btn ghost" type="button" id="labelDel">Foto weghalen</button></div>`
-        : `<div class="photoopts">
+        : `<div class="photoopts${id ? "" : " two"}">
              <label class="btn ghost memadd" for="labelIn"><svg class="house" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4zM12 17a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/></svg>Foto van de fles toevoegen</label>
+             ${id ? "" : `<label class="btn ghost memadd" id="labelScan" for="fileIn"><svg class="house" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3.2"/></svg>Scan wijnfles</label>`}
            </div>`;
       const del = $("labelDel");
       if (del) del.addEventListener("click", () => { thumb = ""; drawLabel(); });
+      // Only for a new wine: it does what the round scan button does, for the chosen "Bewaar in".
+      const sc = $("labelScan");
+      if (sc) sc.addEventListener("click", e => onScanTap(e, dest));
     };
     const useLabelFile = async f => {
       try {
