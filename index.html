@@ -470,6 +470,7 @@ img { max-width: 100%; }
   <header class="head">
     <div class="headrow">
       <h1 id="wijnenTitle">Wijnen</h1>
+      <div class="headbtns"><button class="btn primary addtoggle" id="wijnAdd" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Voeg toe</button></div>
     </div>
   </header>
 
@@ -839,7 +840,7 @@ img { max-width: 100%; }
         : filter === "fav" ? w.favorite
         : filter === "opdronk" ? w.quantity > 0 && drinkNow(w)
         : w.quantity > 0 && (filter === "alle" || w.color === filter))
-      .filter(w => !q || norm([w.name, w.producer, w.region, w.country, w.grape, w.vintage, ...memoriesOf(w).map(m => m.text + " " + (m.with || "")), w.pairing, w.saveFor, w.boughtAt, ...(w.log || []).map(e => e.with + " " + e.note)].join(" ")).includes(q))
+      .filter(w => !q || norm([w.name, w.producer, w.region, w.country, w.grape, w.vintage, ...memoriesOf(w).map(m => m.text + " " + (m.with || "")), w.pairing, w.saveFor, w.boughtAt, w.receivedFrom, ...(w.log || []).map(e => e.with + " " + e.note)].join(" ")).includes(q))
       .sort((a, b) => {
         const byName = String(a.producer || a.name).localeCompare(String(b.producer || b.name), "nl");
         const stock = (b.quantity > 0) - (a.quantity > 0);
@@ -1073,6 +1074,7 @@ img { max-width: 100%; }
   $("wishList").addEventListener("keydown", e => {
     if ((e.key === "Enter" || e.key === " ") && e.target.matches("[data-wedit]")) { e.preventDefault(); e.target.click(); }
   });
+  $("wijnAdd").addEventListener("click", () => { addTarget = "kelder"; openForm({ quantity: 1, color: "rood" }, null); });
   $("wishAdd").addEventListener("click", () => { addTarget = "wish"; openForm({ quantity: 0, color: "rood", wish: true }, null); });
   $("reminders").addEventListener("click", e => {
     const x = e.target.closest("[data-remdel]");
@@ -1430,14 +1432,6 @@ img { max-width: 100%; }
           <textarea id="f-pairing" style="min-height:80px" placeholder="Bijv. lamsrack, stoofvlees, oude Gouda">${esc(w.pairing)}</textarea>
           <span class="hint" id="pairMsg" hidden></span>
         </div>
-        <div class="field">
-          <label for="f-savefor">Bewaar voor</label>
-          <div class="savegrid">
-            <div class="saveinput" id="f-saveinput"><input id="f-savefor" value="${esc(w.saveFor)}" placeholder="Bijv. 50ste verjaardag van Peter"><button class="linkbtn savewis" type="button" id="f-savedateClear" hidden>Wis datum</button></div>
-            <label class="mapbtn datebtn" title="Kies een datum"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v15H5zM5 9.5h14M9 3v4M15 3v4"/></svg><input id="f-savedate" type="date" value="${esc(w.saveForDate)}" aria-label="Datum"></label>
-          </div>
-          <div class="savedate" id="f-savedateRow" hidden><span id="f-savedateTxt"></span></div>
-        </div>
         <div class="field" id="f-boughtField">
           <label for="f-bought" id="f-boughtLbl">${dest === "wish" ? "Gedronken bij" : "Gekocht bij"}</label>
           <div class="boughtrow">
@@ -1448,6 +1442,18 @@ img { max-width: 100%; }
             <p class="hint">Zoek de winkel in Google Maps, tik op <b>Deel</b> en kies <b>Kopieer</b>. Kom terug en plak de link hieronder.</p>
             <input id="f-mapurl" class="pastebox" value="${esc(w.boughtMapUrl)}" placeholder="Plak hier de link uit Google Maps" inputmode="url" autocomplete="off">
           </div>
+        </div>
+        <div class="field" id="f-receivedField"${dest === "wish" ? " hidden" : ""}>
+          <label for="f-received">Gekregen van</label>
+          <input id="f-received" value="${esc(w.receivedFrom)}" placeholder="Bijv. Anna, voor onze verjaardag">
+        </div>
+        <div class="field" id="f-saveField">
+          <label for="f-savefor">Bewaar voor</label>
+          <div class="savegrid">
+            <div class="saveinput" id="f-saveinput"><input id="f-savefor" value="${esc(w.saveFor)}" placeholder="Bijv. 50ste verjaardag van Peter"><button class="linkbtn savewis" type="button" id="f-savedateClear" hidden>Wis datum</button></div>
+            <label class="mapbtn datebtn" title="Kies een datum"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v15H5zM5 9.5h14M9 3v4M15 3v4"/></svg><input id="f-savedate" type="date" value="${esc(w.saveForDate)}" aria-label="Datum"></label>
+          </div>
+          <div class="savedate" id="f-savedateRow" hidden><span id="f-savedateTxt"></span></div>
         </div>
         <div class="actions">
           <button class="btn ghost" type="button" data-close>Annuleren</button>
@@ -1504,9 +1510,12 @@ img { max-width: 100%; }
     });
     const form = $("wineForm");
     // For a wishlist wine "Gedronken bij" is the main thing, so it moves up, right under the rating.
+    // "Gekregen van" always follows it and only applies to wines in the cellar. "Bewaar voor" sits just above the buttons.
     const placeBought = () => {
       if (dest === "wish") $("f-rating").closest(".field").after($("f-boughtField"));
-      else form.querySelector(".actions").before($("f-boughtField"));
+      else $("f-saveField").before($("f-boughtField"));
+      $("f-boughtField").after($("f-receivedField"));
+      $("f-receivedField").hidden = dest === "wish";
     };
     placeBought();
     // "Gekocht" on a wishlist wine saves the form and moves the wine to the cellar (at least 1 bottle).
@@ -1533,7 +1542,7 @@ img { max-width: 100%; }
       color: $("f-color").value, region: $("f-region").value.trim(), country: $("f-country").value.trim(),
       grape: $("f-grape").value.trim(), price: parsePrice($("f-price").value), drinkFrom: int($("f-from").value), drinkTo: int($("f-to").value),
       description: $("f-desc").value.trim(), pairing: $("f-pairing").value.trim(), saveFor: $("f-savefor").value.trim(), saveForDate: $("f-savedate").value || "",
-      boughtAt: $("f-bought").value.trim(), boughtMapUrl: cleanUrl($("f-mapurl").value),
+      boughtAt: $("f-bought").value.trim(), boughtMapUrl: cleanUrl($("f-mapurl").value), receivedFrom: $("f-received").value.trim(),
       thumb, rating
     });
     const updateMatch = () => {
