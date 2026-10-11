@@ -90,6 +90,9 @@ create table if not exists private.attempts (
   at      timestamptz not null default now()
 );
 create index if not exists attempts_lookup on private.attempts (user_id, kind, at);
+-- Het schema `private` is niet bereikbaar via de API en gebruikers hebben er geen enkel recht op.
+-- Row Level Security zonder regels staat er als extra slot bovenop: niemand komt erbij, alleen de functies hieronder.
+alter table private.attempts enable row level security;
 
 -- ---------- Rechten en regels (RLS) ----------
 -- Extra slot op de bestaande tabel: anonieme bezoekers krijgen geen enkel recht op `wines`.
