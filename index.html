@@ -563,10 +563,12 @@ img { max-width: 100%; }
         <button class="btn ghost backupbtn" type="button" id="demoIn">Ik heb al een account</button>
       </div>
       <div class="setsec" id="acctSec">
-        <span class="section-l" style="margin:0">Account</span>
+        <button class="btn ghost backupbtn backuptoggle" type="button" id="acctToggle" aria-expanded="false" aria-controls="acctOpts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4.5 20a7.5 7.5 0 0 1 15 0"/></svg><span>Account</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="backupopts" id="acctOpts" hidden>
         <p class="hint" style="margin:0">Ingelogd als <b id="acctMail"></b></p>
         <button class="btn ghost backupbtn" type="button" id="signOutBtn">Uitloggen</button>
         <button class="btn danger backupbtn" type="button" id="acctDelBtn">Account verwijderen</button>
+        </div>
       </div>
       <div class="setsec" id="helpSec">
         <span class="section-l" style="margin:0">Uitleg</span>
@@ -1412,7 +1414,7 @@ img { max-width: 100%; }
     tab = t;
     for (const [k, id] of Object.entries(VIEWS)) $(id).hidden = k !== t;
     document.querySelectorAll("[data-tab]").forEach(b => { if (b.dataset.tab === t) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
-    if (t !== "set") { resetRestore(); setBackupOpen(false); }
+    if (t !== "set") { resetRestore(); setBackupOpen(false); setAcctOpen(false); }
     if (t === "kelder") renderStats();
     if (t === "wish") renderWish();
     if (changed) window.scrollTo(0, 0);
@@ -1538,6 +1540,9 @@ img { max-width: 100%; }
     setBackupOpen(open);
     if (!open) resetRestore();
   });
+  // "Account" works the same way: one button that folds out sign out and delete account.
+  const setAcctOpen = open => { $("acctOpts").hidden = !open; $("acctToggle").setAttribute("aria-expanded", String(open)); };
+  $("acctToggle").addEventListener("click", () => setAcctOpen($("acctOpts").hidden));
   function cleanBackupWine(x) {
     if (!x || typeof x !== "object" || Array.isArray(x)) return null;
     const w = JSON.parse(JSON.stringify(x));
@@ -1617,7 +1622,7 @@ img { max-width: 100%; }
   });
 
   // Settings are a page now: "open" switches to it; closing only folds the back-up part away.
-  const setSettings = open => { if (open) showTab("set"); else { resetRestore(); setBackupOpen(false); } };
+  const setSettings = open => { if (open) showTab("set"); else { resetRestore(); setBackupOpen(false); setAcctOpen(false); } };
 
   // The round scan button in the tab bar is a label for #fileIn.
   // A scan always starts on "Mijn kelder"; the form can switch it to the wishlist.
