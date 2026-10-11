@@ -104,7 +104,8 @@ h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(34px, 9vw
 .restoreacts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .restoreacts .btn { padding: 11px 8px; font-size: 15px; }
 .seg button[aria-checked="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-#langSeg button { justify-content: center; min-height: 44px; font-size: 14px; }
+#themeSeg button, #langSeg button { justify-content: center; min-height: 44px; padding-block: 0; font-size: 14px; }
+#themeSeg svg { display: none; }   /* Weergave and Taal have the same plain, 44px buttons */
 .addmenu { position: absolute; right: 0; top: calc(100% + 8px); z-index: 8; width: min(280px, calc(100vw - 32px)); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); padding: 6px; display: flex; flex-direction: column; gap: 2px; }
 .menuitem { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; border: 0; background: none; padding: 12px 10px; border-radius: 10px; cursor: pointer; }
 .menuitem:hover, .menuitem:focus-visible { background: var(--sunk); }
