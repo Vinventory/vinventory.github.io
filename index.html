@@ -104,6 +104,7 @@ h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(34px, 9vw
 .restoreacts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .restoreacts .btn { padding: 11px 8px; font-size: 15px; }
 .seg button[aria-checked="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+#langSeg button { justify-content: center; min-height: 44px; font-size: 14px; }
 .addmenu { position: absolute; right: 0; top: calc(100% + 8px); z-index: 8; width: min(280px, calc(100vw - 32px)); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); padding: 6px; display: flex; flex-direction: column; gap: 2px; }
 .menuitem { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; border: 0; background: none; padding: 12px 10px; border-radius: 10px; cursor: pointer; }
 .menuitem:hover, .menuitem:focus-visible { background: var(--sunk); }
@@ -478,7 +479,7 @@ img { max-width: 100%; }
     </div>
   </header>
 
-  <section class="reminders" id="reminders" aria-label="Herinneringen" hidden></section>
+  <section class="reminders" id="reminders" aria-label="Aanstaande bewaardatums" hidden></section>
 
   <div class="tools">
     <input class="search" id="search" type="search" placeholder="Zoek op naam, producent, streek of druif" autocomplete="off">
@@ -528,6 +529,15 @@ img { max-width: 100%; }
         <button type="button" role="radio" data-theme-pick="dark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>Donker</button>
       </div>
       <p class="hint" style="margin:0">Automatisch volgt de instelling van je telefoon of computer.</p>
+      </div>
+      <div class="setsec" id="langSec">
+      <span class="section-l" style="margin:0">Taal</span>
+      <div class="seg" id="langSeg" role="radiogroup" aria-label="Taal">
+        <button type="button" role="radio" data-lang-pick="auto">Automatisch</button>
+        <button type="button" role="radio" data-lang-pick="nl">Nederlands</button>
+        <button type="button" role="radio" data-lang-pick="en">English</button>
+      </div>
+      <p class="hint" style="margin:0">Automatisch volgt de taal van je telefoon.</p>
       </div>
       <div class="setsec" id="backupSec">
         <button class="btn ghost backupbtn backuptoggle" type="button" id="backupToggle" aria-expanded="false" aria-controls="backupOpts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7.5 12 4l8 3.5v9L12 20l-8-3.5zM4 7.5l8 3.5 8-3.5M12 11v9"/></svg><span>Back-up</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
@@ -592,12 +602,383 @@ img { max-width: 100%; }
 <div class="sheet" id="sheet" hidden role="dialog" aria-modal="true"><div class="sheet-in" id="sheetIn"></div></div>
 <div class="toast" id="toast" hidden></div>
 
+<!--I18N-START-->
+<script>
+/* Vinventory i18n layer. Source of truth: i18n/layer.js. Do not edit it inside the HTML files:
+   change it here and run i18n/inject.ps1, which copies it into web/index.html and wijnkelder.html.
+   Dutch is the source language. In Dutch mode this file does nothing. In English mode it
+   (1) translates the page's static and rendered text and a few attributes by exact match on the Dutch text,
+   (2) offers T(), L() and plural helpers for strings the app builds in code. */
+(function () {
+  var KEY = "wijnkelder.lang", pick = "auto";
+  try { var s = localStorage.getItem(KEY); if (s === "nl" || s === "en") pick = s; } catch (e) {}
+  var nav = String((navigator.languages && navigator.languages[0]) || navigator.language || "nl").toLowerCase();
+  var lang = pick !== "auto" ? pick : (nav.indexOf("nl") === 0 ? "nl" : "en");
+  var V = window.VINV = {
+    lang: lang, pick: pick, loc: lang === "en" ? "en-GB" : "nl-NL",
+    L: function (nl, en) { return lang === "en" ? en : nl; },
+    T: function (s) { return s; },
+    D: function (s) { return s; },
+    nWines: function (n) { return n + " " + (lang === "en" ? (n === 1 ? "wine" : "wines") : (n === 1 ? "wijn" : "wijnen")); },
+    nBottles: function (n) { return n + " " + (lang === "en" ? (n === 1 ? "bottle" : "bottles") : (n === 1 ? "fles" : "flessen")); }
+  };
+  document.documentElement.lang = lang;
+  if (lang !== "en") return;
+
+  /* ---- Dutch -> English, exact match on the trimmed text ---- */
+  var X = {
+    /* sign-in screen */
+    "Even laden…": "Loading…",
+    "Je eigen wijnkelder, op al je apparaten.": "Your own wine cellar, on all your devices.",
+    "Inloggen of account maken": "Sign in or create an account",
+    "Inloggen": "Sign in", "Account maken": "Create account",
+    "E-mailadres": "Email address", "Wachtwoord": "Password",
+    "Ik ga akkoord met de": "I agree to the", "voorwaarden": "terms", "en de": "and the", "privacyverklaring": "privacy statement",
+    "Wachtwoord vergeten?": "Forgot password?", "Terug naar inloggen": "Back to sign in",
+    "Eerst rondkijken? Bekijk een voorbeeld": "Just looking? See an example",
+    "Je wijnen zijn privé: alleen jij ziet je kelder.": "Your wines are private: only you can see your cellar.",
+    "Voorwaarden": "Terms",
+    "Vul je e-mailadres in. Je krijgt een mail met een link om een nieuw wachtwoord te kiezen.": "Enter your email address. You will get an email with a link to choose a new password.",
+    "Kies een nieuw wachtwoord voor je account.": "Choose a new password for your account.",
+    "Stuur herstelmail": "Send reset email", "Nieuw wachtwoord opslaan": "Save new password",
+    "Dit e-mailadres of wachtwoord klopt niet.": "This email address or password is incorrect.",
+    "Bevestig eerst je e-mailadres met de link in de mail die we je stuurden.": "First confirm your email address with the link in the email we sent you.",
+    "Dit e-mailadres heeft al een account. Log in, of herstel je wachtwoord.": "This email address already has an account. Sign in, or reset your password.",
+    "Er zijn net te veel mails verstuurd. Probeer het over een paar minuten opnieuw.": "Too many emails were just sent. Try again in a few minutes.",
+    "Kies een wachtwoord van minstens 8 tekens.": "Choose a password of at least 8 characters.",
+    "Dit e-mailadres lijkt niet te kloppen.": "This email address doesn't look right.",
+    "Geen verbinding. Controleer je internet en probeer het opnieuw.": "No connection. Check your internet and try again.",
+    "Vul een geldig e-mailadres in.": "Enter a valid email address.",
+    "Vul je wachtwoord in.": "Enter your password.",
+    "Ga akkoord met de voorwaarden en de privacyverklaring om een account te maken.": "Agree to the terms and the privacy statement to create an account.",
+    "Als dit adres bij een account hoort, is er een mail onderweg met een link om je wachtwoord te herstellen.": "If this address belongs to an account, an email is on its way with a link to reset your password.",
+
+    /* main screens */
+    "Voorbeeld:": "Example:", "dit zijn voorbeeldwijnen. Wat je hier doet, wordt niet bewaard.": "these are example wines. What you do here isn't saved.",
+    "Maak een account": "Create an account", "Voorbeeld": "Example",
+    "Wijnen": "Wines", "Voeg toe": "Add", "Kelder": "Cellar", "Instellingen": "Settings",
+    "Herinneringen": "Memories", "Hoofdmenu": "Main menu", "Etiket scannen": "Scan label",
+    "Zoek op naam, producent, streek of druif": "Search name, producer, region, grape",
+    "Filteren": "Filter", "Sorteer": "Sort",
+    "Standaard": "Default", "Hoogste cijfer": "Highest rating", "Oudste jaar": "Oldest vintage", "Meeste flessen": "Most bottles",
+    "Hoogste prijs": "Highest price", "Laagste prijs": "Lowest price",
+    "Alles": "All", "Favorieten": "Favourites", "Op dronk": "Ready to drink", "Archief": "Archive",
+    "Rood": "Red", "Wit": "White", "Mousserend": "Sparkling", "Versterkt": "Fortified",
+    "Naamloze wijn": "Unnamed wine", "Wijn": "Wine", "wijn": "wine",
+    "Je kelder wordt geladen…": "Loading your cellar…",
+    "Je kelder is nog leeg": "Your cellar is still empty",
+    "Tik onderaan op de ronde": "At the bottom, tap the round", "scanknop": "scan button",
+    "om een foto van een fles te maken. De wijn wordt herkend en je krijgt er een korte beschrijving bij.": "to take a photo of a bottle. The wine is recognised and you get a short description.",
+    "Nog geen favorieten. Tik op het hartje bij een wijn om hem hier te bewaren.": "No favourites yet. Tap the heart on a wine to keep it here.",
+    "Geen wijnen die nu op dronk zijn. Vul bij een wijn": "No wines are ready to drink right now. For a wine, fill in",
+    "Op dronk vanaf": "Drink from", "Tot": "Until", "en": "and",
+    "in, dan verschijnt hij hier zodra het zover is.": ", and it will appear here when the time comes.",
+    "Het archief is leeg. Wijnen waarvan je de laatste fles hebt gedronken, komen hier te staan.": "The archive is empty. Wines of which you drank the last bottle will appear here.",
+    "Je hebt geen flessen meer op voorraad. Je eerdere wijnen staan in het": "You have no bottles left in stock. Your earlier wines are in the",
+    "Geen wijnen gevonden voor deze zoekopdracht.": "No wines found for this search.",
+    "Op dronk tot dit jaar, drink hem snel": "Ready to drink until this year, drink it soon",
+    "Bewaar voor": "Save for", "Bewaard voor": "Saved for", "Gedronken bij": "Drunk at", "Met": "With",
+    "Fles erbij": "Add a bottle", "Fles eraf": "Remove a bottle",
+    "Uit favorieten halen": "Remove from favourites", "Aan favorieten toevoegen": "Add to favourites",
+    "Toegevoegd aan favorieten": "Added to favourites", "Uit favorieten gehaald": "Removed from favourites",
+    "Herinnering verbergen": "Hide reminder", "Herinnering verborgen": "Reminder hidden",
+    "Laatste fles op. De wijn staat nu in het Archief.": "Last bottle gone. The wine is now in the Archive.",
+    "Fles eraf.": "Bottle removed.", "Noteer in logboek": "Note it in the logbook",
+    "Cijfer": "Rating", "Jouw cijfer": "Your rating", "Mijn cijfer": "My rating", "Cijfer van 1 tot 10": "Rating from 1 to 10",
+    "Cijfer voor deze fles": "Rating for this bottle", "Dit wordt ook je cijfer voor de wijn.": "This also becomes your rating for the wine.",
+
+    /* wishlist */
+    "Een lekkere wijn gedronken? Sla hem op in je wishlist. Tik op": "Had a lovely wine? Save it to your wishlist. Tap",
+    ", of scan het etiket met de knop onderaan en kies in het formulier": ", or scan the label with the button at the bottom and in the form choose",
+    "Je wishlist is leeg": "Your wishlist is empty",
+    "Zie je ergens een wijn die je later wilt kopen? Tik op": "Spot a wine somewhere that you'd like to buy later? Tap",
+    "om hem in te vullen, of scan het etiket met de ronde knop onderaan en kies in het formulier": "to fill it in, or scan the label with the round button at the bottom and in the form choose",
+    "Van wishlist halen": "Remove from wishlist", "Verwijder": "Delete", "Van je wishlist gehaald": "Removed from your wishlist",
+
+    /* settings */
+    "Weergave": "Appearance", "Automatisch": "Automatic", "Licht": "Light", "Donker": "Dark",
+    "Automatisch volgt de instelling van je telefoon of computer.": "Automatic follows the setting of your phone or computer.",
+    "Taal": "Language", "Automatisch volgt de taal van je telefoon.": "Automatic follows the language of your phone.",
+    "Back-up": "Backup", "Download back-up": "Download backup", "Back-up terugzetten": "Restore backup",
+    "Eén bestand met al je wijnen, je logboek en je foto's.": "One file with all your wines, your logbook and your photos.",
+    "Toevoegen": "Add", "Vervangen": "Replace", "Annuleren": "Cancel", "Zeker weten?": "Are you sure?", "Back-up teruggezet": "Backup restored",
+    "Dit bestand kan niet gelezen worden. Kies een back-up van Vinventory (.json).": "This file can't be read. Choose a Vinventory backup (.json).",
+    "Dit is geen back-up van Vinventory.": "This isn't a Vinventory backup.",
+    "Deze back-up bevat geen wijnen.": "This backup contains no wines.",
+    "Je kelder is nog leeg; er is niets om te bewaren.": "Your cellar is still empty; there is nothing to save.",
+    "Niet opgeslagen. Tik nog eens als je de back-up toch wilt.": "Not saved. Tap again if you still want the backup.",
+    "Er staat al een vraag open. Probeer het zo nog eens.": "A request is already open. Try again in a moment.",
+    "De back-up is te groot om op te slaan.": "The backup is too large to save.",
+    "Opslaan is hier niet mogelijk.": "Saving isn't possible here.",
+    "Je kijkt rond met voorbeeldwijnen. Niets wordt bewaard.": "You're looking around with example wines. Nothing is saved.",
+    "Ik heb al een account": "I already have an account",
+    "Ingelogd als": "Signed in as", "Uitloggen": "Sign out", "Account verwijderen": "Delete account",
+    "Uitleg": "Guide", "Een korte rondleiding: wijnen toevoegen, bijhouden en Vinventory op je beginscherm zetten.": "A short tour: adding wines, keeping track and putting Vinventory on your home screen.",
+    "Uitleg bekijken": "View guide",
+    "Scannen met Claude": "Scanning with Claude",
+    "Sleutel opgeslagen op dit apparaat.": "Key saved on this device.",
+    "Nog geen sleutel. Zonder sleutel opent de scanknop een formulier om de wijn zelf in te vullen.": "No key yet. Without a key, the scan button opens a form to fill in the wine yourself.",
+    "Claude-sleutel": "Claude key", "Sleutel opgeslagen. Je kunt nu etiketten scannen.": "Key saved. You can now scan labels.",
+    "Verwijderen": "Delete", "Bewaar sleutel": "Save key",
+    "Dit is je eigen Anthropic-sleutel: elke scan kost een klein bedrag op jouw account. De sleutel blijft op dit apparaat en komt nooit in je kelder. Uitloggen haalt hem hier weg.": "This is your own Anthropic key: every scan costs a small amount on your account. The key stays on this device and never goes into your cellar. Signing out removes it here.",
+    "Sleutel maken": "Create a key",
+    "Dit lijkt geen Anthropic-sleutel. Zo'n sleutel begint met sk-ant-.": "This doesn't look like an Anthropic key. Such a key starts with sk-ant-.",
+    "Opslaan op dit apparaat lukte niet.": "Saving on this device failed.",
+    "Sleutel verwijderd van dit apparaat.": "Key removed from this device.",
+    "Privacy": "Privacy",
+
+    /* detail screen */
+    "Producent": "Producer", "Jaargang": "Vintage", "Druif": "Grape", "Soort": "Type", "Land": "Country", "Streek": "Region",
+    "Prijs per fles": "Price per bottle", "Flessen": "Bottles", "Beschrijving": "Description",
+    "Nog geen beschrijving. Tik op Bewerken om er een te laten schrijven.": "No description yet. Tap Edit to have one written.",
+    "Past goed bij": "Pairs well with", "Laat Claude voorstellen": "Let Claude suggest", "Laat Claude schrijven": "Let Claude write",
+    "+ Herinnering": "+ Memory", "Herinnering": "Memory", "+ Fles geopend": "+ Bottle opened", "Fles geopend": "Bottle opened",
+    "Logboek": "Logbook", "Foto": "Photo", "Opslaan": "Save", "Datum": "Date", "Met wie": "With whom", "Notitie": "Note",
+    "Bijv. gekregen van Anna, gedronken op onze trouwdag, bij de slijter in Gent gekocht": "E.g. received from Anna, drunk on our wedding day, bought at the wine shop in Ghent",
+    "Bijv. Anna en Peter": "E.g. Anna and Peter",
+    "Bijv. verjaardag van Anna, bij de lamsrack. Hoe smaakte hij?": "E.g. Anna's birthday, with the rack of lamb. How did it taste?",
+    "Nog niets genoteerd. Tik op": "Nothing noted yet. Tap", "als je er een opendoet.": "when you open one.",
+    "Nog geen herinneringen. Tik op": "No memories yet. Tap", "om er een toe te voegen.": "to add one.",
+    "Gekocht bij": "Bought at", "Gekregen van": "Received from",
+    "Bijv. Wijnhandel De Druif, Utrecht": "E.g. Wine merchant De Druif, Utrecht",
+    "Bijv. Restaurant De Proeverij, Utrecht": "E.g. Restaurant De Proeverij, Utrecht",
+    "Bijv. Anna, voor onze verjaardag": "E.g. Anna, for our anniversary",
+    "Bewerken": "Edit", "Deze wijn helemaal uit je kelder verwijderen?": "Remove this wine from your cellar completely?",
+    "Nee, bewaren": "No, keep it", "Ja, verwijderen": "Yes, delete",
+    "Terug naar home": "Back to home", "Sluiten": "Close",
+    "Delen": "Share", "Deel deze wijn": "Share this wine",
+    "Foto bij dit moment": "Photo of this moment", "Foto bij je herinnering": "Photo with your memory",
+    "Etiket van": "Label of", "Andere foto": "Different photo", "Foto weghalen": "Remove photo", "Foto toevoegen": "Add photo",
+    "Foto van de fles toevoegen": "Add a photo of the bottle", "Scan wijnfles": "Scan wine bottle", "Foto van de fles": "Photo of the bottle", "Je foto": "Your photo",
+    "Notitie verwijderen": "Delete note", "Herinnering verwijderen": "Delete memory",
+    "Herinnering toegevoegd": "Memory added", "Herinnering verwijderd": "Memory deleted", "Notitie verwijderd": "Note deleted",
+    "Schrijf iets op of voeg een foto toe.": "Write something or add a photo.",
+    "Deze foto kan niet geopend worden.": "This photo can't be opened.", "Deze afbeelding kan niet geopend worden.": "This image can't be opened.",
+    "Verwijderd": "Deleted", "Opgeslagen": "Saved", "Op je wishlist gezet": "Added to your wishlist",
+    "Staat nu in je kelder": "Now in your cellar", "Toegevoegd aan je kelder": "Added to your cellar",
+    "Geef de wijn een naam of producent.": "Give the wine a name or producer.",
+    "De fles is al uit je kelder gehaald": "The bottle has already been taken out of your cellar",
+    "Er staan geen flessen meer in je kelder": "There are no bottles left in your cellar",
+    "Genoteerd. Dit was je laatste fles.": "Noted. That was your last bottle.", "Genoteerd in je logboek.": "Noted in your logbook.",
+    "nog even laten liggen": "keep a little longer", "over zijn hoogtepunt": "past its peak", "nu op dronk": "ready to drink now",
+    "Home": "Home",
+
+    /* forms */
+    "Wijn toevoegen": "Add wine", "Wijn bewerken": "Edit wine", "Bewaar in": "Save in", "Mijn kelder": "My cellar",
+    "Gekocht: zet in mijn kelder": "Bought: put in my cellar", "Aantal flessen": "Number of bottles", "Minder": "Fewer", "Meer": "More",
+    "Naam": "Name", "Bijv. Clos des Papes": "E.g. Clos des Papes", "Geen jaartal": "No year",
+    "\"Tot\" ligt vóór \"Op dronk vanaf\". Kies een later jaar bij Tot.": "\"Until\" is before \"Drink from\". Choose a later year for Until.",
+    "Bijv. lamsrack, stoofvlees, oude Gouda": "E.g. rack of lamb, stew, aged Gouda",
+    "Bijv. 50ste verjaardag van Peter": "E.g. Peter's 50th birthday",
+    "Kies een datum": "Choose a date", "Wis datum": "Clear date", "0,00": "0.00",
+    "Kies op Google Maps": "Choose on Google Maps",
+    "Zoek de winkel in Google Maps, tik op": "Find the shop in Google Maps, tap", "Deel": "Share", "Kopieer": "Copy",
+    "en kies": "and choose", ". Kom terug en plak de link hieronder.": ". Come back and paste the link below.",
+    "Plak hier de link uit Google Maps": "Paste the link from Google Maps here",
+    "Vul eerst een naam of producent in.": "First fill in a name or producer.",
+    "Claude schrijft een beschrijving…": "Claude is writing a description…", "Claude zoekt gerechten…": "Claude is looking for dishes…",
+    "Herkend. Controleer de gegevens en sla op.": "Recognised. Check the details and save.",
+    "Het etiket was lastig te lezen. Controleer de gegevens even.": "The label was hard to read. Please check the details.",
+    "Er werd geen wijnetiket herkend op deze foto. Probeer het opnieuw met het etiket goed in beeld, of vul de wijn zelf in.": "No wine label was recognised in this photo. Try again with the label clearly in view, or fill in the wine yourself.",
+    "Scannen kan met je eigen Claude-sleutel (zet hem bij Instellingen). Vul de wijn nu zelf in.": "Scanning works with your own Claude key (set it under Settings). Fill in the wine yourself for now.",
+    "Maak een account om etiketten te scannen en je eigen wijnen te bewaren.": "Create an account to scan labels and keep your own wines.",
+    "Vul eerst je Claude-sleutel in bij Instellingen (onderaan). Voeg de wijn nu zelf toe.": "First enter your Claude key under Settings (at the bottom). Add the wine yourself for now.",
+    "Je Claude-sleutel is ongeldig of ingetrokken. Controleer hem bij Instellingen (onderaan).": "Your Claude key is invalid or has been revoked. Check it under Settings (at the bottom).",
+    "Er staat te weinig tegoed op je Anthropic-account. Vul het aan, of voeg de wijn zelf toe.": "There is too little credit on your Anthropic account. Top it up, or add the wine yourself.",
+    "Even te veel verzoeken. Probeer het over een minuut opnieuw.": "Too many requests for a moment. Try again in a minute.",
+    "Deze foto kan niet gelezen worden. Probeer een andere foto.": "This photo can't be read. Try another photo.",
+    "Het etiket kon niet gelezen worden. Probeer een andere foto.": "The label couldn't be read. Try another photo.",
+    "Het antwoord was onvolledig. Probeer het opnieuw.": "The answer was incomplete. Please try again.",
+    "Geen verbinding met Claude. Controleer je internet en probeer het opnieuw.": "No connection to Claude. Check your internet and try again.",
+    "Claude gaf een fout terug. Probeer het straks opnieuw, of voeg de wijn zelf toe.": "Claude returned an error. Try again later, or add the wine yourself.",
+    "Er ging iets mis bij het lezen. Probeer het opnieuw of vul de wijn zelf in.": "Something went wrong while reading. Try again or fill in the wine yourself.",
+    "Vul de wijn zelf in; je foto wordt wel bewaard.": "Fill in the wine yourself; your photo is kept.",
+    "De foto kon niet worden voorbereid.": "The photo couldn't be prepared.",
+    "Etiket lezen": "Reading label", "Foto openen…": "Opening photo…", "Stoppen": "Stop",
+    "Claude leest het etiket…": "Claude is reading the label…", "Claude leest de foto": "Claude reads the photo",
+    "Foto openen": "Opening the photo", "Het antwoord van Claude": "Claude's answer",
+    "Verbinden met Claude": "Connecting to Claude", "Claude": "Claude", "Tekstherkenning": "Text recognition",
+    "Verbinden met Claude…": "Connecting to Claude…",
+    "Tekstherkenning laden: programma…": "Loading text recognition: program…",
+    "Tekstherkenning laden: taalbestanden…": "Loading text recognition: language files…",
+    "Tekstherkenning laden (eerste keer duurt even)…": "Loading text recognition (the first time takes a while)…",
+    "Tekstherkenning laden…": "Loading text recognition…",
+    "Tekstherkenning starten…": "Starting text recognition…", "Tekstherkenning starten (tweede poging)…": "Starting text recognition (second attempt)…",
+    "Taalbestanden downloaden": "Downloading language files", "Starten": "Starting", "Starten (tweede poging)": "Starting (second attempt)", "Lezen": "Reading",
+    "Tekst op het etiket lezen…": "Reading the text on the label…",
+    "Claude herkent de wijn… (de eerste keer vraagt Claude om toestemming)": "Claude is recognising the wine… (the first time Claude asks for permission)",
+    "Er werd geen tekst op het etiket gevonden. Maak de foto recht van voren, dichtbij en met goed licht, of vul de wijn zelf in.": "No text was found on the label. Take the photo straight on, close up and in good light, or fill in the wine yourself.",
+    "Automatisch herkennen is hier niet beschikbaar. Open de app via claude.ai en sta Claude toe; vul de wijn nu zelf in.": "Automatic recognition isn't available here. Open the app through claude.ai and allow Claude; fill in the wine yourself for now.",
+    "Je hebt Claude geen toestemming gegeven. Voeg de wijn handmatig toe.": "You haven't given Claude permission. Add the wine manually.",
+    "Log opnieuw in bij Claude en probeer het nog eens.": "Sign in to Claude again and try once more.",
+
+    /* logbook page and statistics */
+    "Zoek op wijn, datum, met wie of notitie": "Search by wine, date, who with or note", "Zoeken in je logboek": "Search your logbook",
+    "Niets in je logboek gevonden voor deze zoekopdracht.": "Nothing found in your logbook for this search.",
+    "Je logboek is nog leeg. Open een wijn en tik op": "Your logbook is still empty. Open a wine and tap",
+    "om bij te houden wanneer en met wie je hem dronk.": "to keep track of when and with whom you drank it.",
+    "Waarde": "Value", "Gem. prijs per fles": "Avg. price per bottle", "Gem. cijfer": "Avg. rating",
+    "Per soort": "By type", "Aantal flessen in je kelder.": "Number of bottles in your cellar.",
+    "Landen": "Countries", "Druiven": "Grapes", "Bij een blend telt elke druif mee.": "In a blend, every grape counts.",
+    "Jaargangen": "Vintages", "Drinkvenster": "Drinking window", "Nu op dronk": "Ready now", "Nog te jong": "Too young", "Over hoogtepunt": "Past its peak",
+    "Onbekend": "Unknown", "Je kelder": "Your cellar", "Er staan nu geen flessen in je kelder.": "There are no bottles in your cellar right now.",
+    "Overig": "Other", "Geopende flessen per maand": "Bottles opened per month", "Uit je logboek, de afgelopen 12 maanden.": "From your logbook, the past 12 months.",
+    "Vaakst gedronken met": "Most often drunk with", "Best beoordeeld": "Best rated",
+    "Nog niets in je logboek. Open een wijn en tik op": "Nothing in your logbook yet. Open a wine and tap",
+    ", dan zie je hier per maand wat je dronk.": ", and you'll see here per month what you drank.",
+
+    /* sharing */
+    "Wijn delen": "Share wine", "Kaart maken…": "Making card…",
+    "De kaart kon niet worden gemaakt. Je kunt de tekst wel delen.": "The card couldn't be made. You can still share the text.",
+    "Delen…": "Share…", "Tekst": "Text", "Terug naar de wijn": "Back to the wine", "Deelkaart van": "Share card of",
+    "Tekst met link gekopieerd. Plak hem in je bericht.": "Text with link copied. Paste it into your message.",
+    "De tekst is geselecteerd: kies Kopieer.": "The text is selected: choose Copy.",
+    "Delen lukte niet. Houd de kaart hierboven ingedrukt en kies Deel… of Bewaar in Foto's.": "Sharing failed. Press and hold the card above and choose Share… or Save to Photos.",
+    "Beheer je eigen wijnkelder gratis met Vinventory:": "Keep your own wine cellar for free with Vinventory:",
+    "Uit mijn wijnkelder · vinventory.github.io": "From my wine cellar · vinventory.github.io",
+    "Uit mijn wijnkelder · Vinventory": "From my wine cellar · Vinventory",
+    "Afbeelding opslaan": "Save image", "Tekst kopiëren": "Copy text", "Afbeelding opgeslagen.": "Image saved.",
+    "Houd de kaart ingedrukt om hem te delen, in Foto's te bewaren of te kopiëren.": "Press and hold the card to share it, save it to Photos or copy it.",
+    "Deze knop werkt hier niet. Houd de kaart hierboven ingedrukt en kies Deel… of Bewaar in Foto's.": "This button doesn't work here. Press and hold the card above and choose Share… or Save to Photos.",
+    "Tekst gekopieerd. Plak hem in je bericht.": "Text copied. Paste it into your message.",
+    "Kopiëren lukt hier niet automatisch. De tekst is geselecteerd: kies Kopieer.": "Copying doesn't work automatically here. The text is selected: choose Copy.",
+
+    /* welcome guide */
+    "Welkom": "Welcome", "Welkom bij Vinventory": "Welcome to Vinventory",
+    "Houd je wijnkelder bij: wat je hebt, wat je ervan vindt en wanneer je een fles opendeed. Je kelder is": "Keep track of your wine cellar: what you have, what you think of it and when you opened a bottle. Your cellar is",
+    "privé": "private", ": alleen jij ziet je wijnen, op al je apparaten.": ": only you can see your wines, on all your devices.",
+    "Wijnen toevoegen": "Adding wines",
+    "en maak een foto van het etiket: Claude vult de gegevens in. Dat werkt met je eigen Claude-sleutel (onder": "and take a photo of the label: Claude fills in the details. This works with your own Claude key (under",
+    ") en kost een klein bedrag op jouw Anthropic-account. Zonder sleutel opent de scanknop een formulier om de wijn zelf in te vullen.": ") and costs a small amount on your Anthropic account. Without a key, the scan button opens a form to fill in the wine yourself.",
+    "Bijhouden": "Keeping track",
+    "pas je het aantal flessen aan. Doe je een fles open, noteer dat dan in het logboek. Met het hartje bewaar je favorieten. Onder": "you adjust the number of bottles. If you open a bottle, note it in the logbook. The heart saves favourites. Under",
+    "zie je je statistieken, en op je": "you see your statistics, and on your", "zet je wijnen die je later wilt kopen.": "you put wines you want to buy later.",
+    "Altijd bij de hand": "Always at hand",
+    "Zet Vinventory op je beginscherm: tik in Safari op": "Put Vinventory on your home screen: in Safari, tap",
+    "Zet op beginscherm": "Add to Home Screen", ". Maak af en toe een back-up via": ". Make a backup now and then via",
+    "Terug": "Back", "Volgende": "Next", "Aan de slag": "Get started",
+
+    /* delete account */
+    "Hiermee verwijder je je account": "This deletes your account", "en al je wijnen": "and all your wines",
+    ", met logboek, herinneringen en foto's. Dit kan niet ongedaan worden gemaakt.": ", with logbook, memories and photos. This cannot be undone.",
+    "Download eerst een back-up": "Download a backup first", "Typ VERWIJDER om te bevestigen": "Type DELETE to confirm", "Verwijder alles": "Delete everything",
+    "Back-up opgeslagen. Controleer dat het bestand is bewaard voordat je verdergaat.": "Backup saved. Check that the file was saved before you continue.",
+    "De back-up kon niet worden opgeslagen.": "The backup couldn't be saved.",
+    "Account verwijderen…": "Deleting account…",
+    "Verwijderen is nog niet ingesteld in de database. Laat de beheerder van de app het databasebestand opnieuw uitvoeren.": "Deleting isn't set up in the database yet. Ask the app's administrator to run the database file again.",
+    "Je account en al je wijnen zijn verwijderd.": "Your account and all your wines have been deleted.",
+
+    /* notices */
+    "Verwijderen lukte niet.": "Deleting failed.",
+    "Deze wijn is te groot om op te slaan. Verwijder eerst een herinnering met foto.": "This wine is too big to save. First delete a memory with a photo.",
+    "Je bent uitgelogd. Log opnieuw in om verder te gaan.": "You have been signed out. Sign in again to continue.",
+    "Opslaan op dit apparaat lukte niet. Er is misschien te weinig ruimte.": "Saving on this device failed. There may not be enough space.",
+    "Je kelder is vol. Verwijder eerst een paar wijnen.": "Your cellar is full. First delete a few wines.",
+    "Opslaan lukte niet (invalid_argument). Er is mogelijk te veel data bij deze wijn, of je mag hier niet schrijven.": "Saving failed (invalid_argument). There may be too much data on this wine, or you may not be allowed to write here.",
+    "Je kelder wordt alleen op dit apparaat bewaard. Wis je de websitegegevens van je browser, dan ben je hem kwijt.": "Your cellar is only kept on this device. If you clear your browser's website data, you will lose it.",
+    "Je kelder kan nu niet online worden opgehaald en wordt alleen op dit apparaat bewaard. Log in bij claude.ai en herlaad de pagina.": "Your cellar can't be loaded online right now and is only kept on this device. Sign in to claude.ai and reload the page.",
+    "Verbinding met je kelder is verbroken. Herlaad de pagina.": "The connection to your cellar was lost. Reload the page.",
+    "Aanstaande bewaardatums": "Upcoming save-for dates"
+  };
+  /* numbers only, no user text: applied to every text and attribute */
+  var P = [
+    [/^Cijfer (\d+)$/, "Rating $1"]
+  ];
+  var HREF = { "privacy.html": "privacy-en.html", "voorwaarden.html": "terms-en.html" };
+  /* example wines (demo): only used where the app asks for it with D(), so a user's own data is never translated */
+  var DEMO = {
+    "Italië": "Italy", "Spanje": "Spain", "Frankrijk": "France", "Duitsland": "Germany", "Oostenrijk": "Austria", "Toscane": "Tuscany", "Bourgogne": "Burgundy",
+    "Elegant en sappig, met kers, viooltjes en een lange, droge afdronk.": "Elegant and juicy, with cherry, violets and a long, dry finish.",
+    "Pasta met ragù, gegrild vlees, oude kaas": "Pasta with ragù, grilled meat, aged cheese",
+    "Anna en Peter": "Anna and Peter", "Bij de pasta. Prachtig.": "With the pasta. Wonderful.",
+    "Zacht en rijp, met vanille, pruim en een vleugje leer.": "Soft and ripe, with vanilla, plum and a hint of leather.",
+    "Lamsrack, gestoofd vlees": "Rack of lamb, braised meat", "Bij het stoofvlees.": "With the stew.",
+    "Strak en mineraal, met citrus en een zilte afdronk.": "Tight and mineral, with citrus and a salty finish.",
+    "Oesters, vis, geitenkaas": "Oysters, fish, goat cheese",
+    "Fris en droog, perfect als aperitief.": "Fresh and dry, perfect as an aperitif.", "Schaaldieren, salade": "Shellfish, salad",
+    "Bleek en elegant, met aardbei en grapefruit.": "Pale and elegant, with strawberry and grapefruit.",
+    "Verjaardag van Anna": "Anna's birthday", "Op het terras.": "On the terrace.",
+    "Een vleugje zoet met veel zuur, perzik en steenkool.": "A touch of sweetness with plenty of acidity, peach and slate.",
+    "Pittig eten, Aziatische gerechten": "Spicy food, Asian dishes",
+    "Licht, fris en fruitig met peer en appel.": "Light, fresh and fruity with pear and apple.", "Aperitief, antipasti": "Aperitif, antipasti",
+    "Rijk en zoet, met abrikoos, honing en saffraan.": "Rich and sweet, with apricot, honey and saffron.",
+    "Foie gras, blauwe kaas, fruittaart": "Foie gras, blue cheese, fruit tart",
+    "Noten, gedroogd fruit en karamel.": "Nuts, dried fruit and caramel.", "Chocolade, noten, oude kaas": "Chocolate, nuts, aged cheese",
+    "Roos, teer en kers; op zijn hoogtepunt geweest.": "Rose, tar and cherry; past its peak.",
+    "Licht en zijdeachtig, met rood fruit.": "Light and silky, with red fruit.", "Familie": "Family",
+    "De laatste fles, bij het kerstdiner.": "The last bottle, at the Christmas dinner.",
+    "Krachtig en fijn, met kers, leer en kruiden.": "Powerful and refined, with cherry, leather and spices.",
+    "Fris en kruidig, met witte peper en groene appel.": "Fresh and spicy, with white pepper and green apple.",
+    "Tawny Port 20 jaar": "Tawny Port 20 years"
+  };
+
+  var DEBUG = false;
+  try { DEBUG = !!localStorage.getItem("wijnkelder.lang.debug"); } catch (e) {}
+  V.missed = {}; // debug only: texts that still look Dutch after translation
+  var NL_HINT = /\b(je|jouw|jij|het|een|niet|geen|nog|wordt|worden|zijn|voor|naar|deze|dit|wijn|wijnen|fles|flessen|kelder|bij|met|van|dagen|dag|uit|eerst|alle|alleen|maar|ook|kunt|kan|dan|als|op|aan|tot|nieuwe?|jaar|vandaag|morgen|gisteren)\b/i;
+  function tr(k) {
+    var e = X[k];
+    if (e !== undefined) return e;
+    for (var i = 0; i < P.length; i++) { var m = P[i][0].exec(k); if (m) return k.replace(P[i][0], P[i][1]); }
+    if (DEBUG && NL_HINT.test(k)) V.missed[k] = 1;
+    return k;
+  }
+  V.T = function (s) {
+    if (typeof s !== "string") return s;
+    var m = /^(\s*)([\s\S]*?)(\s*)$/.exec(s);
+    return m[2] ? m[1] + tr(m[2]) + m[3] : s;
+  };
+  V.D = function (s) { return typeof s === "string" && DEMO[s] !== undefined ? DEMO[s] : s; };
+
+  var SKIP = { SCRIPT: 1, STYLE: 1, TEXTAREA: 1, NOSCRIPT: 1 };
+  var ATTRS = ["placeholder", "aria-label", "title", "alt", "href"];
+  function tx(n) {
+    var p = n.parentNode;
+    if (!p || SKIP[p.tagName]) return;
+    var v = n.nodeValue;
+    if (!v || !/\S/.test(v)) return;
+    var m = /^(\s*)([\s\S]*?)(\s*)$/.exec(v), r = tr(m[2]);
+    if (r !== m[2]) n.nodeValue = m[1] + r + m[3];
+  }
+  function at(el) {
+    for (var i = 0; i < ATTRS.length; i++) {
+      var a = ATTRS[i];
+      if (!el.hasAttribute(a)) continue;
+      var v = el.getAttribute(a);
+      if (a === "href") { if (HREF[v]) el.setAttribute(a, HREF[v]); continue; }
+      var r = tr(v);
+      if (r !== v) el.setAttribute(a, r);
+    }
+  }
+  function walk(n) {
+    if (n.nodeType === 3) { tx(n); return; }
+    if (n.nodeType !== 1 || SKIP[n.tagName]) return;
+    at(n);
+    for (var c = n.firstChild; c; c = c.nextSibling) walk(c);
+  }
+  var d = document.querySelector('meta[name="description"]');
+  if (d) d.setAttribute("content", "Vinventory: your own wine cellar, on all your devices.");
+  walk(document.body);
+  var obs = new MutationObserver(function (recs) {
+    for (var i = 0; i < recs.length; i++) {
+      var r = recs[i];
+      if (r.type === "childList") { for (var j = 0; j < r.addedNodes.length; j++) walk(r.addedNodes[j]); }
+      else if (r.type === "characterData") tx(r.target);
+      else if (r.type === "attributes") at(r.target);
+    }
+    obs.takeRecords(); // our own changes are not new work
+  });
+  obs.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRS });
+})();
+</script>
+<!--I18N-END-->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
 <script>
 (() => {
+  const { lang: LANG, loc: LOC, L, T, D, nWines, nBottles } = window.VINV;
   const COLORS = [
-    ["rood", "Rood", "--w-rood"], ["wit", "Wit", "--w-wit"], ["rosé", "Rosé", "--w-rose"],
-    ["mousserend", "Mousserend", "--w-mousserend"], ["dessert", "Dessert", "--w-dessert"], ["versterkt", "Versterkt", "--w-versterkt"]
+    ["rood", T("Rood"), "--w-rood"], ["wit", T("Wit"), "--w-wit"], ["rosé", T("Rosé"), "--w-rose"],
+    ["mousserend", T("Mousserend"), "--w-mousserend"], ["dessert", T("Dessert"), "--w-dessert"], ["versterkt", T("Versterkt"), "--w-versterkt"]
   ];
   const colorVar = c => (COLORS.find(x => x[0] === c) || COLORS[0])[2];
   const HEART = "M12 20.5s-7.5-4.6-9.3-9.2C1.4 7.9 3.6 4.5 7 4.5c2 0 3.4 1.1 5 3 1.6-1.9 3-3 5-3 3.4 0 5.6 3.4 4.3 6.8-1.8 4.6-9.3 9.2-9.3 9.2z";
@@ -606,7 +987,7 @@ img { max-width: 100%; }
   const GLASS = "M7 3h10l-.5 5.5a4.5 4.5 0 0 1-9 0zM12 13v7M8.5 20.5h7";
   const BOOK ="M5 5.5A2.5 2.5 0 0 1 7.5 3H19v15H7.5A2.5 2.5 0 0 0 5 20.5zM5 20.5A2.5 2.5 0 0 1 7.5 18H19v3H7.5M9 7.5h6";
   const today = () => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
-  const colorName = c => (COLORS.find(x => x[0] === c) || [0, "Onbekend"])[1];
+  const colorName = c => (COLORS.find(x => x[0] === c) || [0, T("Onbekend")])[1];
   const YEAR = new Date().getFullYear();
   const $ = id => document.getElementById(id);
   const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
@@ -632,9 +1013,9 @@ img { max-width: 100%; }
   let loading = true;
   const saveErrText = e => {
     const code = e && (e.code || e.status), m = String((e && e.message) || "");
-    if (String(code) === "23514") return "Deze wijn is te groot om op te slaan. Verwijder eerst een herinnering met foto.";
-    if (/jwt|not authenticated|401/i.test(m + code)) return "Je bent uitgelogd. Log opnieuw in om verder te gaan.";
-    return "Opslaan lukte niet" + (code || m ? " (" + String(code || m).slice(0, 60) + ")" : "") + ". Probeer het opnieuw.";
+    if (String(code) === "23514") return T("Deze wijn is te groot om op te slaan. Verwijder eerst een herinnering met foto.");
+    if (/jwt|not authenticated|401/i.test(m + code)) return T("Je bent uitgelogd. Log opnieuw in om verder te gaan.");
+    return L("Opslaan lukte niet", "Saving failed") + (code || m ? " (" + String(code || m).slice(0, 60) + ")" : "") + L(". Probeer het opnieuw.", ". Please try again.");
   };
   const store = {
     chains: {}, channel: null,
@@ -646,7 +1027,7 @@ img { max-width: 100%; }
     async init() {
       render();
       try { this.apply(await this.load()); }
-      catch (e) { loading = false; render(); showNotice("Je kelder kon niet worden opgehaald (" + why(e) + "). Controleer je verbinding en herlaad de pagina."); return false; }
+      catch (e) { loading = false; render(); showNotice(L("Je kelder kon niet worden opgehaald (" + why(e) + "). Controleer je verbinding en herlaad de pagina.", "Your cellar could not be loaded (" + why(e) + "). Check your connection and reload the page.")); return false; }
       if (this.channel) sb.removeChannel(this.channel);
       this.channel = sb.channel("wines-" + me.id)
         .on("postgres_changes", { event: "*", schema: "public", table: "wines", filter: "user_id=eq." + me.id }, p => this.onChange(p))
@@ -708,7 +1089,7 @@ img { max-width: 100%; }
   // The database accepts at most about 900 KB of data per wine (see schema.sql). Keep a margin.
   const MAX_DOC = 800000;
   const docBytes = w => { const { id, ...d } = w; return new TextEncoder().encode(JSON.stringify(d)).length; };
-  const tooBigMsg = b => `Deze wijn bevat te veel foto's (${Math.round(b / 1024)} van ${Math.round(MAX_DOC / 1024)} KB). Verwijder eerst een herinnering met foto, dan past het weer.`;
+  const tooBigMsg = b => L(`Deze wijn bevat te veel foto's (${Math.round(b / 1024)} van ${Math.round(MAX_DOC / 1024)} KB). Verwijder eerst een herinnering met foto, dan past het weer.`, `This wine contains too many photos (${Math.round(b / 1024)} of ${Math.round(MAX_DOC / 1024)} KB). First delete a memory with a photo, then it will fit again.`);
 
   // ---------- Claude: every user's own Anthropic key, kept on this device only ----------
   const KEY_STORE = "wijnkelder.claudeKey";
@@ -824,7 +1205,7 @@ img { max-width: 100%; }
     // Each chip shows "<wines>/<bottles>" for the wines it would list.
     const tally = list => {
       const n = list.length, b = list.reduce((a, w) => a + (w.quantity || 0), 0);
-      return `<span class="n" title="${n} ${n === 1 ? "wijn" : "wijnen"}, ${b} ${b === 1 ? "fles" : "flessen"}">${n}/${b}</span>`;
+      return `<span class="n" title="${nWines(n)}, ${nBottles(b)}">${n}/${b}</span>`;
     };
     const byColor = c => inStock.filter(w => w.color === c);
     const favs = all.filter(w => w.favorite);
@@ -846,7 +1227,7 @@ img { max-width: 100%; }
         : w.quantity > 0 && (filter === "alle" || w.color === filter))
       .filter(w => !q || norm([w.name, w.producer, w.region, w.country, w.grape, w.vintage, ...memoriesOf(w).map(m => m.text + " " + (m.with || "")), w.pairing, w.saveFor, w.boughtAt, w.receivedFrom, ...(w.log || []).map(e => e.with + " " + e.note)].join(" ")).includes(q))
       .sort((a, b) => {
-        const byName = String(a.producer || a.name).localeCompare(String(b.producer || b.name), "nl");
+        const byName = String(a.producer || a.name).localeCompare(String(b.producer || b.name), LOC);
         const stock = (b.quantity > 0) - (a.quantity > 0);
         if (sortBy === "rating") return ((b.rating || 0) - (a.rating || 0)) || stock || byName;
         if (sortBy === "vintage") return stock || ((a.vintage || 9999) - (b.vintage || 9999)) || byName;
@@ -863,7 +1244,7 @@ img { max-width: 100%; }
       });
 
     $("sortLine").hidden = !all.length;
-    $("listCount").textContent = `${list.length} ${list.length === 1 ? "wijn" : "wijnen"}`;
+    $("listCount").textContent = nWines(list.length);
     if (!wines.length && loading) {
       $("list").innerHTML = `<div class="empty"><div class="spinner" aria-hidden="true"></div><p>Je kelder wordt geladen…</p></div>`;
       return;
@@ -891,8 +1272,8 @@ img { max-width: 100%; }
         <div class="meta">
           <span class="name">${favBtn(w)} ${esc(w.name || w.producer || "Naamloze wijn")}${w.example ? '<span class="tag">Voorbeeld</span>' : ""}</span>
           <span class="sub">${w.rating ? `<span class="score" aria-label="Cijfer ${w.rating}">${w.rating}</span>` : ""}${esc([/^price/.test(sortBy) && typeof w.price === "number" ? fmtEur(w.price) : "", w.name ? w.producer : "", w.vintage, w.region].filter(Boolean).join(" · "))}</span>
-          ${filter === "opdronk" ? `<span class="saveline">${w.drinkTo ? (w.drinkTo === YEAR ? "Op dronk tot dit jaar, drink hem snel" : `Op dronk tot ${w.drinkTo}`) : `Op dronk sinds ${w.drinkFrom}`}</span>` : ""}
-          ${w.saveFor || w.saveForDate ? `<span class="saveline">Bewaar voor ${esc([w.saveFor, w.saveForDate ? fmtDate(w.saveForDate) : ""].filter(Boolean).join(" · "))}</span>` : ""}
+          ${filter === "opdronk" ? `<span class="saveline">${w.drinkTo ? (w.drinkTo === YEAR ? T("Op dronk tot dit jaar, drink hem snel") : L(`Op dronk tot ${w.drinkTo}`, `Ready to drink until ${w.drinkTo}`)) : L(`Op dronk sinds ${w.drinkFrom}`, `Ready to drink since ${w.drinkFrom}`)}</span>` : ""}
+          ${w.saveFor || w.saveForDate ? `<span class="saveline">${T("Bewaar voor")} ${esc([w.saveFor, w.saveForDate ? fmtDate(w.saveForDate) : ""].filter(Boolean).join(" · "))}</span>` : ""}
           ${w.description ? `<span class="desc">${esc(w.description)}</span>` : ""}
         </div>
         <div class="stepper">
@@ -922,7 +1303,7 @@ img { max-width: 100%; }
         <button class="grow" type="button" data-open="${esc(w.id)}">
           <span class="when">${esc(daysLeft(w.saveForDate))} · ${esc(fmtDate(w.saveForDate))}</span>
           <span class="what">${esc(w.name || w.producer || "Naamloze wijn")}${w.vintage ? " " + esc(w.vintage) : ""}</span>
-          ${w.saveFor ? `<span class="for">Bewaard voor ${esc(w.saveFor)}</span>` : ""}
+          ${w.saveFor ? `<span class="for">${T("Bewaard voor")} ${esc(w.saveFor)}</span>` : ""}
         </button>
         <button class="remdel" type="button" data-remdel="${esc(remindKey(w))}" aria-label="Herinnering verbergen">×</button>
       </div>`).join("");
@@ -950,7 +1331,7 @@ img { max-width: 100%; }
         <div class="meta">
           <span class="name">${esc(w.name || w.producer || "Naamloze wijn")}</span>
           <span class="sub">${e.rating ? `<span class="score" aria-label="Cijfer ${e.rating}">${e.rating}</span>` : ""}${esc([fmtDate(e.date), w.name ? w.producer : "", w.vintage].filter(Boolean).join(" · "))}</span>
-          ${e.with ? `<span class="desc">Met ${esc(e.with)}</span>` : ""}
+          ${e.with ? `<span class="desc">${T("Met")} ${esc(e.with)}</span>` : ""}
           ${e.note ? `<span class="desc">${esc(e.note)}</span>` : ""}
         </div>
       </div>`).join("");
@@ -1003,7 +1384,7 @@ img { max-width: 100%; }
   $("sort").value = sortBy;
   // The sort button shows only its icon; it turns accent-coloured when a non-standard order is active.
   const syncSortChip = () => {
-    const label = "Sorteer: " + $("sort").selectedOptions[0].textContent;
+    const label = L("Sorteer: ", "Sort: ") + $("sort").selectedOptions[0].textContent;
     $("sortLbl").textContent = $("sort").selectedOptions[0].textContent;
     $("sort").setAttribute("aria-label", label);
   };
@@ -1051,7 +1432,7 @@ img { max-width: 100%; }
         <div class="meta">
           <span class="name">${esc(w.name || w.producer || "Naamloze wijn")}${w.example ? '<span class="tag">Voorbeeld</span>' : ""}</span>
           <span class="sub">${esc([w.name ? w.producer : "", w.vintage, w.region].filter(Boolean).join(" · "))}</span>
-          ${typeof w.price === "number" || w.boughtAt ? `<span class="saveline">${esc([typeof w.price === "number" ? fmtEur(w.price) : "", w.boughtAt ? "Gedronken bij " + w.boughtAt : ""].filter(Boolean).join(" · "))}</span>` : ""}
+          ${typeof w.price === "number" || w.boughtAt ? `<span class="saveline">${esc([typeof w.price === "number" ? fmtEur(w.price) : "", w.boughtAt ? T("Gedronken bij") + " " + w.boughtAt : ""].filter(Boolean).join(" · "))}</span>` : ""}
           ${w.description ? `<span class="desc">${esc(w.description)}</span>` : ""}
         </div>
         <div class="wishacts">
@@ -1124,6 +1505,14 @@ img { max-width: 100%; }
     applyTheme();
     setSettings(false);
   });
+  // ---------- Taal (automatisch / Nederlands / English), remembered per device; a change reloads the page ----------
+  document.querySelectorAll("[data-lang-pick]").forEach(b => b.setAttribute("aria-checked", String(b.dataset.langPick === window.VINV.pick)));
+  $("langSeg").addEventListener("click", e => {
+    const b = e.target.closest("[data-lang-pick]");
+    if (!b) return;
+    try { localStorage.setItem("wijnkelder.lang", b.dataset.langPick); } catch {}
+    location.reload();
+  });
   // ---------- Back-up: the whole cellar as one JSON file ----------
   const downloads = {
     save({ filename, data }) {
@@ -1171,9 +1560,12 @@ img { max-width: 100%; }
     const have = new Set(wines.map(w => w.id));
     const fresh = list.filter(w => !have.has(w.id)).length;
     const when = parsed.exportedAt ? fmtDate(String(parsed.exportedAt).slice(0, 10)) : "";
-    $("restoreTxt").textContent = `Back-up${when ? " van " + when : ""}: ${list.length} ${list.length === 1 ? "wijn" : "wijnen"}. ` +
+    $("restoreTxt").textContent = L(`Back-up${when ? " van " + when : ""}: ${nWines(list.length)}. ` +
       (fresh === list.length ? "Ze zijn allemaal nieuw." : fresh ? `${fresh} nieuw, ${list.length - fresh} ${list.length - fresh === 1 ? "staat" : "staan"} al in je kelder.` : "Ze staan allemaal al in je kelder.") +
-      " Toevoegen zet alleen de nieuwe erbij; Vervangen maakt je kelder gelijk aan de back-up.";
+      " Toevoegen zet alleen de nieuwe erbij; Vervangen maakt je kelder gelijk aan de back-up.",
+      `Backup${when ? " from " + when : ""}: ${nWines(list.length)}. ` +
+      (fresh === list.length ? "All of them are new." : fresh ? `${fresh} new, ${list.length - fresh} already in your cellar.` : "All of them are already in your cellar.") +
+      " Add only adds the new ones; Replace makes your cellar equal to the backup.");
     $("restoreAdd").disabled = !fresh;
     showMsg("backupMsg", "");
     $("restoreBox").hidden = false;
@@ -1186,7 +1578,7 @@ img { max-width: 100%; }
     wines.push(...add);
     writeRestored(add, []);
     resetRestore(); render();
-    showMsg("backupMsg", `${add.length} ${add.length === 1 ? "wijn" : "wijnen"} toegevoegd aan je kelder.`);
+    showMsg("backupMsg", L(`${nWines(add.length)} toegevoegd aan je kelder.`, `${nWines(add.length)} added to your cellar.`));
     toast("Back-up teruggezet");
   });
   $("restoreReplace").addEventListener("click", () => {
@@ -1198,7 +1590,7 @@ img { max-width: 100%; }
     writeRestored(restoreData, gone);
     const n = restoreData.length;
     resetRestore(); render();
-    showMsg("backupMsg", `Je kelder is vervangen door de back-up (${n} ${n === 1 ? "wijn" : "wijnen"}).`);
+    showMsg("backupMsg", L(`Je kelder is vervangen door de back-up (${nWines(n)}).`, `Your cellar has been replaced by the backup (${nWines(n)}).`));
     toast("Back-up teruggezet");
   });
   function writeRestored(put, removed) {
@@ -1214,7 +1606,7 @@ img { max-width: 100%; }
     try {
       await downloads.save({ filename: `vinventory-backup-${today()}.json`, data });
       const bottles = wines.reduce((a, w) => a + (w.quantity || 0), 0);
-      showMsg("backupMsg", `Back-up opgeslagen: ${wines.length} ${wines.length === 1 ? "wijn" : "wijnen"}, ${bottles} ${bottles === 1 ? "fles" : "flessen"}.`);
+      showMsg("backupMsg", L(`Back-up opgeslagen: ${nWines(wines.length)}, ${nBottles(bottles)}.`, `Backup saved: ${nWines(wines.length)}, ${nBottles(bottles)}.`));
     } catch (e) {
       const code = e && e.code;
       if (code === "declined") showMsg("backupMsg", "Niet opgeslagen. Tik nog eens als je de back-up toch wilt.");
@@ -1269,7 +1661,7 @@ img { max-width: 100%; }
       const url = URL.createObjectURL(file);
       const img = new Image();
       img.onload = () => resolve({ img, url });
-      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("foto kan niet geopend worden")); };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error(L("foto kan niet geopend worden", "photo can't be opened"))); };
       img.src = url;
     });
   }
@@ -1281,8 +1673,8 @@ img { max-width: 100%; }
     return c;
   }
 
-  const withTimeout = (p, ms, what) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error(what + " duurde te lang")), ms))]);
-  const why = e => String((e && (e.message || e.code)) || e || "onbekend").slice(0, 140);
+  const withTimeout = (p, ms, what) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error(T(what) + L(" duurde te lang", " took too long"))), ms))]);
+  const why = e => String((e && (e.message || e.code)) || e || L("onbekend", "unknown")).slice(0, 140);
 
   // ---------- Scan ----------
   const ERR = {
@@ -1296,10 +1688,11 @@ img { max-width: 100%; }
     network: "Geen verbinding met Claude. Controleer je internet en probeer het opnieuw.",
     api_error: "Claude gaf een fout terug. Probeer het straks opnieuw, of voeg de wijn zelf toe."
   };
-  const errText = e => (e && e.ocr ? e.message + " Vul de wijn zelf in; je foto wordt wel bewaard." : "") || ERR[e && e.code] ||
-    (!(e && e.code) ? "Er ging iets mis (" + why(e) + "). Vul de wijn zelf in; je foto wordt wel bewaard." : "") || "Er ging iets mis bij het lezen. Probeer het opnieuw of vul de wijn zelf in.";
+  const errText = e => (e && e.ocr ? e.message + " " + T("Vul de wijn zelf in; je foto wordt wel bewaard.") : "") || T(ERR[e && e.code]) ||
+    (!(e && e.code) ? L("Er ging iets mis (" + why(e) + "). Vul de wijn zelf in; je foto wordt wel bewaard.", "Something went wrong (" + why(e) + "). Fill in the wine yourself; your photo is kept.") : "") || T("Er ging iets mis bij het lezen. Probeer het opnieuw of vul de wijn zelf in.");
 
   function wineSchemaText() {
+    if (LANG === "en") return `{"isWine": true, "name": "name of the wine or cuvée, without the producer", "producer": "producer or château", "vintage": 2019, "region": "region or appellation", "country": "country, in English", "grape": "grape or blend", "color": "rood|wit|rosé|mousserend|dessert|versterkt", "description": "2 to 3 sentences in English about style, aroma and taste (do not mention dishes here)", "pairing": "4 to 6 concrete dishes in English that go well with this wine, separated by commas", "drinkFrom": 2025, "drinkTo": 2032, "confidence": "hoog|middel|laag"}`;
     return `{"isWine": true, "name": "naam van de wijn of cuvée, zonder de producent", "producer": "producent of château", "vintage": 2019, "region": "streek of appellation", "country": "land", "grape": "druif of blend", "color": "rood|wit|rosé|mousserend|dessert|versterkt", "description": "2 tot 3 zinnen in het Nederlands over stijl, geur en smaak (noem hier geen gerechten)", "pairing": "4 tot 6 concrete gerechten in het Nederlands die goed bij deze wijn passen, gescheiden door komma's","drinkFrom": 2025, "drinkTo": 2032, "confidence": "hoog|middel|laag"}`;
   }
 
@@ -1315,7 +1708,7 @@ img { max-width: 100%; }
     const tick = setInterval(() => {
       if (ctl.signal.aborted) { clearInterval(tick); return; }
       const el = $("readStep");
-      if (el) el.textContent = `Stap: ${step} · ${Math.round((Date.now() - t0) / 1000)} s`;
+      if (el) el.textContent = `${L("Stap", "Step")}: ${T(step)} · ${Math.round((Date.now() - t0) / 1000)} s`;
     }, 1000);
     const say = (msg, s) => { if (ctl.signal.aborted) return; if (s) step = s; const el = $("readMsg"); if (el) el.textContent = msg; };
 
@@ -1324,14 +1717,14 @@ img { max-width: 100%; }
       try {
         loaded = await withTimeout(loadImg(file), 20000, "Foto openen");
         thumb = scaled(loaded.img, 420).toDataURL("image/jpeg", 0.72);
-      } catch (e) { throw { ocr: true, message: "Deze foto kan niet geopend worden (" + why(e) + ")." }; }
+      } catch (e) { throw { ocr: true, message: L("Deze foto kan niet geopend worden (" + why(e) + ").", "This photo can't be opened (" + why(e) + ").") }; }
       if (ctl.signal.aborted) return;
       $("scanPhoto").innerHTML = `<img class="photo" src="${thumb}" alt="Je foto">`;
 
       if (!sample) throw { code: "no_key" };
       const big = await new Promise(r => scaled(loaded.img, 1500).toBlob(r, "image/jpeg", 0.85));
       URL.revokeObjectURL(loaded.url);
-      if (!big) throw { ocr: true, message: "De foto kon niet worden voorbereid." };
+      if (!big) throw { ocr: true, message: T("De foto kon niet worden voorbereid.") };
       await runRecognition(ctl, say, thumb, big);
     } catch (e) {
       if (e && e.code === "cancelled") return;
@@ -1342,14 +1735,16 @@ img { max-width: 100%; }
   }
 
   async function runRecognition(ctl, say, thumb, big) {
-    const rules = `Regels: "vintage", "drinkFrom" en "drinkTo" zijn getallen of null. Vul wat niet op het etiket staat aan met je wijnkennis als je redelijk zeker bent, anders een lege string. ` +
-      `Het drinkvenster is je beste schatting voor deze jaargang; het huidige jaar is ${YEAR}. `;
+    const rules = L(`Regels: "vintage", "drinkFrom" en "drinkTo" zijn getallen of null. Vul wat niet op het etiket staat aan met je wijnkennis als je redelijk zeker bent, anders een lege string. ` +
+      `Het drinkvenster is je beste schatting voor deze jaargang; het huidige jaar is ${YEAR}. `,
+      `Rules: "vintage", "drinkFrom" and "drinkTo" are numbers or null. Fill in what is not on the label with your wine knowledge if you are reasonably sure, otherwise an empty string. ` +
+      `The drinking window is your best estimate for this vintage; the current year is ${YEAR}. For "color" and "confidence" use exactly the Dutch keywords from the template (rood = red, wit = white, rosé, mousserend = sparkling, dessert, versterkt = fortified; hoog = high, middel = medium, laag = low). `);
     const askClaude = (prompt, opts) => withTimeout(sample.json(prompt, Object.assign({ signal: ctl.signal }, opts)), 150000, "Het antwoord van Claude")
-      .catch(e => { if (e instanceof Error && !e.code) throw { ocr: true, message: e.message + ". Probeer het nog eens" }; throw e; });
+      .catch(e => { if (e instanceof Error && !e.code) throw { ocr: true, message: e.message + L(". Probeer het nog eens", ". Please try again") }; throw e; });
     say("Claude leest het etiket…", "Claude leest de foto");
     const r = await askClaude(
-      `Je bekijkt een foto van een wijnfles of wijnetiket. Lees het etiket en antwoord met ALLEEN één JSON-object in precies deze vorm:\n${wineSchemaText()}\n\n` +
-      rules + `Staat er geen wijnetiket op de foto, antwoord dan {"isWine": false}.`,
+      L(`Je bekijkt een foto van een wijnfles of wijnetiket. Lees het etiket en antwoord met ALLEEN één JSON-object in precies deze vorm:\n${wineSchemaText()}\n\n`, `You are looking at a photo of a wine bottle or wine label. Read the label and answer with ONLY one JSON object in exactly this form:\n${wineSchemaText()}\n\n`) +
+      rules + L(`Staat er geen wijnetiket op de foto, antwoord dan {"isWine": false}.`, `If there is no wine label in the photo, answer {"isWine": false}.`),
       { images: big }
     );
     if (ctl.signal.aborted) return;
@@ -1418,7 +1813,7 @@ img { max-width: 100%; }
         <div class="grid2">
           <div class="field"><label for="f-grape">Druif</label><input id="f-grape" value="${esc(w.grape)}"></div>
           <div class="field"><label for="f-price">Prijs per fles</label>
-            <div class="euro"><span aria-hidden="true">€</span><input id="f-price" inputmode="decimal" autocomplete="off" value="${w.price != null ? esc(String(w.price.toFixed(2)).replace(".", ",")) : ""}" placeholder="0,00"></div>
+            <div class="euro"><span aria-hidden="true">€</span><input id="f-price" inputmode="decimal" autocomplete="off" value="${w.price != null ? esc(String(w.price.toFixed(2)).replace(".", L(",", "."))) : ""}" placeholder="0,00"></div>
           </div>
         </div>
         <div class="grid2">
@@ -1537,7 +1932,7 @@ img { max-width: 100%; }
       $("f-saveinput").classList.toggle("has-date", !!v);
       $("f-savedateClear").hidden = !v;
       $("f-savedateRow").hidden = !v || !typed;
-      $("f-savedateTxt").textContent = v ? "Datum: " + fmtDate(v) : "";
+      $("f-savedateTxt").textContent = v ? L("Datum: ", "Date: ") + fmtDate(v) : "";
     };
     showSaveDate();
     $("f-savefor").addEventListener("input", showSaveDate);
@@ -1555,7 +1950,7 @@ img { max-width: 100%; }
     });
     const updateMatch = () => {
       const m = findMatch(read(), id);
-      $("matchMsg").textContent = m ? `Staat al in je kelder (${m.quantity || 0} fl.). Opslaan telt deze erbij.` : "";
+      $("matchMsg").textContent = m ? L(`Staat al in je kelder (${m.quantity || 0} fl.). Opslaan telt deze erbij.`, `Already in your cellar (${nBottles(m.quantity || 0)}). Saving adds this one to it.`) : "";
     };
     updateMatch();
     ["f-name", "f-producer", "f-vintage"].forEach(k => $(k).addEventListener("input", updateMatch));
@@ -1591,16 +1986,16 @@ img { max-width: 100%; }
         btn.disabled = true; showMsg(msgId, busy);
         try {
           const facts = [d.producer, d.name, d.vintage, d.region, d.country, d.grape, colorName(d.color)].filter(Boolean).join(", ");
-          const { text } = await sample(ask + `\n\nWijn: ${facts}`, { cache: false, onText: ({ text }) => { $(fieldId).value = text; } });
+          const { text } = await sample(ask + `\n\n${L("Wijn", "Wine")}: ${facts}`, { cache: false, onText: ({ text }) => { $(fieldId).value = text; } });
           $(fieldId).value = text.trim(); showMsg(msgId, "");
         } catch (e) { showMsg(msgId, errText(e), true); }
         finally { btn.disabled = false; }
       });
     };
     wireGen("genDesc", "f-desc", "descMsg", "Claude schrijft een beschrijving…",
-      "Schrijf 2 tot 3 zinnen in het Nederlands over deze wijn: stijl, geur en smaak. Noem geen gerechten. Alleen de beschrijving, geen kop of opsomming.");
+      L("Schrijf 2 tot 3 zinnen in het Nederlands over deze wijn: stijl, geur en smaak. Noem geen gerechten. Alleen de beschrijving, geen kop of opsomming.", "Write 2 to 3 sentences in English about this wine: style, aroma and taste. Do not mention dishes. Only the description, no heading or list."));
     wireGen("genPair", "f-pairing", "pairMsg", "Claude zoekt gerechten…",
-      "Noem in het Nederlands 4 tot 6 concrete gerechten die goed bij deze wijn passen, gescheiden door komma's, eventueel gevolgd door één korte zin waarom. Geen kop, geen opsomming met streepjes.");
+      L("Noem in het Nederlands 4 tot 6 concrete gerechten die goed bij deze wijn passen, gescheiden door komma's, eventueel gevolgd door één korte zin waarom. Geen kop, geen opsomming met streepjes.", "Name 4 to 6 concrete dishes in English that go well with this wine, separated by commas, optionally followed by one short sentence on why. No heading, no bulleted list."));
 
     form.addEventListener("submit", e => {
       e.preventDefault();
@@ -1619,7 +2014,7 @@ img { max-width: 100%; }
         Object.assign(m, fillBlank(m, d), { quantity: (m.quantity || 0) + qty });
         if (!m.thumb && w.thumb) m.thumb = w.thumb;
         saved = m;
-        toast(qty ? `${qty} fl. bijgeteld. Je hebt er nu ${m.quantity}.` : `Gegevens aangevuld. Je hebt er ${m.quantity} fl.`);
+        toast(qty ? L(`${qty} fl. bijgeteld. Je hebt er nu ${m.quantity}.`, `${nBottles(qty)} added. You now have ${m.quantity}.`) : L(`Gegevens aangevuld. Je hebt er ${m.quantity} fl.`, `Details filled in. You have ${nBottles(m.quantity)}.`));
       } else if (id) {
         saved = wines.find(x => x.id === id);
         if (!saved) { closeSheet(); return; }
@@ -1659,7 +2054,7 @@ img { max-width: 100%; }
     return list.map(e => `<div class="logitem">
         <div class="grow">
           <span class="when">${e.rating ? `<span class="score" aria-label="Cijfer ${e.rating}">${e.rating}</span>` : ""}${esc(fmtDate(e.date))}</span>
-          ${e.with ? `<span class="who">Met ${esc(e.with)}</span>` : ""}
+          ${e.with ? `<span class="who">${T("Met")} ${esc(e.with)}</span>` : ""}
           ${e.note ? `<p class="lognote">${esc(e.note)}</p>` : ""}
         </div>
         <button class="logdel" type="button" data-logdel="${esc(e.id)}" aria-label="Notitie verwijderen">×</button>
@@ -1680,7 +2075,7 @@ img { max-width: 100%; }
     openSheet(`<div class="sheet-top"><div class="title-l"><button class="homebtn" type="button" data-close aria-label="Terug naar home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${HOUSE}"/></svg>Home</button><h2>${esc(w.name || w.producer || "Wijn")}</h2></div><div class="topbtns"><button class="fav big sharebtn" type="button" id="shareBtn" aria-label="Deel deze wijn" title="Delen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5v11M8 7.5l4-4 4 4M6 11H5v9.5h14V11h-1"/></svg></button>${favBtn(w, true)}</div></div>
       ${w.example ? '<span class="tag" style="margin:0;align-self:flex-start">Voorbeeld</span>' : ""}
       ${facts ? `<dl class="stats">${facts}</dl>` : ""}      <div><span class="section-l">Jouw cijfer</span><div id="d-rating">${ratingRow(w.rating, "data-rate")}</div></div>
-      ${w.thumb ? `<img class="photo" src="${esc(w.thumb)}" alt="Etiket van ${esc(w.name)}">` : ""}
+      ${w.thumb ? `<img class="photo" src="${esc(w.thumb)}" alt="${T("Etiket van")} ${esc(w.name)}">` : ""}
       <div><span class="section-l">Beschrijving</span>${w.description ? `<p class="memo">${esc(w.description)}</p>` : `<p class="hint" style="margin:0">Nog geen beschrijving. Tik op Bewerken om er een te laten schrijven.</p>`}</div>
       <div id="d-pair">${w.pairing ? `<span class="section-l">Past goed bij</span><p class="memo">${esc(w.pairing)}</p>`
         : sample ? `<div class="row-between"><span class="section-l" style="margin:0">Past goed bij</span><button class="linkbtn" type="button" id="dGenPair">Laat Claude voorstellen</button></div><span class="hint" id="dPairMsg" hidden></span>` : ""}</div>
@@ -1744,7 +2139,7 @@ img { max-width: 100%; }
       pb.disabled = true; showMsg("dPairMsg", "Claude zoekt gerechten…");
       try {
         const facts = [w.producer, w.name, w.vintage, w.region, w.country, w.grape, colorName(w.color)].filter(Boolean).join(", ");
-        const { text } = await sample("Noem in het Nederlands 4 tot 6 concrete gerechten die goed bij deze wijn passen, gescheiden door komma's, eventueel gevolgd door één korte zin waarom. Geen kop, geen opsomming met streepjes.\n\nWijn: " + facts,
+        const { text } = await sample(L("Noem in het Nederlands 4 tot 6 concrete gerechten die goed bij deze wijn passen, gescheiden door komma's, eventueel gevolgd door één korte zin waarom. Geen kop, geen opsomming met streepjes.", "Name 4 to 6 concrete dishes in English that go well with this wine, separated by commas, optionally followed by one short sentence on why. No heading, no bulleted list.") + "\n\n" + L("Wijn", "Wine") + ": " + facts,
           { cache: false, onText: ({ text }) => { if (openId === id) showMsg("dPairMsg", text); } });
         const cw = current();
         cw.pairing = text.trim();
@@ -1781,7 +2176,7 @@ img { max-width: 100%; }
       logPhoto = ""; drawLogPhoto();
       $("l-take").checked = !taken && q > 0;
       $("l-take").disabled = !taken && q === 0;
-      $("l-takelbl").textContent = taken ? "De fles is al uit je kelder gehaald" : q > 0 ? `Haal een fles uit de kelder (nu ${q})` : "Er staan geen flessen meer in je kelder";
+      $("l-takelbl").textContent = taken ? "De fles is al uit je kelder gehaald" : q > 0 ? L(`Haal een fles uit de kelder (nu ${q})`, `Take a bottle out of the cellar (now ${q})`) : "Er staan geen flessen meer in je kelder";
       $("l-takewrap").hidden = taken;
       $("logForm").dataset.taken = taken ? "1" : "";
       $("logForm").hidden = false; $("logAdd").hidden = true;
@@ -1818,8 +2213,8 @@ img { max-width: 100%; }
       render(); refreshOpenDetail(); saveNow(cw);
       hideLogForm();
       $("logList").innerHTML = logItems(cw);
-      toast((take ? (cw.quantity ? `Genoteerd. Nog ${cw.quantity} fl. in je kelder.` : "Genoteerd. Dit was je laatste fles.") : "Genoteerd in je logboek.") +
-        (logRating ? ` Je cijfer is nu ${logRating}.` : ""));
+      toast((take ? (cw.quantity ? L(`Genoteerd. Nog ${cw.quantity} fl. in je kelder.`, `Noted. ${nBottles(cw.quantity)} left in your cellar.`) : T("Genoteerd. Dit was je laatste fles.")) : T("Genoteerd in je logboek.")) +
+        (logRating ? L(` Je cijfer is nu ${logRating}.`, ` Your rating is now ${logRating}.`) : ""));
     });
     // Two taps to delete an entry: the first turns the × into "Verwijder".
     $("logList").addEventListener("click", e => {
@@ -1905,12 +2300,20 @@ img { max-width: 100%; }
   function parsePrice(v) {
     let s = String(v || "").replace(/[€\s]/g, "");
     if (!s) return null;
-    if (s.includes(",")) s = s.replace(/\./g, "").replace(",", ".");
-    else if (/^\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, "");
+    const c = s.lastIndexOf(","), p = s.lastIndexOf(".");
+    if (c >= 0 && p >= 0) {
+      // both signs present: the one that comes last is the decimal sign
+      const dec = c > p ? "," : ".";
+      s = s.split(dec === "," ? "." : ",").join("").replace(dec, ".");
+    } else if (c >= 0 || p >= 0) {
+      const sep = c >= 0 ? "," : ".", parts = s.split(sep), group = L(".", ",");   // group = this language's thousands sign
+      const thousands = parts.length > 2 || (sep === group && parts.length === 2 && /^\d{3}$/.test(parts[1]) && parts[0].length <= 3);
+      s = thousands ? parts.join("") : parts.join(".");
+    }
     const n = Math.round(parseFloat(s) * 100) / 100;
     return isFinite(n) && n >= 0 ? n : null;
   }
-  const fmtEur = n => new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR" }).format(n);
+  const fmtEur = n => new Intl.NumberFormat(LOC, { style: "currency", currency: "EUR" }).format(n);
   function cleanUrl(v) {
     const m = String(v || "").match(/https:\/\/[^\s"'<>]+/);
     return m ? m[0] : "";
@@ -1933,7 +2336,7 @@ img { max-width: 100%; }
           <div class="memmeta">
             ${m.date ? `<span class="memdate">${esc(fmtDate(m.date))}</span>` : ""}
             ${m.text ? `<span class="memnote">${esc(m.text)}</span>` : ""}
-            ${m.with ? `<span class="memwith">Met ${esc(m.with)}</span>` : ""}
+            ${m.with ? `<span class="memwith">${T("Met")} ${esc(m.with)}</span>` : ""}
           </div>
         </div>
         <button class="logdel" type="button" data-memdel="${esc(m.id)}" aria-label="Herinnering verwijderen">×</button>
@@ -1941,7 +2344,7 @@ img { max-width: 100%; }
   }
   function fmtDate(s) {
     const d = new Date(s + "T12:00:00");
-    return isNaN(d) ? s : d.toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" });
+    return isNaN(d) ? s : d.toLocaleDateString(LOC, { day: "numeric", month: "long", year: "numeric" });
   }
   function daysUntil(s) {
     if (!s) return NaN;
@@ -1951,10 +2354,10 @@ img { max-width: 100%; }
   function daysLeft(s) {
     const n = daysUntil(s);
     if (isNaN(n)) return "";
-    if (n === 0) return "Vandaag!";
-    if (n === 1) return "Morgen";
-    if (n > 1) return `Nog ${n} dagen`;
-    return n === -1 ? "Gisteren" : `${-n} dagen geleden`;
+    if (n === 0) return L("Vandaag!", "Today!");
+    if (n === 1) return L("Morgen", "Tomorrow");
+    if (n > 1) return L(`Nog ${n} dagen`, `${n} days left`);
+    return n === -1 ? L("Gisteren", "Yesterday") : L(`${-n} dagen geleden`, `${-n} days ago`);
   }
   // A wine is "op dronk" when it has a drinking window and this year falls inside it.
   function drinkNow(w) {
@@ -1962,9 +2365,9 @@ img { max-width: 100%; }
     return !(w.drinkFrom && YEAR < w.drinkFrom) && !(w.drinkTo && YEAR > w.drinkTo);
   }
   function drinkState(w) {
-    if (w.drinkFrom && YEAR < w.drinkFrom) return " · nog even laten liggen";
-    if (w.drinkTo && YEAR > w.drinkTo) return " · over zijn hoogtepunt";
-    return " · nu op dronk";
+    if (w.drinkFrom && YEAR < w.drinkFrom) return " · " + T("nog even laten liggen");
+    if (w.drinkTo && YEAR > w.drinkTo) return " · " + T("over zijn hoogtepunt");
+    return " · " + T("nu op dronk");
   }
   function refreshOpenDetail() {
     if (!openId) return;
@@ -1985,10 +2388,10 @@ img { max-width: 100%; }
       const cur = m.get(key) || { label, value: 0 };
       cur.value += n; m.set(key, cur);
     }
-    return [...m.values()].sort((a, b) => b.value - a.value || a.label.localeCompare(b.label, "nl"));
+    return [...m.values()].sort((a, b) => b.value - a.value || a.label.localeCompare(b.label, LOC));
   }
   const topWithOther = (rows, k) => rows.length <= k + 1 ? rows
-    : rows.slice(0, k).concat({ label: "Overig", value: rows.slice(k).reduce((a, r) => a + r.value, 0) });
+    : rows.slice(0, k).concat({ label: T("Overig"), value: rows.slice(k).reduce((a, r) => a + r.value, 0) });
   // Horizontal bars; rows keep their given order (ranked or chronological).
   function barRows(rows, unit) {
     const max = Math.max(1, ...rows.map(r => r.value));
@@ -2010,14 +2413,14 @@ img { max-width: 100%; }
     const rated = cel.filter(w => w.rating);
     const logs = cel.flatMap(w => (w.log || []).map(e => ({ w, e })));
     const thisYear = logs.filter(({ e }) => String(e.date).startsWith(String(YEAR))).length;
-    const fmt0 = n => new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
+    const fmt0 = n => new Intl.NumberFormat(LOC, { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
     const tiles = [
       ["Flessen", bottles], ["Wijnen", inStock.length],
       ["Waarde", pricedBottles ? fmt0(value) : "–"], ["Gem. prijs per fles", pricedBottles ? fmtEur(value / pricedBottles) : "–"],
-      ["Gem. cijfer", rated.length ? (rated.reduce((a, w) => a + w.rating, 0) / rated.length).toFixed(1).replace(".", ",") : "–"],
-      ["Geopend in " + YEAR, thisYear]
+      ["Gem. cijfer", rated.length ? (rated.reduce((a, w) => a + w.rating, 0) / rated.length).toFixed(1).replace(".", L(",", ".")) : "–"],
+      [L("Geopend in ", "Opened in ") + YEAR, thisYear]
     ].map(([k, v]) => `<div class="stat"><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("");
-    const bt = ["fles", "flessen"];
+    const bt = L(["fles", "flessen"], ["bottle", "bottles"]);
     let html = `<section class="statsec"><dl class="tiles">${tiles}</dl></section>`;
 
     if (bottles) {
@@ -2029,10 +2432,10 @@ img { max-width: 100%; }
       if (grapes.length) html += statSec("Druiven", barRows(topWithOther(grapes, 6), bt), "Bij een blend telt elke druif mee.");
       const dec = new Map();
       for (const w of inStock) { const v = +w.vintage; const k = v ? Math.floor(v / 10) * 10 : 0; dec.set(k, (dec.get(k) || 0) + w.quantity); }
-      const decRows = [...dec.entries()].sort((a, b) => (a[0] || 9999) - (b[0] || 9999)).map(([k, n]) => ({ label: k ? `${k}–${k + 9}` : "Geen jaartal", value: n }));
+      const decRows = [...dec.entries()].sort((a, b) => (a[0] || 9999) - (b[0] || 9999)).map(([k, n]) => ({ label: k ? `${k}–${k + 9}` : T("Geen jaartal"), value: n }));
       html += statSec("Jaargangen", barRows(decRows, bt));
       const win = [["Nu op dronk", w => drinkNow(w)], ["Nog te jong", w => w.drinkFrom && YEAR < w.drinkFrom], ["Over hoogtepunt", w => w.drinkTo && YEAR > w.drinkTo], ["Onbekend", w => !w.drinkFrom && !w.drinkTo]]
-        .map(([label, test]) => ({ label, value: inStock.filter(test).reduce((a, w) => a + w.quantity, 0) })).filter(r => r.value);
+        .map(([label, test]) => ({ label: T(label), value: inStock.filter(test).reduce((a, w) => a + w.quantity, 0) })).filter(r => r.value);
       html += statSec("Drinkvenster", barRows(win, bt));
     } else {
       html += statSec("Je kelder", `<p class="hint" style="margin:0">Er staan nu geen flessen in je kelder.</p>`);
@@ -2044,18 +2447,18 @@ img { max-width: 100%; }
     for (let i = 11; i >= 0; i--) { const d = new Date(d0.getFullYear(), d0.getMonth() - i, 1); months.push({ key: d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0"), d, n: 0 }); }
     for (const { e } of logs) { const m = months.find(x => String(e.date).startsWith(x.key)); if (m) m.n++; }
     const maxM = Math.max(1, ...months.map(m => m.n));
-    const monthName = d => d.toLocaleDateString("nl-NL", { month: "short" }).replace(".", "");
+    const monthName = d => d.toLocaleDateString(LOC, { month: "short" }).replace(".", "");
     if (logs.length) {
       html += statSec("Geopende flessen per maand",
-        `<div class="cols">${months.map(m => `<div class="col" title="${esc(monthName(m.d))} ${m.d.getFullYear()}: ${m.n} ${m.n === 1 ? "fles" : "flessen"}">${m.n ? `<b>${m.n}</b>` : ""}<i style="height:${m.n ? Math.max(4, Math.round(m.n / maxM * 85)) : 0}px"></i></div>`).join("")}</div>
+        `<div class="cols">${months.map(m => `<div class="col" title="${esc(monthName(m.d))} ${m.d.getFullYear()}: ${nBottles(m.n)}">${m.n ? `<b>${m.n}</b>` : ""}<i style="height:${m.n ? Math.max(4, Math.round(m.n / maxM * 85)) : 0}px"></i></div>`).join("")}</div>
          <div class="colx">${months.map(m => `<span>${esc(monthName(m.d).charAt(0).toUpperCase())}</span>`).join("")}</div>`,
         "Uit je logboek, de afgelopen 12 maanden.");
       const people = tallyBy(logs.flatMap(({ e }) => splitNames(e.with).map(p => ({ key: norm(p), label: p, n: 1 }))));
-      if (people.length) html += statSec("Vaakst gedronken met", barRows(people.slice(0, 5), ["keer", "keer"]));
+      if (people.length) html += statSec("Vaakst gedronken met", barRows(people.slice(0, 5), L(["keer", "keer"], ["time", "times"])));
     } else {
       html += statSec("Logboek", `<p class="hint" style="margin:0">Nog niets in je logboek. Open een wijn en tik op <b>Fles geopend</b>, dan zie je hier per maand wat je dronk.</p>`);
     }
-    const best = cel.filter(w => w.rating).sort((a, b) => b.rating - a.rating || String(a.name).localeCompare(String(b.name), "nl")).slice(0, 5);
+    const best = cel.filter(w => w.rating).sort((a, b) => b.rating - a.rating || String(a.name).localeCompare(String(b.name), LOC)).slice(0, 5);
     if (best.length) html += statSec("Best beoordeeld",
       best.map(w => `<div class="toprow"><span class="score">${w.rating}</span><span>${esc([w.name || w.producer, w.vintage].filter(Boolean).join(" "))}</span></div>`).join(""));
     html += `<button class="btn ghost logbtn" type="button" id="openLog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${BOOK}"/></svg><span>Logboek</span><span class="n">${logs.length}</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button>`;
@@ -2069,8 +2472,8 @@ img { max-width: 100%; }
     return [
       "🍷 " + title + (w.name && w.producer ? " – " + w.producer : ""),
       [w.region, w.country].filter(Boolean).join(", ") + (w.grape ? " · " + w.grape : ""),
-      w.rating ? `Mijn cijfer: ${w.rating}/10` : ""
-    ].filter(Boolean).join("\n") + "\nBeheer je eigen wijnkelder gratis met Vinventory:\n" + APP_URL;
+      w.rating ? `${T("Mijn cijfer")}: ${w.rating}/10` : ""
+    ].filter(Boolean).join("\n") + "\n" + T("Beheer je eigen wijnkelder gratis met Vinventory:") + "\n" + APP_URL;
   }
   function wrapLines(ctx, text, maxW, maxLines) {
     const words = String(text || "").split(/\s+/).filter(Boolean), lines = [];
@@ -2120,7 +2523,7 @@ img { max-width: 100%; }
     }
     let y = py + ph + 90;
     g.fillStyle = tok("--ink"); g.font = `72px ${disp}`;
-    for (const l of wrapLines(g, w.name || w.producer || "Wijn", W - 2 * P - 40, 2)) { g.fillText(l, P + 20, y); y += 80; }
+    for (const l of wrapLines(g, w.name || w.producer || T("Wijn"), W - 2 * P - 40, 2)) { g.fillText(l, P + 20, y); y += 80; }
     g.font = `600 38px ${body}`; g.fillStyle = tok("--muted");
     const sub = [w.name ? w.producer : "", w.vintage].filter(Boolean).join(" · ");
     if (sub) { g.fillText(wrapLines(g, sub, W - 2 * P - 40, 1)[0], P + 20, y); y += 54; }
@@ -2132,7 +2535,7 @@ img { max-width: 100%; }
       const t = `${w.rating}/10`, tw = g.measureText(t).width + 36;
       g.fillStyle = tok("--accent"); rrect(g, P + 20, y - 38, tw, 54, 14); g.fill();
       g.fillStyle = tok("--accent-ink"); g.fillText(t, P + 38, y);
-      g.fillStyle = tok("--muted"); g.font = `600 30px ${body}`; g.fillText("Mijn cijfer", P + 20 + tw + 18, y - 2);
+      g.fillStyle = tok("--muted"); g.font = `600 30px ${body}`; g.fillText(T("Mijn cijfer"), P + 20 + tw + 18, y - 2);
       y += 66;
     }
     if (w.description) {
@@ -2141,7 +2544,7 @@ img { max-width: 100%; }
       for (const l of wrapLines(g, w.description, W - 2 * P - 40, Math.min(5, room))) { g.fillText(l, P + 20, y); y += 44; }
     }
     g.fillStyle = tok("--muted"); g.font = `600 28px ${body}`;
-    g.fillText("Uit mijn wijnkelder · vinventory.github.io", P + 20, H - 40 - 44);
+    g.fillText(T("Uit mijn wijnkelder · vinventory.github.io"), P + 20, H - 40 - 44);
     return new Promise(r => c.toBlob(r, "image/png"));
   }
   async function openShare(id) {
@@ -2152,14 +2555,14 @@ img { max-width: 100%; }
     let blob = null;
     try { blob = await buildShareCard(w); } catch (e) { console.warn("Kaart maken mislukt", e); }
     if (!$("shareWait") || $("sheet").hidden) return; // the viewer left this sheet meanwhile
-    const text = shareText(w), fname = (norm(w.name || w.producer) || "wijn") + (w.vintage ? "-" + w.vintage : "") + ".png";
+    const text = shareText(w), fname = (norm(w.name || w.producer) || T("wijn")) + (w.vintage ? "-" + w.vintage : "") + ".png";
     // A data URL (not a blob URL) so Safari's long-press menu can share it, save it to Photos or copy it.
     // Long-pressing the picture is the fallback when navigator.share isn't available.
     const url = blob ? await new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.onerror = () => r(""); fr.readAsDataURL(blob); }) : "";
     const file = blob ? new File([blob], fname, { type: "image/png" }) : null;
     const canNative = !!navigator.share;
     openSheet(`${top("Wijn delen")}
-      ${url ? `<img class="sharecard" src="${url}" alt="Deelkaart van ${esc(w.name || w.producer)}">` : `<p class="hint warn">De kaart kon niet worden gemaakt. Je kunt de tekst wel delen.</p>`}
+      ${url ? `<img class="sharecard" src="${url}" alt="${T("Deelkaart van")} ${esc(w.name || w.producer)}">` : `<p class="hint warn">De kaart kon niet worden gemaakt. Je kunt de tekst wel delen.</p>`}
       <button class="btn primary" type="button" id="shareGo"><svg class="house" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5v11M8 7.5l4-4 4 4M6 11H5v9.5h14V11h-1"/></svg>Delen…</button>
       <span class="hint" id="shareMsg" hidden></span>
       <div class="field"><span class="section-l" style="margin:0">Tekst</span><textarea class="sharetxt" id="shareText">${esc(text)}</textarea></div>
@@ -2173,7 +2576,7 @@ img { max-width: 100%; }
         catch { const ta = $("shareText"); ta.focus(); ta.select(); showMsg("shareMsg", "De tekst is geselecteerd: kies Kopieer."); }
         return;
       }
-      const data = { title: w.name || w.producer || "Wijn", text: t };
+      const data = { title: w.name || w.producer || T("Wijn"), text: t };
       if (file && (!navigator.canShare || navigator.canShare({ files: [file] }))) data.files = [file];
       try { await navigator.share(data); }
       catch (e) {
@@ -2197,7 +2600,7 @@ img { max-width: 100%; }
     }
     el.hidden = false;
     clearTimeout(toastT);
-    toastT = setTimeout(() => { el.hidden = true; }, action ? 6000 : /^Opslaan lukte|^Je kelder is vol|^Je mag|^Deze wijn bevat/.test(t) ? 9000 : 2600);
+    toastT = setTimeout(() => { el.hidden = true; }, action ? 6000 : /^Opslaan lukte|^Je kelder is vol|^Je mag|^Deze wijn bevat|^Saving failed|^Your cellar is full|^This wine contains|^This wine is too big/.test(t) ? 9000 : 2600);
   }
   function showNotice(t) { $("notice").textContent = t; $("notice").hidden = false; }
   function hideNotice() { $("notice").hidden = true; }
@@ -2220,7 +2623,7 @@ img { max-width: 100%; }
     if (/password/i.test(m) && /(weak|short|least|characters)/i.test(m)) return "Kies een wachtwoord van minstens 8 tekens.";
     if (/valid email|invalid email|email address.*invalid/i.test(m)) return "Dit e-mailadres lijkt niet te kloppen.";
     if (/fetch|network|failed to/i.test(m)) return "Geen verbinding. Controleer je internet en probeer het opnieuw.";
-    return "Er ging iets mis" + (m ? " (" + m.slice(0, 80) + ")" : "") + ".";
+    return L("Er ging iets mis", "Something went wrong") + (m ? " (" + m.slice(0, 80) + ")" : "") + ".";
   };
   function setAuthMode(mode, msg, good) {
     authMode = mode;
@@ -2259,13 +2662,13 @@ img { max-width: 100%; }
         const { error } = await sb.auth.signInWithPassword({ email, password: pass });
         if (error) throw error;
       } else if (authMode === "up") {
-        const { data, error } = await sb.auth.signUp({ email, password: pass, options: { emailRedirectTo: back } });
+        const { data, error } = await sb.auth.signUp({ email, password: pass, options: { emailRedirectTo: back, data: { lang: LANG } } });
         if (error) throw error;
         if (!data.session) {
           // Supabase hides whether an address exists; an empty identities list means it already has an account.
           if (data.user && data.user.identities && data.user.identities.length === 0) throw new Error("already registered");
           $("a-pass").value = "";
-          setAuthMode("in", "We hebben een mail gestuurd naar " + email + ". Klik op de link erin om je account te bevestigen, en log daarna hier in.", true);
+          setAuthMode("in", L("We hebben een mail gestuurd naar " + email + ". Klik op de link erin om je account te bevestigen, en log daarna hier in.", "We sent an email to " + email + ". Click the link in it to confirm your account, then sign in here."), true);
         }
       } else if (authMode === "reset") {
         const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: back });
@@ -2328,7 +2731,12 @@ img { max-width: 100%; }
         wish: true, createdAt: d(-3) + "T12:00:00Z", boughtAt: "Restaurant De Proeverij", description: "Krachtig en fijn, met kers, leer en kruiden." },
       { name: "Grüner Veltliner Smaragd", producer: "Weingut Beispiel", vintage: 2022, color: "wit", country: "Oostenrijk", region: "Wachau", grape: "Grüner Veltliner", quantity: 0, price: 23,
         wish: true, createdAt: d(-10) + "T12:00:00Z", boughtAt: "Wijnbar Het Vat", description: "Fris en kruidig, met witte peper en groene appel." }
-    ].map((w, i) => Object.assign({ id: "demo" + (i + 1), example: true }, w));
+    ].map((w, i) => Object.assign({ id: "demo" + (i + 1), example: true }, w)).map(w => {
+      // example wines are translated with D(), so a user's own data is never touched
+      for (const k of ["name", "country", "region", "description", "pairing", "saveFor"]) if (w[k]) w[k] = D(w[k]);
+      (w.log || []).forEach(e => { e.with = D(e.with); e.note = D(e.note); });
+      return w;
+    });
   }
   const CAN_HIDE = ["acctSec", "keySec", "backupSec"];
   function endDemoUi() {
@@ -2384,7 +2792,7 @@ img { max-width: 100%; }
     const s = WEL[i], last = i === WEL.length - 1;
     openSheet(`${top("Welkom")}
       <div class="wel"><div class="welicon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${s.icon}"/></svg></div><h3>${s.t}</h3><p>${s.p}</p></div>
-      <div class="dots" aria-label="Stap ${i + 1} van ${WEL.length}">${WEL.map((_, k) => `<i class="${k === i ? "on" : ""}"></i>`).join("")}</div>
+      <div class="dots" aria-label="${L("Stap", "Step")} ${i + 1} ${L("van", "of")} ${WEL.length}">${WEL.map((_, k) => `<i class="${k === i ? "on" : ""}"></i>`).join("")}</div>
       <div class="actions">${i ? `<button class="btn ghost" type="button" id="welPrev">Terug</button>` : ""}<button class="btn primary" type="button" id="welNext">${last ? "Aan de slag" : "Volgende"}</button></div>`);
     if (i) $("welPrev").addEventListener("click", () => openWelcome(i - 1));
     $("welNext").addEventListener("click", () => last ? closeSheet() : openWelcome(i + 1));
@@ -2405,7 +2813,8 @@ img { max-width: 100%; }
       <div class="field"><label for="delConfirm">Typ VERWIJDER om te bevestigen</label><input id="delConfirm" autocomplete="off" autocapitalize="characters" spellcheck="false"></div>
       <span class="hint" id="delMsg" hidden></span>
       <div class="actions"><button class="btn ghost" type="button" data-close>Annuleren</button><button class="btn danger" type="button" id="delGo" disabled>Verwijder alles</button></div>`);
-    $("delConfirm").addEventListener("input", () => { $("delGo").disabled = $("delConfirm").value.trim().toUpperCase() !== "VERWIJDER"; });
+    const delOk = () => ["VERWIJDER", "DELETE"].includes($("delConfirm").value.trim().toUpperCase());
+    $("delConfirm").addEventListener("input", () => { $("delGo").disabled = !delOk(); });
     $("delBackup").addEventListener("click", async () => {
       if (!wines.length) { showMsg("delMsg", "Je kelder is leeg; er is niets om te bewaren."); return; }
       try {
@@ -2421,8 +2830,8 @@ img { max-width: 100%; }
         const m = String(error.message || "") + String(error.code || "");
         showMsg("delMsg", /PGRST202|does not exist|not find the function/i.test(m)
           ? "Verwijderen is nog niet ingesteld in de database. Laat de beheerder van de app het databasebestand opnieuw uitvoeren."
-          : "Verwijderen lukte niet (" + String(error.message || error.code || "onbekend").slice(0, 80) + "). Je account is niet verwijderd.", true);
-        btn.disabled = $("delConfirm").value.trim().toUpperCase() !== "VERWIJDER";
+          : L("Verwijderen lukte niet (" + String(error.message || error.code || "onbekend").slice(0, 80) + "). Je account is niet verwijderd.", "Deleting failed (" + String(error.message || error.code || "unknown").slice(0, 80) + "). Your account has not been deleted."), true);
+        btn.disabled = !delOk();
         return;
       }
       afterLeaveMsg = "Je account en al je wijnen zijn verwijderd.";
