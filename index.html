@@ -430,6 +430,24 @@ img { max-width: 100%; }
 .logbtn span:first-of-type { flex: 1; text-align: left; }
 .logbtn .n { color: var(--muted); font-weight: 500; font-variant-numeric: tabular-nums; }
 .wishlead { margin: 0; }
+/* Friends: tips in the wishlist, the friends card in Instellingen, the friend picker */
+.tips { display: flex; flex-direction: column; gap: var(--space); }
+.tip { display: flex; flex-direction: column; gap: 10px; padding: 14px; background: var(--accent-soft); border-radius: var(--r); }
+.tip .card { box-shadow: none; }
+.card.tipwine { grid-template-columns: 56px minmax(0, 1fr); cursor: default; }
+.tiphead { font-size: 15px; }
+.frow { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
+.frname { display: flex; flex-direction: column; min-width: 0; }
+.frname b { overflow-wrap: anywhere; }
+.fracts { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex: none; }
+.fracts .linkbtn.sure { color: var(--danger); }
+.invbox { display: flex; gap: 8px; }
+.invbox input { flex: 1; min-width: 0; padding: 11px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; }
+.friendpick { display: flex; flex-direction: column; gap: 6px; }
+.friendpick button { min-height: 44px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); font-weight: 600; text-align: left; padding: 0 14px; }
+.friendpick button[aria-checked="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.tab { position: relative; }
+.tabdot { position: absolute; top: 8px; left: calc(50% + 8px); width: 11px; height: 11px; border-radius: 50%; background: var(--accent); border: 2px solid var(--surface); }
 .wishacts { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .wishacts .btn { padding: 8px 12px; font-size: 14px; border-radius: 10px; flex: none; }
 .tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; background: var(--surface); border-top: 1px solid var(--line); padding: 4px 8px env(safe-area-inset-bottom, 0px); }
@@ -451,6 +469,7 @@ img { max-width: 100%; }
     <div id="authBox" hidden style="display:flex;flex-direction:column;gap:14px">
       <h1>Vinventory</h1>
       <p class="authlead" id="a-lead">Je eigen wijnkelder, op al je apparaten.</p>
+      <p class="hint good" id="a-invite" hidden>Je bent uitgenodigd voor Vinventory. Maak een account of log in; daarna kun je de uitnodiging accepteren.</p>
       <div class="seg two" id="authTabs" role="radiogroup" aria-label="Inloggen of account maken">
         <button type="button" role="radio" data-auth-tab="in">Inloggen</button>
         <button type="button" role="radio" data-auth-tab="up">Account maken</button>
@@ -516,6 +535,7 @@ img { max-width: 100%; }
       <div class="headbtns"><button class="btn primary addtoggle" id="wishAdd" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Voeg toe</button></div>
     </div>
     <p class="hint wishlead">Een lekkere wijn gedronken? Sla hem op in je wishlist. Tik op <b>Voeg toe</b>, of scan het etiket met de knop onderaan en kies in het formulier <b>Wishlist</b>.</p>
+    <section class="tips" id="tipsBox" aria-live="polite"></section>
     <section class="list" id="wishList" aria-live="polite"></section>
   </section>
 
@@ -571,6 +591,21 @@ img { max-width: 100%; }
         <button class="btn danger backupbtn" type="button" id="acctDelBtn">Account verwijderen</button>
         </div>
       </div>
+      <div class="setsec" id="friendsSec" hidden>
+        <button class="btn ghost backupbtn backuptoggle" type="button" id="frToggle" aria-expanded="false" aria-controls="frOpts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 6.5M18 14a6.5 6.5 0 0 1 3.5 6"/></svg><span>Vrienden</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="backupopts" id="frOpts" hidden>
+          <div class="field">
+            <label for="fr-name">Jouw naam voor vrienden</label>
+            <div class="boughtrow"><input id="fr-name" maxlength="40" autocomplete="off" placeholder="Bijv. Anna"><button class="btn ghost" type="button" id="fr-nameSave">Bewaar</button></div>
+            <span class="hint">Alleen je vrienden zien deze naam. Je e-mailadres blijft privé.</span>
+          </div>
+          <button class="btn primary backupbtn" type="button" id="fr-invite" disabled>Nodig een vriend uit</button>
+          <span class="hint" id="fr-msg" hidden></span>
+          <div class="invbox" id="fr-linkbox" hidden><input id="fr-link" readonly aria-label="Uitnodigingslink"><button class="btn ghost" type="button" id="fr-copy">Kopieer</button></div>
+          <div id="fr-list"></div>
+          <div id="fr-blocked"></div>
+        </div>
+      </div>
       <div class="setsec" id="helpSec">
         <button class="btn ghost backupbtn backuptoggle" type="button" id="helpBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 1-1 1.7M12 17h.01"/></svg><span>How to</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button>
       </div>
@@ -594,7 +629,7 @@ img { max-width: 100%; }
     <button class="tab" type="button" data-tab="kelder"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 10.5 12 3.5l8.5 7M5.5 9v11h13V9"/></svg>Kelder</button>
     <button class="tab" type="button" data-tab="wijnen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3h8l-.4 6.2a3.6 3.6 0 0 1-7.2 0zM12 13v7.5M8.5 20.5h7"/></svg>Wijnen</button>
     <label class="scantab" id="scanTab" for="fileIn" aria-label="Etiket scannen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3.2"/></svg></label>
-    <button class="tab" type="button" data-tab="wish"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h10v17l-5-3.5-5 3.5z"/></svg>Wishlist</button>
+    <button class="tab" type="button" data-tab="wish"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h10v17l-5-3.5-5 3.5z"/></svg>Wishlist<i class="tabdot" id="wishDot" hidden></i></button>
     <button class="tab" type="button" data-tab="set"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Instellingen</button>
   </div>
 </nav>
@@ -879,7 +914,42 @@ img { max-width: 100%; }
     "Je kelder wordt alleen op dit apparaat bewaard. Wis je de websitegegevens van je browser, dan ben je hem kwijt.": "Your cellar is only kept on this device. If you clear your browser's website data, you will lose it.",
     "Je kelder kan nu niet online worden opgehaald en wordt alleen op dit apparaat bewaard. Log in bij claude.ai en herlaad de pagina.": "Your cellar can't be loaded online right now and is only kept on this device. Sign in to claude.ai and reload the page.",
     "Verbinding met je kelder is verbroken. Herlaad de pagina.": "The connection to your cellar was lost. Reload the page.",
-    "Aanstaande bewaardatums": "Upcoming save-for dates"
+    "Aanstaande bewaardatums": "Upcoming save-for dates",
+
+    /* friends and tips */
+    "Vrienden": "Friends", "Jouw naam voor vrienden": "Your name for friends", "Bijv. Anna": "E.g. Anna", "Bewaar": "Save",
+    "Alleen je vrienden zien deze naam. Je e-mailadres blijft privé.": "Only your friends see this name. Your email address stays private.",
+    "Nodig een vriend uit": "Invite a friend", "Uitnodigingslink": "Invitation link", "Je vrienden": "Your friends",
+    "Je hebt nog geen vrienden. Nodig iemand uit met de knop hierboven.": "You have no friends yet. Invite someone with the button above.",
+    "Geblokkeerd": "Blocked", "Verwijder als vriend": "Remove as friend", "Blokkeren": "Block", "Deblokkeren": "Unblock",
+    "Kies een naam van 1 tot 40 tekens.": "Choose a name of 1 to 40 characters.", "Naam bewaard.": "Name saved.",
+    "Kies eerst een naam voor vrienden.": "First choose a name for friends.",
+    "Je hebt al 10 openstaande uitnodigingen. Wacht tot iemand er een gebruikt.": "You already have 10 open invitations. Wait until someone uses one.",
+    "De link is 7 dagen geldig en werkt één keer.": "The link is valid for 7 days and works once.", "Link gekopieerd.": "Link copied.",
+    "Uitnodiging": "Invitation",
+    "Deze uitnodiging werkt niet meer. Hij is verlopen, al gebruikt of ingetrokken.": "This invitation no longer works. It has expired, was already used or was withdrawn.",
+    "Vrienden kunnen elkaar wijnen tippen. Ze zien alleen je naam, nooit je kelder of e-mailadres.": "Friends can send each other wine tips. They only see your name, never your cellar or email address.",
+    "Hoe moeten vrienden je noemen?": "What should friends call you?", "Niet nu": "Not now", "Accepteren": "Accept",
+    "Te veel pogingen. Probeer het later opnieuw.": "Too many attempts. Try again later.",
+    "Je aanvraag is niet gelukt.": "Your request did not work.",
+    "Stuur naar een vriend": "Send to a friend",
+    "Je hebt nog geen vrienden. Nodig iemand uit via Instellingen, Vrienden.": "You have no friends yet. Invite someone via Settings, Friends.",
+    "Naar Instellingen": "Go to Settings", "Aan": "To", "Bericht (optioneel)": "Message (optional)",
+    "Bijv. Probeer deze eens bij de lamsrack!": "E.g. Try this one with the rack of lamb!",
+    "Etiketfoto meesturen": "Send the label photo",
+    "Prijs, logboek, herinneringen en winkel gaan nooit mee.": "Price, logbook, memories and shop are never included.",
+    "Verstuur tip": "Send tip", "Kies eerst een vriend.": "First choose a friend.",
+    "Je kunt niets sturen naar deze persoon.": "You can't send anything to this person.",
+    "Je hebt vandaag al veel tips gestuurd. Probeer het morgen opnieuw.": "You have already sent a lot of tips today. Try again tomorrow.",
+    "Deze vriend heeft al 5 tips van je openstaan. Wacht tot die zijn beantwoord.": "This friend already has 5 tips from you waiting. Wait until they have been answered.",
+    "Deze wijn kan niet worden verstuurd.": "This wine can't be sent.",
+    "Melden of blokkeren": "Report or block", "Wat is er mis? (optioneel)": "What is wrong? (optional)", "Meld deze tip": "Report this tip",
+    "Als je blokkeert, zijn jullie geen vrienden meer en krijg je niets meer van deze persoon.": "If you block, you are no longer friends and you won't receive anything from this person.",
+    "Je hebt vandaag al veel meldingen gedaan.": "You have already made many reports today.",
+    "Bedankt voor je melding.": "Thank you for your report.",
+    "Tips van vrienden": "Tips from friends", "Bewaar op wishlist": "Save to wishlist", "Weigeren": "Decline",
+    "Bewaard op je wishlist": "Saved to your wishlist", "Tip geweigerd": "Tip declined", "Tip van": "Tip from",
+    "Je bent uitgenodigd voor Vinventory. Maak een account of log in; daarna kun je de uitnodiging accepteren.": "You have been invited to Vinventory. Create an account or sign in; then you can accept the invitation."
   };
   /* numbers only, no user text: applied to every text and attribute */
   var P = [
@@ -977,6 +1047,12 @@ img { max-width: 100%; }
 <script>
 (() => {
   const { lang: LANG, loc: LOC, L, T, D, nWines, nBottles } = window.VINV;
+  // An invitation link looks like https://vinventory.github.io/#join=<24 hex>. Keep the code (it is used after sign-in)
+  // and clean the address bar, so the code isn't left in the browser history or a shared screenshot.
+  try {
+    const m = /[#&]join=([0-9a-f]{24})(?:&|$)/.exec(location.hash);
+    if (m) { localStorage.setItem("wijnkelder.pendingInvite", m[1]); history.replaceState(null, "", location.pathname + location.search); }
+  } catch {}
   const COLORS = [
     ["rood", T("Rood"), "--w-rood"], ["wit", T("Wit"), "--w-wit"], ["rosé", T("Rosé"), "--w-rose"],
     ["mousserend", T("Mousserend"), "--w-mousserend"], ["dessert", T("Dessert"), "--w-dessert"], ["versterkt", T("Versterkt"), "--w-versterkt"]
@@ -1413,7 +1489,7 @@ img { max-width: 100%; }
     tab = t;
     for (const [k, id] of Object.entries(VIEWS)) $(id).hidden = k !== t;
     document.querySelectorAll("[data-tab]").forEach(b => { if (b.dataset.tab === t) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
-    if (t !== "set") { resetRestore(); setBackupOpen(false); setAcctOpen(false); }
+    if (t !== "set") { resetRestore(); setBackupOpen(false); setAcctOpen(false); setFrOpen(false); }
     if (t === "kelder") renderStats();
     if (t === "wish") renderWish();
     if (changed) window.scrollTo(0, 0);
@@ -1433,6 +1509,7 @@ img { max-width: 100%; }
         <div class="meta">
           <span class="name">${esc(w.name || w.producer || "Naamloze wijn")}${w.example ? '<span class="tag">Voorbeeld</span>' : ""}</span>
           <span class="sub">${esc([w.name ? w.producer : "", w.vintage, w.region].filter(Boolean).join(" · "))}</span>
+          ${w.fromFriend ? `<span class="saveline">${T("Tip van")} ${esc(w.fromFriend)}${w.friendRating ? " · " + L(`gaf een ${esc(w.friendRating)}`, `rated it ${esc(w.friendRating)}`) : ""}</span>` : ""}
           ${typeof w.price === "number" || w.boughtAt ? `<span class="saveline">${esc([typeof w.price === "number" ? fmtEur(w.price) : "", w.boughtAt ? T("Gedronken bij") + " " + w.boughtAt : ""].filter(Boolean).join(" · "))}</span>` : ""}
           ${w.description ? `<span class="desc">${esc(w.description)}</span>` : ""}
         </div>
@@ -1621,7 +1698,7 @@ img { max-width: 100%; }
   });
 
   // Settings are a page now: "open" switches to it; closing only folds the back-up part away.
-  const setSettings = open => { if (open) showTab("set"); else { resetRestore(); setBackupOpen(false); setAcctOpen(false); } };
+  const setSettings = open => { if (open) showTab("set"); else { resetRestore(); setBackupOpen(false); setAcctOpen(false); setFrOpen(false); } };
 
   // The round scan button in the tab bar is a label for #fileIn.
   // A scan always starts on "Mijn kelder"; the form can switch it to the wishlist.
@@ -2568,10 +2645,13 @@ img { max-width: 100%; }
     openSheet(`${top("Wijn delen")}
       ${url ? `<img class="sharecard" src="${url}" alt="${T("Deelkaart van")} ${esc(w.name || w.producer)}">` : `<p class="hint warn">De kaart kon niet worden gemaakt. Je kunt de tekst wel delen.</p>`}
       <button class="btn primary" type="button" id="shareGo"><svg class="house" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5v11M8 7.5l4-4 4 4M6 11H5v9.5h14V11h-1"/></svg>Delen…</button>
+      ${friends.visible() ? `<button class="btn ghost" type="button" id="shareFriend">Stuur naar een vriend</button>` : ""}
       <span class="hint" id="shareMsg" hidden></span>
       <div class="field"><span class="section-l" style="margin:0">Tekst</span><textarea class="sharetxt" id="shareText">${esc(text)}</textarea></div>
       <button class="btn ghost" type="button" id="shareBack">Terug naar de wijn</button>`);
     $("shareBack").addEventListener("click", () => openDetail(id));
+    const sf = $("shareFriend");
+    if (sf) sf.addEventListener("click", () => friends.openSend(id));
     $("shareGo").addEventListener("click", async () => {
       const t = $("shareText").value;
       // Without a share sheet (some desktop browsers) the one button copies the text, link included.
@@ -2645,6 +2725,7 @@ img { max-width: 100%; }
     $("a-back").hidden = mode !== "reset";
     $("a-lead").textContent = mode === "reset" ? "Vul je e-mailadres in. Je krijgt een mail met een link om een nieuw wachtwoord te kiezen."
       : mode === "recover" ? "Kies een nieuw wachtwoord voor je account." : "Je eigen wijnkelder, op al je apparaten.";
+    $("a-invite").hidden = !hasPendingInvite() || mode === "reset" || mode === "recover";
     showMsg("a-msg", msg || "", !good && !!msg);
     if (good && msg) $("a-msg").className = "hint good";
   }
@@ -2700,6 +2781,7 @@ img { max-width: 100%; }
     showTab("wijnen");
     refreshSample();
     store.init().then(ok => { if (ok) maybeWelcome(); });
+    friends.boot();
   }
   // ---------- Demo: look around with example wines; nothing is saved ----------
   function demoWines() {
@@ -2771,6 +2853,7 @@ img { max-width: 100%; }
   function leaveApp() {
     me = null; wines = []; loading = false; filter = "alle"; query = ""; $("search").value = "";
     if (store.channel) { sb.removeChannel(store.channel); store.channel = null; }
+    friends.reset();
     closeSheet(); setSettings(false); showTab("wijnen");
     try { localStorage.removeItem(KEY_STORE); } catch {}   // a shared device shouldn't keep someone's key
     refreshSample(); render();
@@ -2779,6 +2862,270 @@ img { max-width: 100%; }
     setAuthMode("in", msg, !!msg);
   }
   $("signOutBtn").addEventListener("click", async () => { await sb.auth.signOut(); });
+
+  // ---------- Vrienden: uitnodigen, tips sturen en ontvangen (zie VRIENDEN-PLAN.md) ----------
+  // Dit zet zichzelf aan zodra de database de tabellen uit schema-vrienden.sql heeft. Zonder die tabellen blijft alles verborgen.
+  // Alles wat iets verandert gaat via databasefuncties (rpc); de app krijgt van vrienden alleen namen en tips te zien.
+  const PENDING_INVITE = "wijnkelder.pendingInvite";
+  const hasPendingInvite = () => { try { return !!localStorage.getItem(PENDING_INVITE); } catch { return false; } };
+  const clearPendingInvite = () => { try { localStorage.removeItem(PENDING_INVITE); } catch {} };
+  const cleanName = s => String(s || "").replace(/[\u0000-\u001f\u007f]/g, " ").trim().slice(0, 40);
+  // A tip's photo is only ever shown when it is a small inline JPEG, never an address to load from somewhere else.
+  const safeThumb = s => typeof s === "string" && s.length <= 90000 && /^data:image\/jpeg;base64,[A-Za-z0-9+\/]+={0,2}$/.test(s) ? s : "";
+  const setFrOpen = open => { $("frOpts").hidden = !open; $("frToggle").setAttribute("aria-expanded", String(open)); };
+  const friends = {
+    on: false, profile: null, list: [], blocked: [], tips: [], channel: null, timer: null,
+    async call(fn, args) { const { data, error } = await sb.rpc(fn, args || {}); if (error) throw error; return data; },
+    async boot() {
+      if (!me) return;
+      const user = me;
+      const { data, error } = await sb.from("profiles").select("display_name").maybeSingle();
+      if (me !== user) return;                    // signed out or switched account meanwhile
+      if (error) { this.reset(); return; }        // no tables (or offline): the feature stays hidden
+      this.on = true; this.profile = data ? data.display_name : null;
+      if (!this.channel) this.subscribe();
+      try { await this.load(); } catch {}
+      if (me !== user) return;
+      this.paint();
+      this.checkInvite();
+    },
+    async load() {
+      const [f, b, t] = await Promise.all([this.call("my_friends"), this.call("my_blocks"), this.call("my_gifts")]);
+      this.list = f || []; this.blocked = b || []; this.tips = t || [];
+    },
+    refresh() {
+      clearTimeout(this.timer);
+      this.timer = setTimeout(async () => { if (!this.on || !me) return; try { await this.load(); } catch {} this.paint(); }, 300);
+    },
+    subscribe() {
+      this.channel = sb.channel("friends-" + me.id)
+        .on("postgres_changes", { event: "*", schema: "public", table: "gifts", filter: "to_user=eq." + me.id }, () => this.refresh())
+        .on("postgres_changes", { event: "*", schema: "public", table: "friendships" }, () => this.refresh())
+        .subscribe();
+    },
+    reset() {
+      clearTimeout(this.timer);
+      if (this.channel) { sb.removeChannel(this.channel); this.channel = null; }
+      this.on = false; this.profile = null; this.list = []; this.blocked = []; this.tips = [];
+      this.paint();
+    },
+    visible() { return this.on && !demo && !!me; },
+    paint() {
+      const show = this.visible();
+      $("friendsSec").hidden = !show;
+      $("wishDot").hidden = !(show && this.tips.length);
+      this.paintTips();
+      if (!show) return;
+      if (document.activeElement !== $("fr-name")) $("fr-name").value = this.profile || "";
+      $("fr-invite").disabled = !this.profile;
+      $("fr-list").innerHTML = this.list.length
+        ? `<span class="section-l">Je vrienden</span>` + this.list.map(f => `<div class="frow"><div class="frname"><b>${esc(f.display_name)}</b><span class="hint">${L("Vrienden sinds", "Friends since")} ${esc(fmtDate(String(f.since).slice(0, 10)))}</span></div><div class="fracts"><button class="linkbtn" type="button" data-fr-rm="${esc(f.friend_id)}">Verwijder als vriend</button><button class="linkbtn" type="button" data-fr-bl="${esc(f.friend_id)}">Blokkeren</button></div></div>`).join("")
+        : `<p class="hint" style="margin:0">Je hebt nog geen vrienden. Nodig iemand uit met de knop hierboven.</p>`;
+      $("fr-blocked").innerHTML = this.blocked.length
+        ? `<span class="section-l">Geblokkeerd</span>` + this.blocked.map(b => `<div class="frow"><div class="frname"><b>${esc(b.display_name)}</b></div><div class="fracts"><button class="linkbtn" type="button" data-fr-ub="${esc(b.blocked_id)}">Deblokkeren</button></div></div>`).join("")
+        : "";
+    },
+    tipHtml(g) {
+      const p = g.payload || {}, name = g.from_name || "?", thumb = safeThumb(p.thumb);
+      const sub = [p.name ? p.producer : "", p.vintage, p.region, p.country].filter(Boolean).join(" · ");
+      return `<div class="tip">
+        <div class="tiphead"><b>${esc(name)}</b> ${L("stuurt je een tip", "sent you a tip")}</div>
+        <div class="card tipwine">${thumb ? `<img class="thumb" src="${esc(thumb)}" alt="">` : `<span class="glass" aria-hidden="true"><i style="background:var(${colorVar(p.color)})"></i></span>`}
+          <div class="meta"><span class="name">${esc(p.name || p.producer || T("Wijn"))}</span>${sub ? `<span class="sub">${esc(sub)}</span>` : ""}${p.description ? `<span class="desc">${esc(p.description)}</span>` : ""}</div></div>
+        ${g.message ? `<p class="memo">${esc(g.message)}</p>` : ""}
+        ${p.friendRating ? `<span class="saveline">${L(`${esc(name)} gaf deze wijn een ${esc(p.friendRating)}`, `${esc(name)} rated this wine ${esc(p.friendRating)}`)}</span>` : ""}
+        <div class="actions"><button class="btn primary" type="button" data-tip-save="${esc(g.id)}">Bewaar op wishlist</button><button class="btn ghost" type="button" data-tip-no="${esc(g.id)}">Weigeren</button></div>
+        <button class="linkbtn" type="button" data-tip-more="${esc(g.id)}">Melden of blokkeren</button>
+      </div>`;
+    },
+    paintTips() {
+      $("tipsBox").innerHTML = this.visible() && this.tips.length ? `<span class="section-l" style="margin:0">Tips van vrienden</span>` + this.tips.map(g => this.tipHtml(g)).join("") : "";
+    },
+    async saveName(raw, msgId) {
+      const name = cleanName(raw);
+      if (!name) { showMsg(msgId, "Kies een naam van 1 tot 40 tekens.", true); return false; }
+      const { error } = await sb.from("profiles").upsert({ user_id: me.id, display_name: name }, { onConflict: "user_id" });
+      if (error) { showMsg(msgId, L("Opslaan lukte niet. Probeer het opnieuw.", "Saving failed. Please try again."), true); return false; }
+      this.profile = name; this.paint(); showMsg(msgId, "Naam bewaard.");
+      return true;
+    },
+    async invite() {
+      const note = "De link is 7 dagen geldig en werkt één keer.";
+      showMsg("fr-msg", "");
+      let r;
+      try { r = await this.call("create_invite"); } catch { showMsg("fr-msg", L("Er ging iets mis. Probeer het opnieuw.", "Something went wrong. Please try again."), true); return; }
+      if (r.status === "needs_profile") { showMsg("fr-msg", "Kies eerst een naam voor vrienden.", true); return; }
+      if (r.status === "too_many") { showMsg("fr-msg", "Je hebt al 10 openstaande uitnodigingen. Wacht tot iemand er een gebruikt.", true); return; }
+      if (r.status !== "ok") { showMsg("fr-msg", L("Er ging iets mis. Probeer het opnieuw.", "Something went wrong. Please try again."), true); return; }
+      const link = APP_URL + "#join=" + r.code;
+      $("fr-link").value = link; $("fr-linkbox").hidden = false;
+      const text = L(`${this.profile} nodigt je uit voor Vinventory, de app voor je wijnkelder. Maak een account en word mijn vriend via deze link:\n${link}`,
+                     `${this.profile} invites you to Vinventory, the app for your wine cellar. Create an account and become my friend with this link:\n${link}`);
+      if (navigator.share) {
+        try { await navigator.share({ text }); showMsg("fr-msg", note); return; }
+        catch (e) { if (e && e.name === "AbortError") { showMsg("fr-msg", note); return; } }
+      }
+      try { await navigator.clipboard.writeText(text); showMsg("fr-msg", L("Uitnodiging gekopieerd. Plak hem in een bericht. De link is 7 dagen geldig en werkt één keer.", "Invitation copied. Paste it into a message. The link is valid for 7 days and works once.")); }
+      catch { showMsg("fr-msg", note); }
+    },
+    // After sign-in: an invitation link that was opened earlier asks for a yes.
+    async checkInvite() {
+      let code = "";
+      try { code = localStorage.getItem(PENDING_INVITE) || ""; } catch {}
+      if (!code || !this.on || !me) return;
+      let r;
+      try { r = await this.call("peek_invite", { p_code: code }); } catch { return; }
+      if (r.status === "ok" && !r.already) { this.openInvite(code, r.name); return; }
+      clearPendingInvite();
+      if (r.status === "ok") toast(L(`Je bent al bevriend met ${r.name}.`, `You are already friends with ${r.name}.`));
+      else openSheet(`${top("Uitnodiging")}<p class="memo">Deze uitnodiging werkt niet meer. Hij is verlopen, al gebruikt of ingetrokken.</p><button class="btn primary" type="button" data-close>OK</button>`);
+    },
+    openInvite(code, name) {
+      openSheet(`${top("Uitnodiging")}
+        <p class="memo"><b>${esc(name)}</b> ${L("nodigt je uit om vrienden te worden in Vinventory.", "invites you to become friends in Vinventory.")}</p>
+        <p class="hint" style="margin:0">Vrienden kunnen elkaar wijnen tippen. Ze zien alleen je naam, nooit je kelder of e-mailadres.</p>
+        ${this.profile ? "" : `<div class="field"><label for="inv-name">Hoe moeten vrienden je noemen?</label><input id="inv-name" maxlength="40" autocomplete="off" placeholder="Bijv. Anna"></div>`}
+        <span class="hint" id="inv-msg" hidden></span>
+        <div class="actions"><button class="btn ghost" type="button" id="inv-no">Niet nu</button><button class="btn primary" type="button" id="inv-yes">Accepteren</button></div>`);
+      $("inv-no").addEventListener("click", () => { clearPendingInvite(); closeSheet(); });
+      $("inv-yes").addEventListener("click", async () => {
+        const yes = $("inv-yes");
+        yes.disabled = true;
+        if (!this.profile && !(await this.saveName($("inv-name").value, "inv-msg"))) { yes.disabled = false; return; }
+        let r;
+        try { r = await this.call("accept_invite", { p_code: code }); }
+        catch { showMsg("inv-msg", L("Er ging iets mis. Probeer het opnieuw.", "Something went wrong. Please try again."), true); yes.disabled = false; return; }
+        if (r.status === "rate_limited") { showMsg("inv-msg", "Te veel pogingen. Probeer het later opnieuw.", true); yes.disabled = false; return; }
+        clearPendingInvite();
+        if (r.status === "ok") {
+          closeSheet(); toast(L(`Je bent nu bevriend met ${r.name}.`, `You are now friends with ${r.name}.`));
+          try { await this.load(); } catch {}
+          this.paint();
+        } else showMsg("inv-msg", "Deze uitnodiging werkt niet meer. Hij is verlopen, al gebruikt of ingetrokken.", true);
+      });
+    },
+    openSend(id) {
+      const w = wines.find(x => x.id === id);
+      if (!w || !this.on) return;
+      if (!this.list.length) {
+        openSheet(`${top("Stuur naar een vriend")}<p class="memo">Je hebt nog geen vrienden. Nodig iemand uit via Instellingen, Vrienden.</p>
+          <div class="actions"><button class="btn ghost" type="button" id="tp-back">Terug naar de wijn</button><button class="btn primary" type="button" id="tp-settings">Naar Instellingen</button></div>`);
+        $("tp-back").addEventListener("click", () => openDetail(id));
+        $("tp-settings").addEventListener("click", () => { closeSheet(); showTab("set"); setFrOpen(true); });
+        return;
+      }
+      const only = this.list.length === 1 ? this.list[0].friend_id : "";
+      openSheet(`${top("Stuur naar een vriend")}
+        <div class="memo"><b>${esc(w.name || w.producer || T("Wijn"))}</b>${w.vintage ? " " + esc(w.vintage) : ""}</div>
+        <div class="field"><span class="section-l" style="margin:0">Aan</span>
+          <div class="friendpick" id="tp-pick" role="radiogroup" aria-label="Aan">${this.list.map(f => `<button type="button" role="radio" data-pick="${esc(f.friend_id)}" aria-checked="${f.friend_id === only}">${esc(f.display_name)}</button>`).join("")}</div></div>
+        <div class="field"><label for="tp-msg">Bericht (optioneel)</label><textarea id="tp-msg" maxlength="280" style="min-height:80px" placeholder="Bijv. Probeer deze eens bij de lamsrack!"></textarea></div>
+        ${w.rating ? `<label class="check"><input type="checkbox" id="tp-rating" checked><span>${L(`Mijn cijfer (${esc(w.rating)}) meesturen`, `Send my rating (${esc(w.rating)})`)}</span></label>` : ""}
+        ${safeThumb(w.thumb) ? `<label class="check"><input type="checkbox" id="tp-photo" checked><span>Etiketfoto meesturen</span></label>` : ""}
+        <p class="hint" style="margin:0">Prijs, logboek, herinneringen en winkel gaan nooit mee.</p>
+        <span class="hint" id="tp-status" hidden></span>
+        <div class="actions"><button class="btn ghost" type="button" id="tp-back">Terug</button><button class="btn primary" type="button" id="tp-send">Verstuur tip</button></div>`);
+      $("tp-back").addEventListener("click", () => openDetail(id));
+      $("tp-pick").addEventListener("click", e => {
+        const b = e.target.closest("[data-pick]");
+        if (b) $("tp-pick").querySelectorAll("button").forEach(x => x.setAttribute("aria-checked", String(x === b)));
+      });
+      $("tp-send").addEventListener("click", async () => {
+        const pick = $("tp-pick").querySelector('[aria-checked="true"]');
+        if (!pick) { showMsg("tp-status", "Kies eerst een vriend.", true); return; }
+        const friend = this.list.find(f => f.friend_id === pick.dataset.pick);
+        const btn = $("tp-send");
+        btn.disabled = true; showMsg("tp-status", "");
+        let r;
+        try {
+          // The tip is built on the server from the saved wine, so make sure the latest edits are saved first.
+          flushSaves(); await Promise.all(Object.values(store.chains));
+          r = await this.call("send_gift", { p_to: pick.dataset.pick, p_wine_id: id, p_message: $("tp-msg").value,
+            p_rating: !!($("tp-rating") && $("tp-rating").checked), p_photo: !!($("tp-photo") && $("tp-photo").checked) });
+        } catch { showMsg("tp-status", L("Er ging iets mis. Probeer het opnieuw.", "Something went wrong. Please try again."), true); btn.disabled = false; return; }
+        if (r.status === "ok") { toast(L(`Tip gestuurd naar ${friend ? friend.display_name : "je vriend"}`, `Tip sent to ${friend ? friend.display_name : "your friend"}`)); openDetail(id); return; }
+        showMsg("tp-status", {
+          not_friends: "Je kunt niets sturen naar deze persoon.",
+          rate_limited: "Je hebt vandaag al veel tips gestuurd. Probeer het morgen opnieuw.",
+          too_many_pending: "Deze vriend heeft al 5 tips van je openstaan. Wacht tot die zijn beantwoord.",
+          no_wine: "Deze wijn kan niet worden verstuurd."
+        }[r.status] || L("Er ging iets mis. Probeer het opnieuw.", "Something went wrong. Please try again."), true);
+        btn.disabled = false;
+      });
+    },
+    openReport(g) {
+      const name = g.from_name || "?";
+      openSheet(`${top("Melden of blokkeren")}
+        <p class="memo"><b>${esc(name)}</b></p>
+        <div class="field"><label for="rp-reason">Wat is er mis? (optioneel)</label><textarea id="rp-reason" maxlength="500" style="min-height:80px"></textarea></div>
+        <span class="hint" id="rp-msg" hidden></span>
+        <button class="btn ghost" type="button" id="rp-send">Meld deze tip</button>
+        <button class="btn danger" type="button" id="rp-block">${L(`Blokkeer ${esc(name)}`, `Block ${esc(name)}`)}</button>
+        <p class="hint" style="margin:0">Als je blokkeert, zijn jullie geen vrienden meer en krijg je niets meer van deze persoon.</p>
+        <button class="btn ghost" type="button" id="rp-back">Annuleren</button>`);
+      $("rp-back").addEventListener("click", closeSheet);
+      $("rp-send").addEventListener("click", async () => {
+        try {
+          const r = await this.call("submit_report", { p_reported: g.from_id, p_gift: g.id, p_reason: $("rp-reason").value });
+          if (r.status === "ok") { closeSheet(); toast("Bedankt voor je melding."); }
+          else showMsg("rp-msg", r.status === "rate_limited" ? "Je hebt vandaag al veel meldingen gedaan." : L("Er ging iets mis. Probeer het opnieuw.", "Something went wrong. Please try again."), true);
+        } catch { showMsg("rp-msg", L("Er ging iets mis. Probeer het opnieuw.", "Something went wrong. Please try again."), true); }
+      });
+      $("rp-block").addEventListener("click", async () => {
+        try {
+          const r = await this.call("block_user", { p_user: g.from_id });
+          if (r.status !== "ok") throw new Error("block");
+          closeSheet(); toast(L(`${name} is geblokkeerd.`, `${name} has been blocked.`));
+          await this.load(); this.paint();
+        } catch { showMsg("rp-msg", L("Er ging iets mis. Probeer het opnieuw.", "Something went wrong. Please try again."), true); }
+      });
+    }
+  };
+  $("frToggle").addEventListener("click", () => setFrOpen($("frOpts").hidden));
+  $("frOpts").addEventListener("click", async e => {
+    const b = e.target.closest("button");
+    if (!b) return;
+    if (b.id === "fr-nameSave") { friends.saveName($("fr-name").value, "fr-msg"); return; }
+    if (b.id === "fr-invite") { b.disabled = true; await friends.invite(); b.disabled = !friends.profile; return; }
+    if (b.id === "fr-copy") {
+      try { await navigator.clipboard.writeText($("fr-link").value); showMsg("fr-msg", "Link gekopieerd."); }
+      catch { $("fr-link").focus(); $("fr-link").select(); }
+      return;
+    }
+    const act = b.dataset.frRm ? "rm" : b.dataset.frBl ? "bl" : b.dataset.frUb ? "ub" : "";
+    if (!act) return;
+    // Removing or blocking needs a second tap on the same button.
+    if (act !== "ub" && !b.classList.contains("sure")) {
+      $("fr-list").querySelectorAll(".sure").forEach(x => { x.classList.remove("sure"); x.textContent = x.dataset.frRm ? "Verwijder als vriend" : "Blokkeren"; });
+      b.classList.add("sure"); b.textContent = "Zeker weten?";
+      return;
+    }
+    b.disabled = true;
+    try {
+      const fn = act === "rm" ? "remove_friend" : act === "bl" ? "block_user" : "unblock_user";
+      const arg = act === "rm" ? { p_friend: b.dataset.frRm } : { p_user: b.dataset.frBl || b.dataset.frUb };
+      await friends.call(fn, arg);
+      await friends.load(); friends.paint();
+    } catch { b.disabled = false; showMsg("fr-msg", L("Er ging iets mis. Probeer het opnieuw.", "Something went wrong. Please try again."), true); }
+  });
+  $("tipsBox").addEventListener("click", async e => {
+    const b = e.target.closest("button");
+    if (!b) return;
+    const id = b.dataset.tipSave || b.dataset.tipNo || b.dataset.tipMore;
+    const g = friends.tips.find(t => t.id === id);
+    if (!g) return;
+    if (b.dataset.tipMore) { friends.openReport(g); return; }
+    const saved = !!b.dataset.tipSave;
+    b.disabled = true;
+    try {
+      const r = await friends.call("answer_gift", { p_id: g.id, p_action: saved ? "saved" : "declined" });
+      if (r.status !== "ok" && r.status !== "invalid") throw new Error("answer");
+      friends.tips = friends.tips.filter(t => t.id !== g.id);
+      friends.paint();
+      toast(saved ? "Bewaard op je wishlist" : "Tip geweigerd");
+      if (saved) store.load().then(l => store.apply(l)).catch(() => {});
+    } catch { b.disabled = false; toast(L("Er ging iets mis. Probeer het opnieuw.", "Something went wrong. Please try again.")); }
+  });
 
   // ---------- Welcome guide: shown once on a device, for an account with an empty cellar ----------
   const WEL = [
@@ -2845,7 +3192,10 @@ img { max-width: 100%; }
   }
   $("acctDelBtn").addEventListener("click", () => { setSettings(false); openAccountDelete(); });
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible" && me) store.load().then(l => store.apply(l)).catch(() => {});
+    if (document.visibilityState === "visible" && me) {
+      store.load().then(l => store.apply(l)).catch(() => {});
+      if (friends.on) friends.refresh(); else friends.boot();
+    }
   });
 
   // ---------- Boot ----------
@@ -2856,7 +3206,7 @@ img { max-width: 100%; }
       if (event === "PASSWORD_RECOVERY") { recovering = true; setAuthMode("recover"); return; }
       if (event === "SIGNED_OUT") { leaveApp(); return; }
       if (session && session.user) { if (!recovering) enterApp(session.user); }
-      else if (event === "INITIAL_SESSION") setAuthMode(recovering ? "recover" : "in");
+      else if (event === "INITIAL_SESSION") setAuthMode(recovering ? "recover" : hasPendingInvite() ? "up" : "in");
     }, 0);
   });
 })();
