@@ -784,6 +784,10 @@ img { max-width: 100%; }
           <button class="btn primary backupbtn" type="button" id="fr-invite" disabled>Nodig een vriend uit</button>
           <span class="hint" id="fr-msg" hidden></span>
           <div class="invbox" id="fr-linkbox" hidden><input id="fr-link" readonly aria-label="Uitnodigingslink"><button class="btn ghost" type="button" id="fr-copy">Kopieer</button></div>
+          <div id="fr-fxbox" hidden style="display:flex;flex-direction:column;gap:8px">
+            <button class="btn ghost backupbtn" type="button" id="fr-fx">Stuur een verrassing</button>
+            <label class="check"><input type="checkbox" id="fr-fxon"><span>Verrassingen van vrienden afspelen</span></label>
+          </div>
           <div id="fr-list"></div>
           <div id="fr-blocked"></div>
         </div>
@@ -916,7 +920,12 @@ img { max-width: 100%; }
     /* settings */
     "Weergave": "Appearance", "Automatisch": "Automatic", "Licht": "Light", "Donker": "Dark",
     "Automatisch volgt de instelling van je apparaat.": "Automatic follows the setting of your device.",
-    "Wijnkelder": "Wine cellar", "Bubbels": "Bubbles", "Zet in wijnkelder": "Put in cellar", "Mijn wijnen": "My wines",
+    "Stuur een verrassing": "Send a surprise", "Verrassingen van vrienden afspelen": "Play surprises from friends",
+    "Je vriend ziet de animatie een minuut lang, meteen als de app opengaat.": "Your friend sees the animation for one minute, as soon as the app opens.",
+    "Verrassing": "Surprise", "Voorbeeld bekijken": "Preview", "Bijv. Proost op je verjaardag!": "E.g. Cheers on your birthday!", "Verstuur": "Send",
+    "Je hebt vandaag al 10 verrassingen gestuurd. Probeer het morgen opnieuw.": "You have already sent 10 surprises today. Try again tomorrow.",
+    "Deze vriend heeft je laatste 3 verrassingen nog niet gezien. Wacht even.": "This friend hasn't seen your last 3 surprises yet. Please wait a while.",
+    "Deze verrassing kan nog niet worden verstuurd.": "This surprise can't be sent yet.",    "Wijnkelder": "Wine cellar", "Bubbels": "Bubbles", "Zet in wijnkelder": "Put in cellar", "Mijn wijnen": "My wines",
     "Thema": "Theme", "Klassiek": "Classic", "Zacht": "Soft", "Het uiterlijk van de app. Licht of donker kies je bij Weergave.": "The look of the app. Light or dark you choose under Appearance.",
     "Taal": "Language","Automatisch volgt de taal van je telefoon.": "Automatic follows the language of your phone.",
     "Back-up": "Backup", "Download back-up": "Download backup", "Back-up terugzetten": "Restore backup",
@@ -1789,6 +1798,15 @@ img { max-width: 100%; }
   // FX lists the effects (name -> HTML builder); FX_WORDS the secret search words. State per device: localStorage wijnkelder.fx = {name, until}.
   const FX = { kurk: corkHtml };
   const FX_WORDS = { nikki: "kurk" };
+  const FX_LABEL = { kurk: L("Kurk 🍾", "Cork 🍾") };
+  const FX_FRIENDS_KEY = "wijnkelder.fxFromFriends";   // "off" = surprises from friends are not played
+  // Plays an effect for a few seconds, then goes back to what was running before (e.g. a Nikki hour).
+  function previewFx(name) {
+    let prev = null;
+    try { prev = localStorage.getItem(FX_KEY); } catch {}
+    startFx(name, 6500);
+    setTimeout(() => { try { if (prev) localStorage.setItem(FX_KEY, prev); else localStorage.removeItem(FX_KEY); } catch {} applyFx(); }, 6600);
+  }
   const FX_KEY = "wijnkelder.fx";
   let fxTimer = 0;
   try { // the first version kept only the Kurk end time
@@ -3171,7 +3189,7 @@ img { max-width: 100%; }
   const safeThumb = s => typeof s === "string" && s.length <= 90000 && /^data:image\/jpeg;base64,[A-Za-z0-9+\/]+={0,2}$/.test(s) ? s : "";
   const setFrOpen = open => { $("frOpts").hidden = !open; $("frToggle").setAttribute("aria-expanded", String(open)); };
   const friends = {
-    on: false, profile: null, list: [], blocked: [], tips: [], channel: null, timer: null,
+    on: false, profile: null, list: [], blocked: [], tips: [], channel: null, timer: null, fxOn: false, fxChannel: null,
     async call(fn, args) { const { data, error } = await sb.rpc(fn, args || {}); if (error) throw error; return data; },
     async boot() {
       if (!me) return;
@@ -3185,6 +3203,73 @@ img { max-width: 100%; }
       if (me !== user) return;
       this.paint();
       this.checkInvite();
+      this.loadFx();
+    },
+    // Surprises (effects) from friends. Hidden until schema-effecten.sql has been run (my_effects then exists).
+    async loadFx() {
+      if (!this.on || !me || demo) return;
+      const user = me;
+      let list;
+      try { list = await this.call("my_effects"); } catch { this.fxOn = false; this.paint(); return; }
+      if (me !== user) return;
+      if (!this.fxOn) {
+        this.fxOn = true; this.paint();
+        this.fxChannel = sb.channel("effects-" + me.id)
+          .on("postgres_changes", { event: "INSERT", schema: "public", table: "effects", filter: "to_user=eq." + me.id }, () => this.loadFx())
+          .subscribe();
+      }
+      this.playIncoming(list || []);
+    },
+    playIncoming(list) {
+      if (!list.length) return;
+      let off = false;
+      try { off = localStorage.getItem(FX_FRIENDS_KEY) === "off"; } catch {}
+      const g = list.find(x => FX[x.effect]);   // the newest one this app knows
+      if (g && !off) {
+        startFx(g.effect, 60 * 1000);
+        toast(g.message ? L(`${g.from_name} stuurt je een verrassing: "${g.message}"`, `${g.from_name} sent you a surprise: "${g.message}"`)
+                        : L(`${g.from_name} stuurt je een verrassing!`, `${g.from_name} sent you a surprise!`));
+      }
+      list.forEach(x => this.call("seen_effect", { p_id: x.id }).catch(() => {}));
+    },
+    openSendFx() {
+      if (!this.fxOn || !this.list.length) return;
+      const only = this.list.length === 1 ? this.list[0].friend_id : "";
+      openSheet(`${top("Stuur een verrassing")}
+        <p class="hint" style="margin:0">Je vriend ziet de animatie een minuut lang, meteen als de app opengaat.</p>
+        <div class="field"><span class="section-l" style="margin:0">Aan</span>
+          <div class="friendpick" id="fx-pick" role="radiogroup" aria-label="Aan">${this.list.map(f => `<button type="button" role="radio" data-pick="${esc(f.friend_id)}" aria-checked="${f.friend_id === only}">${esc(f.display_name)}</button>`).join("")}</div></div>
+        <div class="field"><span class="section-l" style="margin:0">Verrassing</span>
+          <div class="friendpick" id="fx-kind" role="radiogroup" aria-label="Verrassing">${Object.keys(FX).map((n, i) => `<button type="button" role="radio" data-fx="${n}" aria-checked="${i === 0}">${esc(FX_LABEL[n] || n)}</button>`).join("")}</div>
+          <button class="linkbtn" type="button" id="fx-preview" style="align-self:flex-start">Voorbeeld bekijken</button></div>
+        <div class="field"><label for="fx-msg">Bericht (optioneel)</label><input id="fx-msg" maxlength="140" autocomplete="off" placeholder="Bijv. Proost op je verjaardag!"></div>
+        <span class="hint" id="fx-status" hidden></span>
+        <div class="actions"><button class="btn ghost" type="button" data-close>Annuleren</button><button class="btn primary" type="button" id="fx-send">Verstuur</button></div>`);
+      const pickIn = id => $(id).addEventListener("click", e => {
+        const b = e.target.closest("button");
+        if (b) $(id).querySelectorAll("button").forEach(x => x.setAttribute("aria-checked", String(x === b)));
+      });
+      pickIn("fx-pick"); pickIn("fx-kind");
+      const kind = () => $("fx-kind").querySelector('[aria-checked="true"]').dataset.fx;
+      $("fx-preview").addEventListener("click", () => previewFx(kind()));
+      $("fx-send").addEventListener("click", async () => {
+        const pick = $("fx-pick").querySelector('[aria-checked="true"]');
+        if (!pick) { showMsg("fx-status", "Kies eerst een vriend.", true); return; }
+        const friend = this.list.find(f => f.friend_id === pick.dataset.pick);
+        const btn = $("fx-send");
+        btn.disabled = true; showMsg("fx-status", "");
+        let r;
+        try { r = await this.call("send_effect", { p_to: pick.dataset.pick, p_effect: kind(), p_message: $("fx-msg").value }); }
+        catch { showMsg("fx-status", L("Er ging iets mis. Probeer het opnieuw.", "Something went wrong. Please try again."), true); btn.disabled = false; return; }
+        if (r.status === "ok") { closeSheet(); toast(L(`Verrassing gestuurd naar ${friend ? friend.display_name : "je vriend"}`, `Surprise sent to ${friend ? friend.display_name : "your friend"}`)); return; }
+        showMsg("fx-status", {
+          not_friends: "Je kunt niets sturen naar deze persoon.",
+          rate_limited: "Je hebt vandaag al 10 verrassingen gestuurd. Probeer het morgen opnieuw.",
+          too_many_pending: "Deze vriend heeft je laatste 3 verrassingen nog niet gezien. Wacht even.",
+          invalid_effect: "Deze verrassing kan nog niet worden verstuurd."
+        }[r.status] || L("Er ging iets mis. Probeer het opnieuw.", "Something went wrong. Please try again."), true);
+        btn.disabled = false;
+      });
     },
     async load() {
       const [f, b, t] = await Promise.all([this.call("my_friends"), this.call("my_blocks"), this.call("my_gifts")]);
@@ -3203,6 +3288,8 @@ img { max-width: 100%; }
     reset() {
       clearTimeout(this.timer);
       if (this.channel) { sb.removeChannel(this.channel); this.channel = null; }
+      if (this.fxChannel) { sb.removeChannel(this.fxChannel); this.fxChannel = null; }
+      this.fxOn = false;
       this.on = false; this.profile = null; this.list = []; this.blocked = []; this.tips = [];
       this.paint();
     },
@@ -3215,6 +3302,9 @@ img { max-width: 100%; }
       if (!show) return;
       if (document.activeElement !== $("fr-name")) $("fr-name").value = this.profile || "";
       $("fr-invite").disabled = !this.profile;
+      $("fr-fxbox").hidden = !this.fxOn;
+      $("fr-fx").disabled = !this.list.length;
+      try { $("fr-fxon").checked = localStorage.getItem(FX_FRIENDS_KEY) !== "off"; } catch {}
       $("fr-list").innerHTML = this.list.length
         ? `<span class="section-l">Je vrienden</span>` + this.list.map(f => `<div class="frow"><div class="frname"><b>${esc(f.display_name)}</b><span class="hint">${L("Vrienden sinds", "Friends since")} ${esc(fmtDate(String(f.since).slice(0, 10)))}</span></div><div class="fracts"><button class="linkbtn" type="button" data-fr-rm="${esc(f.friend_id)}">Verwijder als vriend</button><button class="linkbtn" type="button" data-fr-bl="${esc(f.friend_id)}">Blokkeren</button></div></div>`).join("")
         : `<p class="hint" style="margin:0">Je hebt nog geen vrienden. Nodig iemand uit met de knop hierboven.</p>`;
@@ -3382,10 +3472,12 @@ img { max-width: 100%; }
     }
   };
   $("frToggle").addEventListener("click", () => setFrOpen($("frOpts").hidden));
+  $("fr-fxon").addEventListener("change", e => { try { localStorage.setItem(FX_FRIENDS_KEY, e.target.checked ? "on" : "off"); } catch {} });
   $("frOpts").addEventListener("click", async e => {
     const b = e.target.closest("button");
     if (!b) return;
     if (b.id === "fr-nameSave") { friends.saveName($("fr-name").value, "fr-msg"); return; }
+    if (b.id === "fr-fx") { friends.openSendFx(); return; }
     if (b.id === "fr-invite") { b.disabled = true; await friends.invite(); b.disabled = !friends.profile; return; }
     if (b.id === "fr-copy") {
       try { await navigator.clipboard.writeText($("fr-link").value); showMsg("fr-msg", "Link gekopieerd."); }
