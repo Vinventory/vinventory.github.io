@@ -2240,10 +2240,11 @@ img { max-width: 100%; }
           </div>
           <div class="savedate" id="f-savedateRow" hidden><span id="f-savedateTxt"></span></div>
         </div>
-        ${id && w.wish ? `<div class="actions four" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+        ${id && w.wish ? `<div class="actions four">
           <button class="btn ghost" type="button" data-close><svg class="house" viewBox="0 0 24 24" aria-hidden="true"><path d="${HOUSE}"/></svg>Home</button>
           <button class="btn primary" type="submit"><svg class="house" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>Opslaan</button>
           <button class="btn ghost" type="button" id="f-gekocht"><svg class="house" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5 12 4l8 3.5v9L12 20l-8-3.5zM4 7.5l8 3.5 8-3.5M12 11v9"/></svg>Zet in wijnkelder</button>
+          <a class="btn ghost" id="f-google" href="https://www.google.com/search?q=${encodeURIComponent([w.producer, w.name, w.vintage].filter(Boolean).join(" "))}" target="_blank" rel="noopener"><svg class="house" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13zM15.5 15.5 20 20"/></svg>Google</a>
         </div>` : `<div class="actions">
           <button class="btn ghost" type="button" data-close>Annuleren</button>
           <button class="btn primary" type="submit">Opslaan</button>
@@ -2314,6 +2315,9 @@ img { max-width: 100%; }
       $("f-boughtField").after($("f-receivedField"));
       $("f-receivedField").hidden = dest === "wish";
       $("f-drinkRow").hidden = dest === "wish";
+      // Wishlist wines have no "Beschrijving" and "Past goed bij".
+      $("f-desc").closest(".field").hidden = dest === "wish";
+      $("f-pairing").closest(".field").hidden = dest === "wish";
     };
     placeBought();
     // "Gekocht" on a wishlist wine saves the form and moves the wine to the cellar (at least 1 bottle).
@@ -2350,6 +2354,11 @@ img { max-width: 100%; }
     updateMatch();
     ["f-name", "f-producer", "f-vintage"].forEach(k => $(k).addEventListener("input", updateMatch));
     $("f-vintage").addEventListener("change", updateMatch);
+    // The Google button (wishlist wines) follows the typed name, so its link is right before it is tapped.
+    const gl = $("f-google");
+    if (gl) ["f-name", "f-producer", "f-vintage"].forEach(k => ["input", "change"].forEach(ev => $(k).addEventListener(ev, () => {
+      gl.href = "https://www.google.com/search?q=" + encodeURIComponent([$("f-producer").value, $("f-name").value, $("f-vintage").value].map(s => s.trim()).filter(Boolean).join(" "));
+    })));
     const checkDrink = () => { const f = int($("f-from").value), t = int($("f-to").value); $("drinkMsg").hidden = dest === "wish" || !(f && t && t < f); };
     ["f-from", "f-to"].forEach(k => $(k).addEventListener("change", checkDrink));
     checkDrink();
