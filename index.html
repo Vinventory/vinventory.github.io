@@ -471,6 +471,7 @@ img { max-width: 100%; }
 /* Thema "Zacht" (liquid glass, soft moving blobs). Set with data-look="zacht" on <html>; "klassiek" is the plain look above. */
 .lookbg { display: none; }
 :root[data-glass] {
+  --look-top: #f3e8d3;
   --look-bg: radial-gradient(120% 70% at 10% 0%, #f7ecd4 0%, #efe5d2 45%, #e6d6b6 100%);
   --surface: linear-gradient(135deg, rgba(255,252,244,.44), rgba(255,252,244,.16));
   --sunk: linear-gradient(135deg, rgba(255,252,244,.36), rgba(255,252,244,.12));
@@ -482,6 +483,7 @@ img { max-width: 100%; }
 }
 @media (prefers-color-scheme: dark) {
   :root[data-glass]:not([data-theme="light"]) {
+    --look-top: #1e0e14;
     --look-bg: radial-gradient(120% 70% at 10% 0%, #2a1119 0%, #170c10 50%, #0d0709 100%);
     --surface: linear-gradient(135deg, rgba(255,255,255,.09), rgba(255,255,255,.025));
     --sunk: linear-gradient(135deg, rgba(255,255,255,.07), rgba(255,255,255,.02));
@@ -493,6 +495,7 @@ img { max-width: 100%; }
   }
 }
 :root[data-glass][data-theme="dark"] {
+  --look-top: #1e0e14;
   --look-bg: radial-gradient(120% 70% at 10% 0%, #2a1119 0%, #170c10 50%, #0d0709 100%);
   --surface: linear-gradient(135deg, rgba(255,255,255,.09), rgba(255,255,255,.025));
   --sunk: linear-gradient(135deg, rgba(255,255,255,.07), rgba(255,255,255,.02));
@@ -502,7 +505,7 @@ img { max-width: 100%; }
   --shadow: 0 10px 30px rgba(0,0,0,.5);
   --b1: linear-gradient(145deg,#b3263f,#6d1328); --b2: linear-gradient(145deg,#d9803a,#8e3d1c); --b3: linear-gradient(145deg,#7c1d3a,#31091b);
 }
-:root[data-glass] { background: var(--bg); }
+:root[data-glass] { background: var(--look-top); }
 :root[data-glass] body { background: transparent; }
 :root[data-glass] .sheet { background: var(--look-bg); }
 :root[data-glass] .lookbg { display: block; position: fixed; top: -80px; right: 0; bottom: -80px; left: 0; z-index: 0; overflow: hidden; pointer-events: none; background: var(--look-bg); }
@@ -1698,7 +1701,20 @@ img { max-width: 100%; }
     applyLook();
     setSettings(false);
   });
-  // ---------- Taal (automatisch / Nederlands / English), remembered per device; a change reloads the page ----------
+  // Colour of the browser bar / status bar: matches the top of the glass background, otherwise the plain page colour.
+  function updateBarColor() {
+    const t = rootEl.getAttribute("data-theme");
+    const dark = t === "dark" || (t !== "light" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    const glass = rootEl.hasAttribute("data-glass");
+    const col = glass ? (dark ? "#1e0e14" : "#f3e8d3") : (dark ? "#140c0e" : "#efe5d2");
+    document.querySelectorAll('meta[name="theme-color"]').forEach((m, i) => { if (i) m.remove(); });
+    let m = document.querySelector('meta[name="theme-color"]');
+    if (!m) { m = document.createElement("meta"); m.name = "theme-color"; document.head.appendChild(m); }
+    m.removeAttribute("media"); m.content = col;
+  }
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", updateBarColor);
+  new MutationObserver(updateBarColor).observe(rootEl, { attributes: true, attributeFilter: ["data-theme", "data-glass"] });
+  updateBarColor();  // ---------- Taal (automatisch / Nederlands / English), remembered per device; a change reloads the page ----------
   document.querySelectorAll("[data-lang-pick]").forEach(b => b.setAttribute("aria-checked", String(b.dataset.langPick === window.VINV.pick)));
   $("langSeg").addEventListener("click", e => {
     const b = e.target.closest("[data-lang-pick]");
