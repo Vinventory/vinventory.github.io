@@ -242,9 +242,11 @@ language sql security definer stable set search_path = '' as $$
   order by b.created_at desc
 $$;
 
-create or replace function public.send_gift(p_to uuid, p_wine_id text, p_message text, p_rating boolean, p_photo boolean) returns jsonb
+-- De functie kreeg een extra parameter (p_shop); de oude versie met 5 parameters verdwijnt.
+drop function if exists public.send_gift(uuid, text, text, boolean, boolean);
+create or replace function public.send_gift(p_to uuid, p_wine_id text, p_message text, p_rating boolean, p_photo boolean, p_shop boolean default false) returns jsonb
 language plpgsql security definer set search_path = '' as $$
-declare uid uuid := auth.uid(); w jsonb; payload jsonb; msg text; thumb text; rt int;
+declare uid uuid := auth.uid(); w jsonb; payload jsonb; msg text; thumb text; rt int; shop text;
 begin
   if uid is null then raise exception 'niet ingelogd' using errcode = '28000'; end if;
   -- Dezelfde melding voor "geen vrienden" en "geblokkeerd": de afzender hoeft niet te weten welke van de twee.
@@ -264,6 +266,8 @@ begin
     thumb := null;
   end if;
   rt := case when coalesce(p_rating, false) and (w->>'rating') ~ '^([1-9]|10)$' then (w->>'rating')::int end;
+  -- Alleen de naam van de winkel, nooit het kaartlink-adres.
+  shop := case when coalesce(p_shop, false) then nullif(private.clean(w->>'boughtAt', 200), '') end;
   -- Vaste lijst velden. Alles wat hier niet staat, gaat niet mee.
   payload := jsonb_strip_nulls(jsonb_build_object(
     'name',        private.clean(w->>'name', 200),
@@ -276,6 +280,7 @@ begin
     'description', private.clean(w->>'description', 2000),
     'pairing',     private.clean(w->>'pairing', 500),
     'friendRating', rt,
+    'shop',        shop,
     'thumb',       thumb));
   msg := nullif(private.clean(p_message, 280), '');
   perform private.note(uid, 'gift');
@@ -304,9 +309,9 @@ begin
     -- De tip komt als wishlist-wijn in je eigen kelderlijst (eigen kopie, met een vaste id per tip).
     insert into public.wines (user_id, id, data)
     values (uid, 'g' || replace(g.id::text, '-', ''),
-            (g.payload - 'friendRating') || jsonb_build_object(
+            (g.payload - 'friendRating' - 'shop') || jsonb_strip_nulls(jsonb_build_object(
               'wish', true, 'quantity', 0, 'createdAt', to_char(now() at time zone 'utc', 'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
-              'fromFriend', coalesce(nm, '?'), 'friendRating', g.payload->'friendRating'))
+              'fromFriend', coalesce(nm, '?'), 'friendRating', g.payload->'friendRating', 'friendShop', g.payload->'shop')))
     on conflict (user_id, id) do nothing;
   end if;
   update public.gifts set status = p_action, answered_at = now() where id = g.id;
@@ -364,10 +369,10 @@ end $$;
 
 -- Alleen ingelogde gebruikers mogen de functies aanroepen, nooit anonieme bezoekers.
 revoke all on function public.create_invite(), public.peek_invite(text), public.accept_invite(text), public.my_friends(), public.my_blocks(),
-  public.send_gift(uuid, text, text, boolean, boolean), public.my_gifts(), public.answer_gift(uuid, text), public.remove_friend(uuid),
+  public.send_gift(uuid, text, text, boolean, boolean, boolean), public.my_gifts(), public.answer_gift(uuid, text), public.remove_friend(uuid),
   public.block_user(uuid), public.unblock_user(uuid), public.submit_report(uuid, uuid, text) from public, anon, authenticated;
 grant execute on function public.create_invite(), public.peek_invite(text), public.accept_invite(text), public.my_friends(), public.my_blocks(),
-  public.send_gift(uuid, text, text, boolean, boolean), public.my_gifts(), public.answer_gift(uuid, text), public.remove_friend(uuid),
+  public.send_gift(uuid, text, text, boolean, boolean, boolean), public.my_gifts(), public.answer_gift(uuid, text), public.remove_friend(uuid),
   public.block_user(uuid), public.unblock_user(uuid), public.submit_report(uuid, uuid, text) to authenticated;
 
 -- Live bijwerken: een nieuwe tip of vriend verschijnt meteen op de apparaten van de ontvanger.

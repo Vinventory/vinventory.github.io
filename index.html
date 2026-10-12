@@ -940,7 +940,7 @@ img { max-width: 100%; }
     "Naar Instellingen": "Go to Settings", "Aan": "To", "Bericht (optioneel)": "Message (optional)",
     "Bijv. Probeer deze eens bij de lamsrack!": "E.g. Try this one with the rack of lamb!",
     "Etiketfoto meesturen": "Send the label photo",
-    "Prijs, logboek, herinneringen en winkel gaan nooit mee.": "Price, logbook, memories and shop are never included.",
+    "Prijs, logboek en herinneringen gaan nooit mee.": "Price, logbook and memories are never included.",
     "Verstuur tip": "Send tip", "Kies eerst een vriend.": "First choose a friend.",
     "Je kunt niets sturen naar deze persoon.": "You can't send anything to this person.",
     "Je hebt vandaag al veel tips gestuurd. Probeer het morgen opnieuw.": "You have already sent a lot of tips today. Try again tomorrow.",
@@ -1513,6 +1513,7 @@ img { max-width: 100%; }
           <span class="name">${esc(w.name || w.producer || "Naamloze wijn")}${w.example ? '<span class="tag">Voorbeeld</span>' : ""}</span>
           <span class="sub">${esc([w.name ? w.producer : "", w.vintage, w.region].filter(Boolean).join(" · "))}</span>
           ${w.fromFriend ? `<span class="saveline">${T("Tip van")} ${esc(w.fromFriend)}${w.friendRating ? " · " + L(`gaf een ${esc(w.friendRating)}`, `rated it ${esc(w.friendRating)}`) : ""}</span>` : ""}
+          ${w.friendShop ? `<span class="saveline">${T("Gekocht bij")} ${esc(w.friendShop)}</span>` : ""}
           ${typeof w.price === "number" || w.boughtAt ? `<span class="saveline">${esc([typeof w.price === "number" ? fmtEur(w.price) : "", w.boughtAt ? T("Gedronken bij") + " " + w.boughtAt : ""].filter(Boolean).join(" · "))}</span>` : ""}
           ${w.description ? `<span class="desc">${esc(w.description)}</span>` : ""}
         </div>
@@ -2937,6 +2938,7 @@ img { max-width: 100%; }
           <div class="meta"><span class="name">${esc(p.name || p.producer || T("Wijn"))}</span>${sub ? `<span class="sub">${esc(sub)}</span>` : ""}${p.description ? `<span class="desc">${esc(p.description)}</span>` : ""}</div></div>
         ${g.message ? `<div class="tipmsg"><span class="tiphead"><b>${esc(name)}</b> ${L("zegt", "says")}</span><p class="memo">${esc(g.message)}</p></div>` : ""}
         ${p.friendRating ? `<span class="saveline">${L(`${esc(name)} gaf deze wijn een ${esc(p.friendRating)}`, `${esc(name)} rated this wine ${esc(p.friendRating)}`)}</span>` : ""}
+        ${p.shop ? `<span class="saveline">${T("Gekocht bij")} ${esc(p.shop)}</span>` : ""}
         <div class="actions"><button class="btn primary" type="button" data-tip-save="${esc(g.id)}">Bewaar op wishlist</button><button class="btn ghost" type="button" data-tip-no="${esc(g.id)}">Weigeren</button></div>
         <button class="linkbtn" type="button" data-tip-more="${esc(g.id)}">Melden of blokkeren</button>
       </div>`;
@@ -3025,7 +3027,8 @@ img { max-width: 100%; }
         <div class="field"><label for="tp-msg">Bericht (optioneel)</label><textarea id="tp-msg" maxlength="280" style="min-height:80px" placeholder="Bijv. Probeer deze eens bij de lamsrack!"></textarea></div>
         ${w.rating ? `<label class="check"><input type="checkbox" id="tp-rating" checked><span>${L(`Mijn cijfer (${esc(w.rating)}) meesturen`, `Send my rating (${esc(w.rating)})`)}</span></label>` : ""}
         ${safeThumb(w.thumb) ? `<label class="check"><input type="checkbox" id="tp-photo" checked><span>Etiketfoto meesturen</span></label>` : ""}
-        <p class="hint" style="margin:0">Prijs, logboek, herinneringen en winkel gaan nooit mee.</p>
+        ${w.boughtAt ? `<label class="check"><input type="checkbox" id="tp-shop" checked><span>${L(`Winkel meesturen (${esc(w.boughtAt)})`, `Send the shop (${esc(w.boughtAt)})`)}</span></label>` : ""}
+        <p class="hint" style="margin:0">Prijs, logboek en herinneringen gaan nooit mee.</p>
         <span class="hint" id="tp-status" hidden></span>
         <div class="actions"><button class="btn ghost" type="button" id="tp-back">Terug</button><button class="btn primary" type="button" id="tp-send">Verstuur tip</button></div>`);
       $("tp-back").addEventListener("click", () => openDetail(id));
@@ -3044,7 +3047,8 @@ img { max-width: 100%; }
           // The tip is built on the server from the saved wine, so make sure the latest edits are saved first.
           flushSaves(); await Promise.all(Object.values(store.chains));
           r = await this.call("send_gift", { p_to: pick.dataset.pick, p_wine_id: id, p_message: $("tp-msg").value,
-            p_rating: !!($("tp-rating") && $("tp-rating").checked), p_photo: !!($("tp-photo") && $("tp-photo").checked) });
+            p_rating: !!($("tp-rating") && $("tp-rating").checked), p_photo: !!($("tp-photo") && $("tp-photo").checked),
+            p_shop: !!($("tp-shop") && $("tp-shop").checked) });
         } catch { showMsg("tp-status", L("Er ging iets mis. Probeer het opnieuw.", "Something went wrong. Please try again."), true); btn.disabled = false; return; }
         if (r.status === "ok") { toast(L(`Tip gestuurd naar ${friend ? friend.display_name : "je vriend"}`, `Tip sent to ${friend ? friend.display_name : "your friend"}`)); openDetail(id); return; }
         showMsg("tp-status", {
