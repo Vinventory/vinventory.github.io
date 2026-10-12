@@ -2094,7 +2094,7 @@ img { max-width: 100%; }
             <div class="euro"><span aria-hidden="true">€</span><input id="f-price" inputmode="decimal" autocomplete="off" value="${w.price != null ? esc(String(w.price.toFixed(2)).replace(".", L(",", "."))) : ""}" placeholder="0,00"></div>
           </div>
         </div>
-        <div class="grid2">
+        <div class="grid2" id="f-drinkRow"${dest === "wish" ? " hidden" : ""}>
           <div class="field"><label for="f-from">Op dronk vanaf</label><select id="f-from">${drinkYearOptions(w.drinkFrom)}</select></div>
           <div class="field"><label for="f-to">Tot</label><select id="f-to">${drinkYearOptions(w.drinkTo)}</select></div>
         </div>
@@ -2132,9 +2132,8 @@ img { max-width: 100%; }
           </div>
           <div class="savedate" id="f-savedateRow" hidden><span id="f-savedateTxt"></span></div>
         </div>
-        ${id && w.wish ? `<div class="actions four">
+        ${id && w.wish ? `<div class="actions four" style="grid-template-columns:repeat(3,minmax(0,1fr))">
           <button class="btn ghost" type="button" data-close><svg class="house" viewBox="0 0 24 24" aria-hidden="true"><path d="${HOUSE}"/></svg>Home</button>
-          <button class="btn ghost" type="button" data-close><svg class="house" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>Annuleren</button>
           <button class="btn primary" type="submit"><svg class="house" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>Opslaan</button>
           <button class="btn ghost" type="button" id="f-gekocht"><svg class="house" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5 12 4l8 3.5v9L12 20l-8-3.5zM4 7.5l8 3.5 8-3.5M12 11v9"/></svg>Zet in wijnkelder</button>
         </div>` : `<div class="actions">
@@ -2195,11 +2194,18 @@ img { max-width: 100%; }
     const form = $("wineForm");
     // For a wishlist wine "Gedronken bij" is the main thing, so it moves up, right under the rating.
     // "Gekregen van" always follows it and only applies to wines in the cellar. "Bewaar voor" sits just above the buttons.
+    // For a wishlist wine "Koop voor" moves up above the description and the drinking window is hidden.
     const placeBought = () => {
-      if (dest === "wish") $("f-rating").closest(".field").after($("f-boughtField"));
-      else $("f-saveField").before($("f-boughtField"));
+      if (dest === "wish") {
+        $("f-desc").closest(".field").before($("f-saveField"));
+        $("f-rating").closest(".field").after($("f-boughtField"));
+      } else {
+        $("f-pairing").closest(".field").after($("f-saveField"));
+        $("f-saveField").before($("f-boughtField"));
+      }
       $("f-boughtField").after($("f-receivedField"));
       $("f-receivedField").hidden = dest === "wish";
+      $("f-drinkRow").hidden = dest === "wish";
     };
     placeBought();
     // "Gekocht" on a wishlist wine saves the form and moves the wine to the cellar (at least 1 bottle).
@@ -2236,7 +2242,7 @@ img { max-width: 100%; }
     updateMatch();
     ["f-name", "f-producer", "f-vintage"].forEach(k => $(k).addEventListener("input", updateMatch));
     $("f-vintage").addEventListener("change", updateMatch);
-    const checkDrink = () => { const f = int($("f-from").value), t = int($("f-to").value); $("drinkMsg").hidden = !(f && t && t < f); };
+    const checkDrink = () => { const f = int($("f-from").value), t = int($("f-to").value); $("drinkMsg").hidden = dest === "wish" || !(f && t && t < f); };
     ["f-from", "f-to"].forEach(k => $(k).addEventListener("change", checkDrink));
     checkDrink();
     form.addEventListener("click", e => {
@@ -2247,7 +2253,7 @@ img { max-width: 100%; }
         $("f-qtybox").hidden = dest === "wish";
         $("f-boughtLbl").textContent = dest === "wish" ? "Gedronken bij" : "Gekocht bij";
         $("f-saveLbl").textContent = dest === "wish" ? "Koop voor" : "Bewaar voor";
-        placeBought();
+        placeBought(); checkDrink();
         $("f-bought").placeholder = dest === "wish" ? "Bijv. Restaurant De Proeverij, Utrecht" : "Bijv. Wijnhandel De Druif, Utrecht";
         if (dest === "kelder" && !qty) { qty = 1; $("f-qty").textContent = qty; }
         updateMatch();
