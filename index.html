@@ -119,8 +119,9 @@ h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(34px, 9vw
 .chips { align-items: center; }
 /* The sort control sits on its own line above the list: the count on the left, the chosen order on the right */
 .sortline { display: flex; justify-content: flex-end; align-items: center; gap: 12px; font-size: 14px; color: var(--muted); }
-/* The sort control is the last item of the filter chips, pushed to the right edge of the last row of chips */
-.sortsel { position: relative; display: inline-flex; align-items: center; gap: 2px; margin-left: auto; flex: none; padding: 0 0 0 10px; font-size: 14px; font-weight: 600; color: var(--accent-text); cursor: pointer; }
+/* The sort control is the first filter chip, shaped like the others, with only the sort symbol (accent colour when a non-standard order is on) */
+.sortsel { position: relative; flex: none; display: inline-flex; align-items: center; justify-content: center; height: 32px; padding: 0 9px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--accent-text); cursor: pointer; }
+.sortsel.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .sortsel:focus-within { outline: 2px solid var(--accent-text); outline-offset: 2px; border-radius: 8px; }
 .sortsel svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }.sort { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; font-size: 16px; cursor: pointer; -webkit-appearance: none; appearance: none; }
 .search { width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); }
@@ -509,7 +510,7 @@ img { max-width: 100%; }
     <input class="search" id="search" type="search" placeholder="Zoek op naam, producent, streek of druif" autocomplete="off">
     <div class="chips" role="toolbar" aria-label="Filteren">
       <div class="chipset" id="chips">
-        <label class="sortsel" id="sortChip"><span id="sortLbl">Standaard</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+        <label class="sortsel" id="sortChip"><span id="sortLbl" class="vh">Standaard</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4v16M8 20l-3-3M8 20l3-3M16 20V4M16 4l-3 3M16 4l3 3"/></svg>
           <select id="sort" class="sort" aria-label="Sorteer">
             <option value="std">Standaard</option>
             <option value="rating">Hoogste cijfer</option>
@@ -1324,7 +1325,7 @@ img { max-width: 100%; }
         return stock || (!!b.favorite - !!a.favorite) || byName;
       });
 
-    $("chips").appendChild(sortChipEl);
+    $("chips").prepend(sortChipEl);
     sortChipEl.hidden = !all.length;
     if (!wines.length && loading) {
       $("list").innerHTML = `<div class="empty"><div class="spinner" aria-hidden="true"></div><p>Je kelder wordt geladen…</p></div>`;
@@ -1468,6 +1469,7 @@ img { max-width: 100%; }
   const syncSortChip = () => {
     const label = L("Sorteer: ", "Sort: ") + $("sort").selectedOptions[0].textContent;
     $("sortLbl").textContent = $("sort").selectedOptions[0].textContent;
+    sortChipEl.classList.toggle("on", $("sort").value !== "std");
     $("sort").setAttribute("aria-label", label);
   };
   syncSortChip();
