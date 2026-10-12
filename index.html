@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Instrument+Sans:wght@400;500;600;700&display=swap">
-<script>try { var l = localStorage.getItem("wijnkelder.look"); if (l === "zacht") document.documentElement.setAttribute("data-look", l); } catch (e) {}</script>
+<script>try { var l = localStorage.getItem("wijnkelder.look"); if (l !== "klassiek") document.documentElement.setAttribute("data-look", l); } catch (e) {}</script>
 <style>
 /* Layout: one-column cellar ledger on the phone, fixed scan bar at the bottom, full-height sheets for scan / form / detail. */
 :root {
@@ -1676,7 +1676,7 @@ img { max-width: 100%; }
   });
   // ---------- Thema (klassiek / zacht), remembered per device; only the looks that are published are in LOOKS ----------
   const LOOK_KEY = "wijnkelder.look", LOOKS = ["klassiek", "zacht"];
-  let lookPick = "klassiek";
+  let lookPick = "zacht"; // default for everyone until they choose another look
   try { const l = localStorage.getItem(LOOK_KEY); if (LOOKS.includes(l)) lookPick = l; } catch {}
   function applyLook() {
     if (lookPick === "klassiek") rootEl.removeAttribute("data-look"); else rootEl.setAttribute("data-look", lookPick);
