@@ -2959,8 +2959,8 @@ img { max-width: 100%; }
       if (r.status !== "ok") { showMsg("fr-msg", L("Er ging iets mis. Probeer het opnieuw.", "Something went wrong. Please try again."), true); return; }
       const link = APP_URL + "#join=" + r.code;
       $("fr-link").value = link; $("fr-linkbox").hidden = false;
-      const text = L(`${this.profile} nodigt je uit voor Vinventory, de app voor je wijnkelder. Maak een account en word mijn vriend via deze link:\n${link}`,
-                     `${this.profile} invites you to Vinventory, the app for your wine cellar. Create an account and become my friend with this link:\n${link}`);
+      const text = L(`${this.profile} nodigt je uit voor VINventory, dé app voor al je wijnen. Maak een account en word mijn vriend via deze link:\n${link}`,
+                     `${this.profile} invites you to VINventory, the app for all your wines. Create an account and become my friend with this link:\n${link}`);
       if (navigator.share) {
         try { await navigator.share({ text }); showMsg("fr-msg", note); return; }
         catch (e) { if (e && e.name === "AbortError") { showMsg("fr-msg", note); return; } }
