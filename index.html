@@ -436,6 +436,9 @@ img { max-width: 100%; }
 .tip .card { box-shadow: none; }
 .card.tipwine { grid-template-columns: 56px minmax(0, 1fr); cursor: default; }
 .tiphead { font-size: 15px; }
+.tipmsg { display: flex; flex-direction: column; gap: 6px; }
+.tip .memo { background: var(--surface); }          /* same colour as the wine block above it */
+.tip .saveline { color: var(--ink); }               /* the friend's rating in plain (white at night) text */
 .frow { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
 .frname { display: flex; flex-direction: column; min-width: 0; }
 .frname b { overflow-wrap: anywhere; }
@@ -2932,7 +2935,7 @@ img { max-width: 100%; }
         <div class="tiphead"><b>${esc(name)}</b> ${L("stuurt je een tip", "sent you a tip")}</div>
         <div class="card tipwine">${thumb ? `<img class="thumb" src="${esc(thumb)}" alt="">` : `<span class="glass" aria-hidden="true"><i style="background:var(${colorVar(p.color)})"></i></span>`}
           <div class="meta"><span class="name">${esc(p.name || p.producer || T("Wijn"))}</span>${sub ? `<span class="sub">${esc(sub)}</span>` : ""}${p.description ? `<span class="desc">${esc(p.description)}</span>` : ""}</div></div>
-        ${g.message ? `<p class="memo">${esc(g.message)}</p>` : ""}
+        ${g.message ? `<div class="tipmsg"><span class="tiphead"><b>${esc(name)}</b> ${L("zegt", "says")}</span><p class="memo">${esc(g.message)}</p></div>` : ""}
         ${p.friendRating ? `<span class="saveline">${L(`${esc(name)} gaf deze wijn een ${esc(p.friendRating)}`, `${esc(name)} rated this wine ${esc(p.friendRating)}`)}</span>` : ""}
         <div class="actions"><button class="btn primary" type="button" data-tip-save="${esc(g.id)}">Bewaar op wishlist</button><button class="btn ghost" type="button" data-tip-no="${esc(g.id)}">Weigeren</button></div>
         <button class="linkbtn" type="button" data-tip-more="${esc(g.id)}">Melden of blokkeren</button>
