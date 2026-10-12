@@ -502,10 +502,10 @@ img { max-width: 100%; }
   --shadow: 0 10px 30px rgba(0,0,0,.5);
   --b1: linear-gradient(145deg,#b3263f,#6d1328); --b2: linear-gradient(145deg,#d9803a,#8e3d1c); --b3: linear-gradient(145deg,#7c1d3a,#31091b);
 }
-:root[data-look="zacht"] { background: var(--look-bg) no-repeat fixed; }
+:root[data-look="zacht"] { background: var(--bg); }
 :root[data-look="zacht"] body { background: transparent; }
 :root[data-look="zacht"] .sheet { background: var(--look-bg); }
-:root[data-look="zacht"] .lookbg { display: block; position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+:root[data-look="zacht"] .lookbg { display: block; position: fixed; top: -80px; right: 0; bottom: -80px; left: 0; z-index: 0; overflow: hidden; pointer-events: none; background: var(--look-bg); }
 :root[data-look="zacht"] .lookbg i { position: absolute; border-radius: 50%; filter: blur(8px); opacity: .6; will-change: transform; }
 :root[data-look="zacht"] .lookbg i:nth-child(1) { left: -30px; top: 17%; width: 170px; height: 170px; background: var(--b1); animation: lkA 24s ease-in-out infinite; }
 :root[data-look="zacht"] .lookbg i:nth-child(2) { right: -40px; top: 41%; width: 190px; height: 190px; background: var(--b2); animation: lkB 28s ease-in-out infinite; }
