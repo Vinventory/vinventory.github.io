@@ -16,6 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Instrument+Sans:wght@400;500;600;700&display=swap">
+<script>try { var l = localStorage.getItem("wijnkelder.look"); if (l === "zacht") document.documentElement.setAttribute("data-look", l); } catch (e) {}</script>
 <style>
 /* Layout: one-column cellar ledger on the phone, fixed scan bar at the bottom, full-height sheets for scan / form / detail. */
 :root {
@@ -464,10 +465,83 @@ img { max-width: 100%; }
 .scantab svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .scantab:focus-within, .scantab:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
 .toast { bottom: calc(86px + env(safe-area-inset-bottom, 0px)); }
+#lookSeg { grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); }
+#lookSeg button { flex-direction: row; justify-content: center; min-height: 44px; padding-block: 0; font-size: 14px; }
+
+/* Thema "Zacht" (liquid glass, soft moving blobs). Set with data-look="zacht" on <html>; "klassiek" is the plain look above. */
+.lookbg { display: none; }
+:root[data-look="zacht"] {
+  --look-bg: radial-gradient(120% 70% at 10% 0%, #f7ecd4 0%, #efe5d2 45%, #e6d6b6 100%);
+  --surface: linear-gradient(135deg, rgba(255,252,244,.62), rgba(255,252,244,.28));
+  --sunk: linear-gradient(135deg, rgba(255,252,244,.5), rgba(255,252,244,.22));
+  --surface-solid: #fffdf6; --sunk-solid: #e5d9c1;
+  --line: rgba(255,255,255,.75); --muted: #6b5d43; --ink: #221d12;
+  --accent-grad: linear-gradient(180deg,#a8721f,#7d5112); --glow: rgba(138,90,20,.38); --pill: rgba(255,255,255,.55);
+  --shadow: inset 0 1px 0 rgba(255,255,255,.95), inset 0 -1px 0 rgba(120,90,40,.12), 0 10px 30px rgba(90,60,20,.14);
+  --b1: linear-gradient(145deg,#f0c36a,#d98f3a); --b2: linear-gradient(145deg,#eaa48b,#c9705f); --b3: linear-gradient(145deg,#e9d49a,#bf9a4a);
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-look="zacht"]:not([data-theme="light"]) {
+    --look-bg: radial-gradient(120% 70% at 10% 0%, #2a1119 0%, #170c10 50%, #0d0709 100%);
+    --surface: linear-gradient(135deg, rgba(255,255,255,.13), rgba(255,255,255,.04));
+    --sunk: linear-gradient(135deg, rgba(255,255,255,.1), rgba(255,255,255,.03));
+    --surface-solid: #22151a; --sunk-solid: #301c22;
+    --line: rgba(255,255,255,.2); --muted: #c2a5a8; --ink: #f7ece8;
+    --accent-grad: linear-gradient(180deg,#e04a65,#a3223a); --glow: rgba(224,74,101,.5); --pill: rgba(255,255,255,.14);
+    --shadow: inset 0 1px 0 rgba(255,255,255,.38), inset 0 -1px 0 rgba(0,0,0,.45), 0 10px 30px rgba(0,0,0,.5);
+    --b1: linear-gradient(145deg,#b3263f,#6d1328); --b2: linear-gradient(145deg,#d9803a,#8e3d1c); --b3: linear-gradient(145deg,#7c1d3a,#31091b);
+  }
+}
+:root[data-look="zacht"][data-theme="dark"] {
+  --look-bg: radial-gradient(120% 70% at 10% 0%, #2a1119 0%, #170c10 50%, #0d0709 100%);
+  --surface: linear-gradient(135deg, rgba(255,255,255,.13), rgba(255,255,255,.04));
+  --sunk: linear-gradient(135deg, rgba(255,255,255,.1), rgba(255,255,255,.03));
+  --surface-solid: #22151a; --sunk-solid: #301c22;
+  --line: rgba(255,255,255,.2); --muted: #c2a5a8; --ink: #f7ece8;
+  --accent-grad: linear-gradient(180deg,#e04a65,#a3223a); --glow: rgba(224,74,101,.5); --pill: rgba(255,255,255,.14);
+  --shadow: inset 0 1px 0 rgba(255,255,255,.38), inset 0 -1px 0 rgba(0,0,0,.45), 0 10px 30px rgba(0,0,0,.5);
+  --b1: linear-gradient(145deg,#b3263f,#6d1328); --b2: linear-gradient(145deg,#d9803a,#8e3d1c); --b3: linear-gradient(145deg,#7c1d3a,#31091b);
+}
+:root[data-look="zacht"] { background: var(--look-bg) no-repeat fixed; }
+:root[data-look="zacht"] body { background: transparent; }
+:root[data-look="zacht"] .sheet { background: var(--look-bg); }
+:root[data-look="zacht"] .lookbg { display: block; position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+:root[data-look="zacht"] .lookbg i { position: absolute; border-radius: 50%; filter: blur(8px); opacity: .6; will-change: transform; }
+:root[data-look="zacht"] .lookbg i:nth-child(1) { left: -30px; top: 17%; width: 170px; height: 170px; background: var(--b1); animation: lkA 24s ease-in-out infinite; }
+:root[data-look="zacht"] .lookbg i:nth-child(2) { right: -40px; top: 41%; width: 190px; height: 190px; background: var(--b2); animation: lkB 28s ease-in-out infinite; }
+:root[data-look="zacht"] .lookbg i:nth-child(3) { left: 50px; top: 69%; width: 150px; height: 150px; background: var(--b3); animation: lkC 21s ease-in-out infinite; }
+@keyframes lkA { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(46px,34px) scale(1.12); } }
+@keyframes lkB { 0%,100% { transform: translate(0,0) scale(1.08); } 50% { transform: translate(-52px,28px) scale(.94); } }
+@keyframes lkC { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(30px,-44px) scale(1.15); } }
+@media (prefers-reduced-motion: reduce) { :root[data-look="zacht"] .lookbg i { animation: none; } }
+:root[data-look="zacht"] .wrap, :root[data-look="zacht"] .sheet-in { position: relative; z-index: 1; }
+:root[data-look="zacht"] .tally, :root[data-look="zacht"] .card, :root[data-look="zacht"] .chip, :root[data-look="zacht"] .sortsel,
+:root[data-look="zacht"] .search, :root[data-look="zacht"] .setbtn, :root[data-look="zacht"] .homebtn, :root[data-look="zacht"] .x,
+:root[data-look="zacht"] .rate, :root[data-look="zacht"] .stat, :root[data-look="zacht"] .qtybox, :root[data-look="zacht"] .setpage > .setsec,
+:root[data-look="zacht"] .savebox, :root[data-look="zacht"] .logform, :root[data-look="zacht"] .statsec, :root[data-look="zacht"] .addmenu,
+:root[data-look="zacht"] .btn.ghost, :root[data-look="zacht"] .field input, :root[data-look="zacht"] .field select, :root[data-look="zacht"] .field textarea,
+:root[data-look="zacht"] .boughtin, :root[data-look="zacht"] .memo, :root[data-look="zacht"] .logitem, :root[data-look="zacht"] .tabbar,
+:root[data-look="zacht"] .fav.big, :root[data-look="zacht"] .sharetxt {
+  -webkit-backdrop-filter: blur(20px) saturate(180%); backdrop-filter: blur(20px) saturate(180%);
+}
+:root[data-look="zacht"] .card, :root[data-look="zacht"] .tally { border: 1px solid var(--line); border-radius: 22px; }
+:root[data-look="zacht"] .chip[aria-pressed="true"], :root[data-look="zacht"] .sortsel.on { box-shadow: 0 4px 14px rgba(0,0,0,.18); }
+:root[data-look="zacht"] .btn.primary, :root[data-look="zacht"] .mapbtn, :root[data-look="zacht"] .rate.pick, :root[data-look="zacht"] .step.plus {
+  background: var(--accent-grad); border-color: var(--line); box-shadow: inset 0 1px 0 rgba(255,255,255,.45), 0 6px 18px var(--glow);
+}
+:root[data-look="zacht"] .rate.on { background: var(--pill); }
+:root[data-look="zacht"] .tabbar { left: 14px; right: 14px; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); max-width: 612px; margin: 0 auto; height: 70px; padding: 0 8px; border: 1px solid var(--line); border-radius: 35px; box-shadow: var(--shadow); }
+:root[data-look="zacht"] .tabbar-in { height: 70px; align-items: center; }
+:root[data-look="zacht"] .tab { align-self: center; justify-content: center; min-height: 56px; padding: 0; border-radius: 28px; }
+:root[data-look="zacht"] .tab[aria-current="page"] { background: var(--pill); box-shadow: inset 0 1px 0 rgba(255,255,255,.6), inset 0 0 0 1px var(--line); }
+:root[data-look="zacht"] .scantab { width: 54px; height: 54px; margin-top: 0; border: 0; background: var(--accent-grad); box-shadow: inset 0 1px 0 rgba(255,255,255,.5), inset 0 -2px 6px rgba(0,0,0,.15), 0 6px 20px var(--glow); }
+:root[data-look="zacht"] .tabdot { border-color: var(--surface-solid); }
+:root[data-look="zacht"] .toast { bottom: calc(104px + env(safe-area-inset-bottom, 0px)); }
 </style>
 </head>
 <body>
 
+<div class="lookbg" aria-hidden="true"><i></i><i></i><i></i></div>
 <div class="authscreen" id="auth">
   <div class="auth-in">
     <div class="authwait" id="authWait"><div class="spinner" aria-hidden="true"></div><span>Even laden…</span></div>
@@ -555,6 +629,14 @@ img { max-width: 100%; }
       </div>
       <p class="hint" style="margin:0">Automatisch volgt de instelling van je apparaat.</p>
       </div>
+      <div class="setsec" id="lookSec">
+      <span class="section-l" style="margin:0">Thema</span>
+      <div class="seg" id="lookSeg" role="radiogroup" aria-label="Thema">
+        <button type="button" role="radio" data-look-pick="klassiek">Klassiek</button>
+        <button type="button" role="radio" data-look-pick="zacht">Zacht</button>
+      </div>
+      <p class="hint" style="margin:0">Het uiterlijk van de app. Licht of donker kies je bij Weergave.</p>
+      </div>
       <div class="setsec" id="langSec">
       <span class="section-l" style="margin:0">Taal</span>
       <div class="seg" id="langSeg" role="radiogroup" aria-label="Taal">
@@ -639,7 +721,7 @@ img { max-width: 100%; }
 </nav>
 
 
-<div class="sheet" id="sheet" hidden role="dialog" aria-modal="true"><div class="sheet-in" id="sheetIn"></div></div>
+<div class="sheet" id="sheet" hidden role="dialog" aria-modal="true"><div class="lookbg" aria-hidden="true"><i></i><i></i><i></i></div><div class="sheet-in" id="sheetIn"></div></div>
 <div class="toast" id="toast" hidden></div>
 
 <!--I18N-START-->
@@ -738,7 +820,8 @@ img { max-width: 100%; }
     /* settings */
     "Weergave": "Appearance", "Automatisch": "Automatic", "Licht": "Light", "Donker": "Dark",
     "Automatisch volgt de instelling van je apparaat.": "Automatic follows the setting of your device.",
-    "Taal": "Language", "Automatisch volgt de taal van je telefoon.": "Automatic follows the language of your phone.",
+    "Thema": "Theme", "Klassiek": "Classic", "Zacht": "Soft", "Het uiterlijk van de app. Licht of donker kies je bij Weergave.": "The look of the app. Light or dark you choose under Appearance.",
+    "Taal": "Language","Automatisch volgt de taal van je telefoon.": "Automatic follows the language of your phone.",
     "Back-up": "Backup", "Download back-up": "Download backup", "Back-up terugzetten": "Restore backup",
     "Eén bestand met al je wijnen, je logboek en je foto's.": "One file with all your wines, your logbook and your photos.",
     "Toevoegen": "Add", "Vervangen": "Replace", "Annuleren": "Cancel", "Zeker weten?": "Are you sure?", "Back-up teruggezet": "Backup restored",
@@ -1589,6 +1672,23 @@ img { max-width: 100%; }
     themePick = b.dataset.themePick;
     try { localStorage.setItem(THEME_KEY, themePick); } catch {}
     applyTheme();
+    setSettings(false);
+  });
+  // ---------- Thema (klassiek / zacht), remembered per device; only the looks that are published are in LOOKS ----------
+  const LOOK_KEY = "wijnkelder.look", LOOKS = ["klassiek", "zacht"];
+  let lookPick = "klassiek";
+  try { const l = localStorage.getItem(LOOK_KEY); if (LOOKS.includes(l)) lookPick = l; } catch {}
+  function applyLook() {
+    if (lookPick === "klassiek") rootEl.removeAttribute("data-look"); else rootEl.setAttribute("data-look", lookPick);
+    document.querySelectorAll("[data-look-pick]").forEach(b => b.setAttribute("aria-checked", String(b.dataset.lookPick === lookPick)));
+  }
+  applyLook();
+  $("lookSeg").addEventListener("click", e => {
+    const b = e.target.closest("[data-look-pick]");
+    if (!b) return;
+    lookPick = b.dataset.lookPick;
+    try { localStorage.setItem(LOOK_KEY, lookPick); } catch {}
+    applyLook();
     setSettings(false);
   });
   // ---------- Taal (automatisch / Nederlands / English), remembered per device; a change reloads the page ----------
@@ -2585,7 +2685,7 @@ img { max-width: 100%; }
   function rrect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
   // Draws the card in the app's current colours (tokens), 1080×1350 like a social post.
   async function buildShareCard(w) {
-    const cs = getComputedStyle(document.documentElement), tok = n => cs.getPropertyValue(n).trim();
+    const cs = getComputedStyle(document.documentElement), tok = n => (cs.getPropertyValue(n + "-solid") || cs.getPropertyValue(n)).trim();
     const disp = '"Gloock", Georgia, serif', body = '"Instrument Sans", -apple-system, "Segoe UI", sans-serif';
     await Promise.all([document.fonts.load("72px Gloock"), document.fonts.load('600 40px "Instrument Sans"'), document.fonts.load('400 34px "Instrument Sans"')]).catch(() => {});
     const W = 1080, H = 1350, P = 72, c = document.createElement("canvas");
