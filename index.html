@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Instrument+Sans:wght@400;500;600;700&display=swap">
-<script>try { var l = localStorage.getItem("wijnkelder.look"); if (l === "klassiek") l = null; else if (l !== "crystal" && l !== "bubbels") l = "zacht"; if ((+localStorage.getItem("wijnkelder.kurkUntil") || 0) > Date.now()) l = "kurk"; if (l) { document.documentElement.setAttribute("data-look", l); document.documentElement.setAttribute("data-glass", ""); } } catch (e) { document.documentElement.setAttribute("data-look", "zacht"); document.documentElement.setAttribute("data-glass", ""); }</script>
+<script>try { var l = localStorage.getItem("wijnkelder.look"); if (l === "klassiek") l = null; else if (l !== "crystal" && l !== "bubbels") l = "zacht"; if (l) { document.documentElement.setAttribute("data-look", l); document.documentElement.setAttribute("data-glass", ""); } } catch (e) { document.documentElement.setAttribute("data-look", "zacht"); document.documentElement.setAttribute("data-glass", ""); }</script>
 <style>
 /* Layout: one-column cellar ledger on the phone, fixed scan bar at the bottom, full-height sheets for scan / form / detail. */
 :root {
@@ -593,33 +593,33 @@ img { max-width: 100%; }
 @keyframes lkRise { 0% { transform: translateY(0); opacity: 0; } 12% { opacity: 1; } 85% { opacity: .9; } 100% { transform: translateY(-120vh); opacity: 0; } }
 @keyframes lkSway { from { transform: translateX(-14px); } to { transform: translateX(14px); } }
 @media (prefers-reduced-motion: reduce) { .lookbg .bub, .lookbg .bub b { animation: none; } .lookbg .bub b { opacity: .8; } }
-/* Secret look "kurk" (search for "Nikki" on Mijn wijnen): glass tokens of Glass + a cork-popping scene, one hour only */
-:root[data-look="kurk"] {
+/* Effects: animations that play for a while IN FRONT of the content on any theme (you can tap through them). Kurk = bottle, cork and hearts. */
+.fxlayer { position: fixed; inset: 0; z-index: 20; pointer-events: none; overflow: hidden; }
+.fxlayer {
   --k-g1: #33573d; --k-g2: #17291e; --k-gold1: #f3d98e; --k-gold2: #b3822c; --k-heart: #d8253f; --k-glow: rgba(216,37,63,.35); --k-ring: rgba(255,255,255,.95);
   --k-flash: radial-gradient(circle,rgba(255,255,255,.95),rgba(255,190,200,.5) 40%,rgba(255,190,200,0) 70%); --k-cork1: #d2a874; --k-cork2: #a97a46;
 }
 @media (prefers-color-scheme: dark) {
-  :root[data-look="kurk"]:not([data-theme="light"]) {
+  :root:not([data-theme="light"]) .fxlayer {
     --k-g1: #1f3a2b; --k-g2: #0b150f; --k-gold1: #f1d58a; --k-gold2: #a9782a; --k-heart: #ff4d6a; --k-glow: rgba(255,77,106,.75); --k-ring: rgba(255,170,185,.9);
     --k-flash: radial-gradient(circle,rgba(255,150,170,.9),rgba(255,70,100,.4) 40%,rgba(255,70,100,0) 70%); --k-cork1: #d9b07a; --k-cork2: #a9793f;
   }
 }
-:root[data-look="kurk"][data-theme="dark"] {
+:root[data-theme="dark"] .fxlayer {
   --k-g1: #1f3a2b; --k-g2: #0b150f; --k-gold1: #f1d58a; --k-gold2: #a9782a; --k-heart: #ff4d6a; --k-glow: rgba(255,77,106,.75); --k-ring: rgba(255,170,185,.9);
   --k-flash: radial-gradient(circle,rgba(255,150,170,.9),rgba(255,70,100,.4) 40%,rgba(255,70,100,0) 70%); --k-cork1: #d9b07a; --k-cork2: #a9793f;
 }
-:root[data-look="kurk"] .lookbg i { display: none; }
-.lookbg .cork { position: absolute; left: 0; bottom: 80px; width: 0; height: 0; }
-.lookbg .cork > * { position: absolute; }
-.lookbg .kflash { left: 12px; bottom: 109px; width: 220px; height: 220px; border-radius: 50%; opacity: 0; background: var(--k-flash); animation: kBurst 6s ease-out infinite; }
-.lookbg .kbottle { left: -30px; bottom: -150px; width: 120px; height: 380px; transform-origin: 60px 380px; transform: rotate(14deg); animation: kRecoil 6s ease-in-out infinite; }
-.lookbg .kh { left: 122px; bottom: 219px; width: 0; height: 0; animation: kx 6s linear infinite; }
-.lookbg .kh > div { animation: ky 6s linear infinite; }
-.lookbg .kh svg { display: block; opacity: 0; filter: drop-shadow(0 0 4px var(--k-glow)); animation: kFade 6s linear infinite; }
-.lookbg .kring { left: 82px; bottom: 179px; width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--k-ring); opacity: 0; animation: kPop 6s ease-out infinite; }
-.lookbg .kcorkx { left: 122px; bottom: 219px; width: 0; height: 0; --cx: 120px; animation: kxc 6s linear infinite; }
-.lookbg .kcorky { animation: kyc 6s linear infinite; }
-.lookbg .kcorkb { width: 18px; height: 28px; margin: -14px 0 0 -9px; border-radius: 5px; background: linear-gradient(90deg,var(--k-cork2),var(--k-cork1) 45%,var(--k-cork2)); box-shadow: inset 0 0 0 1px rgba(60,35,10,.35); animation: kSpin 6s linear infinite; }
+.fxlayer .cork { position: absolute; left: 0; bottom: 0; width: 0; height: 0; transform: scale(.8); transform-origin: 0 100%; }
+.fxlayer .cork > * { position: absolute; }
+.fxlayer .kflash { left: 12px; bottom: 109px; width: 220px; height: 220px; border-radius: 50%; opacity: 0; background: var(--k-flash); animation: kBurst 6s ease-out infinite; }
+.fxlayer .kbottle { left: -30px; bottom: -150px; width: 120px; height: 380px; transform-origin: 60px 380px; transform: rotate(14deg); opacity: .85; animation: kRecoil 6s ease-in-out infinite; }
+.fxlayer .kh { left: 122px; bottom: 219px; width: 0; height: 0; animation: kx 6s linear infinite; }
+.fxlayer .kh > div { animation: ky 6s linear infinite; }
+.fxlayer .kh svg { display: block; opacity: 0; filter: drop-shadow(0 0 4px var(--k-glow)); animation: kFade 6s linear infinite; }
+.fxlayer .kring { left: 82px; bottom: 179px; width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--k-ring); opacity: 0; animation: kPop 6s ease-out infinite; }
+.fxlayer .kcorkx { left: 122px; bottom: 219px; width: 0; height: 0; --cx: 120px; animation: kxc 6s linear infinite; }
+.fxlayer .kcorky { animation: kyc 6s linear infinite; }
+.fxlayer .kcorkb { width: 18px; height: 28px; margin: -14px 0 0 -9px; border-radius: 5px; background: linear-gradient(90deg,var(--k-cork2),var(--k-cork1) 45%,var(--k-cork2)); box-shadow: inset 0 0 0 1px rgba(60,35,10,.35); animation: kSpin 6s linear infinite; }
 @keyframes kx { 0% { transform: translateX(0); } 34%, 100% { transform: translateX(var(--dx)); } }
 @keyframes ky { 0% { transform: translateY(0); animation-timing-function: cubic-bezier(.15,.7,.35,1); } 14% { transform: translateY(calc(var(--up) * -1)); animation-timing-function: cubic-bezier(.55,0,.9,.45); } 34%, 100% { transform: translateY(var(--down)); } }
 @keyframes kFade { 0% { opacity: 0; } 1.5%, 34% { opacity: 1; } 37%, 100% { opacity: 0; } }
@@ -629,12 +629,13 @@ img { max-width: 100%; }
 @keyframes kBurst { 0% { transform: scale(.3); opacity: 0; } 3% { opacity: .9; } 12% { transform: scale(1.2); opacity: .6; } 30% { transform: scale(1.7); opacity: 0; } 100% { opacity: 0; } }
 @keyframes kPop { 0% { transform: scale(.1); opacity: .9; } 5% { opacity: .9; } 11% { transform: scale(2.6); opacity: 0; } 100% { opacity: 0; } }
 @keyframes kRecoil { 0% { transform: rotate(14deg) translate(0,0); } 2% { transform: rotate(10deg) translate(-6px,10px); } 10% { transform: rotate(15.5deg) translate(1px,-2px); } 18% { transform: rotate(14deg) translate(0,0); } 90% { transform: rotate(14deg) translate(0,0); } 92% { transform: rotate(13deg) translate(-1px,0); } 94% { transform: rotate(15deg) translate(1px,0); } 96% { transform: rotate(13deg) translate(-1px,0); } 98% { transform: rotate(15deg) translate(1px,0); } 100% { transform: rotate(14deg) translate(0,0); } }
-@media (prefers-reduced-motion: reduce) { .lookbg .cork, .lookbg .cork * { animation: none !important; } }
+@media (prefers-reduced-motion: reduce) { .fxlayer .cork, .fxlayer .cork * { animation: none !important; } }
 </style>
 </head>
 <body>
 
 <div class="lookbg" aria-hidden="true"><i></i><i></i><i></i></div>
+<div class="fxlayer" id="fxLayer" aria-hidden="true" hidden></div>
 <div class="authscreen" id="auth">
   <div class="auth-in">
     <div class="authwait" id="authWait"><div class="spinner" aria-hidden="true"></div><span>Even laden…</span></div>
@@ -1642,8 +1643,9 @@ img { max-width: 100%; }
 
   // ---------- Events ----------
   $("search").addEventListener("input", e => {
-    // Easter egg: searching for "Nikki" gives the cork-popping background for one hour.
-    if (e.target.value.trim().toLowerCase() === "nikki") { e.target.value = ""; query = ""; render(); activateKurk(); return; }
+    // Secret words start an effect for one hour (FX_WORDS, e.g. "Nikki" = Kurk).
+    const fxWord = FX_WORDS[e.target.value.trim().toLowerCase()];
+    if (fxWord) { e.target.value = ""; query = ""; render(); startFx(fxWord, 60 * 60 * 1000); toast(L("Proost! Een uur lang een verrassing.", "Cheers! A surprise for one hour.")); return; }
     query = e.target.value; render();
   });
   const sortChipEl = $("sortChip");   // kept as a reference: renderList() rebuilds #chips and puts it back at the end
@@ -1778,50 +1780,56 @@ img { max-width: 100%; }
   const LOOK_KEY = "wijnkelder.look", LOOKS = ["klassiek", "zacht", "crystal", "bubbels"];
   let lookPick = "zacht"; // default for everyone until they choose another look
   try { const l = localStorage.getItem(LOOK_KEY); if (LOOKS.includes(l)) lookPick = l; } catch {}
-  // The secret "kurk" look is not in LOOKS: it overrides the chosen look for one hour (localStorage wijnkelder.kurkUntil), then the chosen look returns.
-  const KURK_KEY = "wijnkelder.kurkUntil", KURK_MS = 60 * 60 * 1000;
-  let kurkTimer = 0;
-  function kurkLeft() { try { return (+localStorage.getItem(KURK_KEY) || 0) - Date.now(); } catch { return 0; } }
-  function activateKurk() {
-    try { localStorage.setItem(KURK_KEY, String(Date.now() + KURK_MS)); } catch {}
-    applyLook();
-    toast(L("Proost! Een uur lang een speciale achtergrond.", "Cheers! A special background for one hour."));
-  }
   function applyLook() {
-    const eff = kurkLeft() > 0 ? "kurk" : lookPick;
-    clearTimeout(kurkTimer);
-    if (eff === "kurk") kurkTimer = setTimeout(applyLook, Math.min(kurkLeft() + 500, 2147483000));
-    if (eff === "klassiek") { rootEl.removeAttribute("data-look"); rootEl.removeAttribute("data-glass"); } else { rootEl.setAttribute("data-look", eff); rootEl.setAttribute("data-glass", ""); }
+    if (lookPick === "klassiek") { rootEl.removeAttribute("data-look"); rootEl.removeAttribute("data-glass"); } else { rootEl.setAttribute("data-look", lookPick); rootEl.setAttribute("data-glass", ""); }
     document.querySelectorAll("[data-look-pick]").forEach(b => b.setAttribute("aria-checked", String(b.dataset.lookPick === lookPick)));
-    fillBubbles(eff === "bubbels");
-    fillCork(eff === "kurk");
+    fillBubbles(lookPick === "bubbels");
   }
-  document.addEventListener("visibilitychange", () => { if (!document.hidden) applyLook(); });
-  // The cork scene: a champagne bottle bottom left, the cork flies out and hearts fly up (6 s loop). Positions are measured from the bottom of the screen.
-  function fillCork(on) {
-    document.querySelectorAll(".lookbg").forEach((lb, n) => {
-      let box = lb.querySelector(".cork");
-      if (!on) { if (box) box.remove(); return; }
-      if (box) return;
-      box = document.createElement("div"); box.className = "cork";
-      const rnd = (i, k) => { const x = Math.sin((i + 1) * 12.9898 + k * 78.233) * 43758.5453; return x - Math.floor(x); };
-      let hearts = "";
-      for (let j = 0; j < 28; j++) {
-        const s = 12 + Math.round(rnd(j, 4) * 16), d = (0.05 + rnd(j, 5) * 0.65).toFixed(2);
-        hearts += `<div class="kh" style="--dx:${Math.round(-70 + rnd(j, 1) * 330)}px;--up:${Math.round(120 + rnd(j, 2) * 420)}px;--down:${Math.round(40 + rnd(j, 3) * 320)}px;animation-delay:${d}s"><div style="animation-delay:${d}s"><svg viewBox="0 0 24 24" width="${s}" height="${s}" aria-hidden="true" style="margin-left:-${s / 2}px;transform:rotate(${Math.round(rnd(j, 6) * 50 - 25)}deg);animation-delay:${d}s"><path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 7.9 3.6 4.5 7 4.5c2 0 3.4 1.1 5 3 1.6-1.9 3-3 5-3 3.4 0 5.6 3.4 4.3 6.8-1.8 4.6-9.3 9.2-9.3 9.2z" style="fill:var(--k-heart)"/><path d="M7.2 7.6c-1.5.1-2.6 1.4-2.4 3" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round" opacity=".55"/></svg></div></div>`;
-      }
-      box.innerHTML = `<div class="kflash"></div>
-        <div class="kbottle"><svg viewBox="0 0 120 380" width="120" height="380" aria-hidden="true"><defs>
-          <linearGradient id="kglas${n}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" style="stop-color:var(--k-g2)"/><stop offset=".35" style="stop-color:var(--k-g1)"/><stop offset="1" style="stop-color:var(--k-g2)"/></linearGradient>
-          <linearGradient id="kfolie${n}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" style="stop-color:var(--k-gold2)"/><stop offset=".4" style="stop-color:var(--k-gold1)"/><stop offset="1" style="stop-color:var(--k-gold2)"/></linearGradient></defs>
-          <path d="M43 12 H77 V120 C77 152 112 162 112 206 V380 H8 V206 C8 162 43 152 43 120 Z" fill="url(#kglas${n})"/>
-          <rect x="41" y="12" width="38" height="92" rx="3" fill="url(#kfolie${n})"/><rect x="37" y="0" width="46" height="14" rx="5" fill="url(#kfolie${n})"/>
-          <rect x="20" y="214" width="7" height="150" rx="3.5" fill="#fff" opacity=".2"/><path d="M50 24 V98" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".35"/></svg></div>
-        ${hearts}
-        <div class="kring"></div>
-        <div class="kcorkx"><div class="kcorky"><div class="kcorkb"></div></div></div>`;
-      lb.appendChild(box);
-    });
+  // ---------- Effects: an animation in its own layer (#fxLayer) over any theme, for a limited time ----------
+  // FX lists the effects (name -> HTML builder); FX_WORDS the secret search words. State per device: localStorage wijnkelder.fx = {name, until}.
+  const FX = { kurk: corkHtml };
+  const FX_WORDS = { nikki: "kurk" };
+  const FX_KEY = "wijnkelder.fx";
+  let fxTimer = 0;
+  try { // the first version kept only the Kurk end time
+    const old = +localStorage.getItem("wijnkelder.kurkUntil") || 0;
+    if (old > Date.now()) localStorage.setItem(FX_KEY, JSON.stringify({ name: "kurk", until: old }));
+    localStorage.removeItem("wijnkelder.kurkUntil");
+  } catch {}
+  function fxState() {
+    try { const s = JSON.parse(localStorage.getItem(FX_KEY) || "null"); return s && FX[s.name] && s.until > Date.now() ? s : null; } catch { return null; }
+  }
+  function startFx(name, ms) {
+    try { localStorage.setItem(FX_KEY, JSON.stringify({ name, until: Date.now() + ms })); } catch {}
+    applyFx();
+  }
+  function applyFx() {
+    const s = fxState(), layer = $("fxLayer");
+    clearTimeout(fxTimer);
+    if (!s) { layer.hidden = true; layer.innerHTML = ""; delete layer.dataset.fx; return; }
+    if (layer.dataset.fx !== s.name) { layer.innerHTML = FX[s.name](); layer.dataset.fx = s.name; }
+    layer.hidden = false;
+    fxTimer = setTimeout(applyFx, Math.min(s.until - Date.now() + 300, 2147483000));
+  }
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) applyFx(); });
+  // Kurk: a champagne bottle bottom left, the cork flies out and hearts fly up (6 s loop). Positions are measured from the bottom of the screen.
+  function corkHtml() {
+    const rnd = (i, k) => { const x = Math.sin((i + 1) * 12.9898 + k * 78.233) * 43758.5453; return x - Math.floor(x); };
+    let hearts = "";
+    for (let j = 0; j < 28; j++) {
+      const s = 12 + Math.round(rnd(j, 4) * 16), d = (0.05 + rnd(j, 5) * 0.65).toFixed(2);
+      hearts += `<div class="kh" style="--dx:${Math.round(-70 + rnd(j, 1) * 330)}px;--up:${Math.round(120 + rnd(j, 2) * 420)}px;--down:${Math.round(40 + rnd(j, 3) * 320)}px;animation-delay:${d}s"><div style="animation-delay:${d}s"><svg viewBox="0 0 24 24" width="${s}" height="${s}" aria-hidden="true" style="margin-left:-${s / 2}px;transform:rotate(${Math.round(rnd(j, 6) * 50 - 25)}deg);animation-delay:${d}s"><path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 7.9 3.6 4.5 7 4.5c2 0 3.4 1.1 5 3 1.6-1.9 3-3 5-3 3.4 0 5.6 3.4 4.3 6.8-1.8 4.6-9.3 9.2-9.3 9.2z" style="fill:var(--k-heart)"/><path d="M7.2 7.6c-1.5.1-2.6 1.4-2.4 3" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round" opacity=".55"/></svg></div></div>`;
+    }
+    return `<div class="cork"><div class="kflash"></div>
+      <div class="kbottle"><svg viewBox="0 0 120 380" width="120" height="380" aria-hidden="true"><defs>
+        <linearGradient id="kglas" x1="0" y1="0" x2="1" y2="0"><stop offset="0" style="stop-color:var(--k-g2)"/><stop offset=".35" style="stop-color:var(--k-g1)"/><stop offset="1" style="stop-color:var(--k-g2)"/></linearGradient>
+        <linearGradient id="kfolie" x1="0" y1="0" x2="1" y2="0"><stop offset="0" style="stop-color:var(--k-gold2)"/><stop offset=".4" style="stop-color:var(--k-gold1)"/><stop offset="1" style="stop-color:var(--k-gold2)"/></linearGradient></defs>
+        <path d="M43 12 H77 V120 C77 152 112 162 112 206 V380 H8 V206 C8 162 43 152 43 120 Z" fill="url(#kglas)"/>
+        <rect x="41" y="12" width="38" height="92" rx="3" fill="url(#kfolie)"/><rect x="37" y="0" width="46" height="14" rx="5" fill="url(#kfolie)"/>
+        <rect x="20" y="214" width="7" height="150" rx="3.5" fill="#fff" opacity=".2"/><path d="M50 24 V98" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".35"/></svg></div>
+      ${hearts}
+      <div class="kring"></div>
+      <div class="kcorkx"><div class="kcorky"><div class="kcorkb"></div></div></div></div>`;
   }
   // Rising bubbles for the Bubbels look: 56 fixed pseudo-random bubbles per background layer (page and sheet).
   function fillBubbles(on) {
@@ -1840,6 +1848,7 @@ img { max-width: 100%; }
     });
   }
   applyLook();
+  applyFx();
   $("lookSeg").addEventListener("click", e => {
     const b = e.target.closest("[data-look-pick]");
     if (!b) return;
