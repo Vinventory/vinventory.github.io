@@ -878,7 +878,7 @@ img { max-width: 100%; }
     /* settings */
     "Weergave": "Appearance", "Automatisch": "Automatic", "Licht": "Light", "Donker": "Dark",
     "Automatisch volgt de instelling van je apparaat.": "Automatic follows the setting of your device.",
-    "Wijnkelder": "Wine cellar", "Bubbels": "Bubbles", "Mijn wijnen": "My wines",
+    "Wijnkelder": "Wine cellar", "Bubbels": "Bubbles", "Zet in wijnkelder": "Put in cellar", "Mijn wijnen": "My wines",
     "Thema": "Theme", "Klassiek": "Classic", "Zacht": "Soft", "Het uiterlijk van de app. Licht of donker kies je bij Weergave.": "The look of the app. Light or dark you choose under Appearance.",
     "Taal": "Language","Automatisch volgt de taal van je telefoon.": "Automatic follows the language of your phone.",
     "Back-up": "Backup", "Download back-up": "Download backup", "Back-up terugzetten": "Restore backup",
@@ -2053,7 +2053,7 @@ img { max-width: 100%; }
     const opts = COLORS.map(c => `<option value="${c[0]}"${w.color === c[0] ? " selected" : ""}>${c[1]}</option>`).join("");
     // A new wine, or one on the wishlist, can go either to the cellar or to the wishlist.
     let dest = id ? (w.wish ? "wish" : "kelder") : (w.wish || addTarget === "wish" ? "wish" : "kelder");
-    const destPick = !id || w.wish;
+    const destPick = !id; // editing a wishlist wine has no "Mijn kelder / Wishlist" choice; "Zet in wijnkelder" is a button at the bottom
     openSheet(`${top(id ? "Wijn bewerken" : "Wijn toevoegen")}
       <div id="labelBox" class="membox"></div>
       <input type="file" id="labelIn" accept="image/*" class="vh">
@@ -2132,12 +2132,15 @@ img { max-width: 100%; }
           </div>
           <div class="savedate" id="f-savedateRow" hidden><span id="f-savedateTxt"></span></div>
         </div>
-        <div class="actions">
+        ${id && w.wish ? `<div class="actions four">
+          <button class="btn ghost" type="button" data-close><svg class="house" viewBox="0 0 24 24" aria-hidden="true"><path d="${HOUSE}"/></svg>Home</button>
+          <button class="btn ghost" type="button" data-close><svg class="house" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>Annuleren</button>
+          <button class="btn primary" type="submit"><svg class="house" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>Opslaan</button>
+          <button class="btn ghost" type="button" id="f-gekocht"><svg class="house" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5 12 4l8 3.5v9L12 20l-8-3.5zM4 7.5l8 3.5 8-3.5M12 11v9"/></svg>Zet in wijnkelder</button>
+        </div>` : `<div class="actions">
           <button class="btn ghost" type="button" data-close>Annuleren</button>
           <button class="btn primary" type="submit">Opslaan</button>
-        </div>
-        ${id && w.wish ? `<button class="btn ghost" type="button" id="f-gekocht"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>Gekocht: zet in mijn kelder</button>` : ""}
-      </form>`);
+        </div>`}      </form>`);
 
     let qty = w.quantity || 0;
     let rating = w.rating || null;
