@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Instrument+Sans:wght@400;500;600;700&display=swap">
-<script>try { var l = localStorage.getItem("wijnkelder.look"); if (l === "klassiek") l = null; else if (l !== "crystal") l = "zacht"; if (l) { document.documentElement.setAttribute("data-look", l); document.documentElement.setAttribute("data-glass", ""); } } catch (e) { document.documentElement.setAttribute("data-look", "zacht"); document.documentElement.setAttribute("data-glass", ""); }</script>
+<script>try { var l = localStorage.getItem("wijnkelder.look"); if (l === "klassiek") l = null; else if (l !== "crystal" && l !== "bubbels") l = "zacht"; if (l) { document.documentElement.setAttribute("data-look", l); document.documentElement.setAttribute("data-glass", ""); } } catch (e) { document.documentElement.setAttribute("data-look", "zacht"); document.documentElement.setAttribute("data-glass", ""); }</script>
 <style>
 /* Layout: one-column cellar ledger on the phone, fixed scan bar at the bottom, full-height sheets for scan / form / detail. */
 :root {
@@ -546,6 +546,53 @@ img { max-width: 100%; }
 :root[data-look="crystal"] .lookbg i:nth-child(1) { left: -50px; top: 14%; width: 230px; height: 230px; animation-duration: 22s; }
 :root[data-look="crystal"] .lookbg i:nth-child(2) { right: -70px; top: 40%; width: 260px; height: 260px; animation-duration: 26s; }
 :root[data-look="crystal"] .lookbg i:nth-child(3) { left: 30px; top: 70%; width: 200px; height: 200px; animation-duration: 19s; }
+/* Thema "Bubbels": champagne-day / dark-cellar-night colours, rising bubbles instead of blobs */
+:root[data-look="bubbels"] {
+  --look-top: #f6efe2; --look-bg: linear-gradient(180deg,#f8f2e7,#efe5d3 60%,#e4d6bd);
+  --surface: linear-gradient(135deg, rgba(255,253,246,.44), rgba(255,253,246,.16));
+  --sunk: linear-gradient(135deg, rgba(255,253,246,.36), rgba(255,253,246,.12));
+  --surface-solid: #fffdf6; --sunk-solid: #e8dcc4;
+  --line: rgba(110,90,50,.1); --muted: #6e5f3c; --ink: #2b2210;
+  --accent: #6a2b39; --accent-text: #5c1f2c; --accent-ink: #fff1ee;
+  --accent-grad: linear-gradient(180deg,#6a2b39,#4d1821); --glow: rgba(77,24,33,.4); --pill: rgba(255,255,255,.6);
+  --shadow: 0 10px 30px rgba(100,80,50,.15);
+  --bub: radial-gradient(circle at 30% 28%, rgba(255,255,255,1), rgba(236,218,184,.7) 55%, rgba(196,166,116,.4));
+  --bub-rim: rgba(160,120,70,.6); --bub-sh: rgba(110,80,40,.3); --bub-glow: linear-gradient(to top, rgba(214,194,160,.55), rgba(214,194,160,0));
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-look="bubbels"]:not([data-theme="light"]) {
+    --look-top: #120b0d; --look-bg: linear-gradient(180deg,#0d0a0c,#1c0f10 60%,#2a1410);
+    --surface: linear-gradient(135deg, rgba(255,240,220,.09), rgba(255,240,220,.025));
+    --sunk: linear-gradient(135deg, rgba(255,240,220,.07), rgba(255,240,220,.02));
+    --surface-solid: #22151a; --sunk-solid: #301c22;
+    --line: rgba(255,230,190,.07); --muted: #cbb79a; --ink: #f8efe0;
+    --accent: #6a2b39; --accent-text: #e8a3ae; --accent-ink: #fff1ee;
+    --accent-grad: linear-gradient(180deg,#6a2b39,#4d1821); --glow: rgba(106,43,57,.6); --pill: rgba(255,230,190,.14);
+    --shadow: 0 10px 30px rgba(0,0,0,.5);
+    --bub: radial-gradient(circle at 30% 28%, rgba(255,226,160,.9), rgba(240,170,70,.28) 55%, rgba(240,170,70,.08));
+    --bub-rim: rgba(255,214,140,.7); --bub-sh: rgba(0,0,0,0); --bub-glow: linear-gradient(to top, rgba(196,120,40,.45), rgba(196,120,40,0));
+  }
+}
+:root[data-look="bubbels"][data-theme="dark"] {
+  --look-top: #120b0d; --look-bg: linear-gradient(180deg,#0d0a0c,#1c0f10 60%,#2a1410);
+  --surface: linear-gradient(135deg, rgba(255,240,220,.09), rgba(255,240,220,.025));
+  --sunk: linear-gradient(135deg, rgba(255,240,220,.07), rgba(255,240,220,.02));
+  --surface-solid: #22151a; --sunk-solid: #301c22;
+  --line: rgba(255,230,190,.07); --muted: #cbb79a; --ink: #f8efe0;
+  --accent: #6a2b39; --accent-text: #e8a3ae; --accent-ink: #fff1ee;
+  --accent-grad: linear-gradient(180deg,#6a2b39,#4d1821); --glow: rgba(106,43,57,.6); --pill: rgba(255,230,190,.14);
+  --shadow: 0 10px 30px rgba(0,0,0,.5);
+  --bub: radial-gradient(circle at 30% 28%, rgba(255,226,160,.9), rgba(240,170,70,.28) 55%, rgba(240,170,70,.08));
+  --bub-rim: rgba(255,214,140,.7); --bub-sh: rgba(0,0,0,0); --bub-glow: linear-gradient(to top, rgba(196,120,40,.45), rgba(196,120,40,0));
+}
+:root[data-look="bubbels"] .lookbg i { display: none; }
+:root[data-look="bubbels"] .lookbg::before { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 40%; background: var(--bub-glow); }
+.lookbg .bubs { position: absolute; inset: 0; }
+.lookbg .bub { position: absolute; bottom: -70px; animation: lkSway 5s ease-in-out infinite alternate; }
+.lookbg .bub b { display: block; width: 100%; height: 100%; border-radius: 50%; background: var(--bub); border: 1px solid var(--bub-rim); box-shadow: inset 0 0 4px var(--bub-rim), 0 1px 3px var(--bub-sh); opacity: 0; animation: lkRise 16s linear infinite; will-change: transform, opacity; }
+@keyframes lkRise { 0% { transform: translateY(0); opacity: 0; } 12% { opacity: 1; } 85% { opacity: .9; } 100% { transform: translateY(-120vh); opacity: 0; } }
+@keyframes lkSway { from { transform: translateX(-14px); } to { transform: translateX(14px); } }
+@media (prefers-reduced-motion: reduce) { .lookbg .bub, .lookbg .bub b { animation: none; } .lookbg .bub b { opacity: .8; } }
 </style>
 </head>
 <body>
@@ -644,6 +691,7 @@ img { max-width: 100%; }
         <button type="button" role="radio" data-look-pick="klassiek">Klassiek</button>
         <button type="button" role="radio" data-look-pick="zacht">Glass</button>
         <button type="button" role="radio" data-look-pick="crystal">Crystal</button>
+        <button type="button" role="radio" data-look-pick="bubbels">Bubbels</button>
       </div>
       <p class="hint" style="margin:0">Het uiterlijk van de app. Licht of donker kies je bij Weergave.</p>
       </div>
@@ -830,7 +878,7 @@ img { max-width: 100%; }
     /* settings */
     "Weergave": "Appearance", "Automatisch": "Automatic", "Licht": "Light", "Donker": "Dark",
     "Automatisch volgt de instelling van je apparaat.": "Automatic follows the setting of your device.",
-    "Wijnkelder": "Wine cellar", "Mijn wijnen": "My wines",
+    "Wijnkelder": "Wine cellar", "Bubbels": "Bubbles", "Mijn wijnen": "My wines",
     "Thema": "Theme", "Klassiek": "Classic", "Zacht": "Soft", "Het uiterlijk van de app. Licht of donker kies je bij Weergave.": "The look of the app. Light or dark you choose under Appearance.",
     "Taal": "Language","Automatisch volgt de taal van je telefoon.": "Automatic follows the language of your phone.",
     "Back-up": "Backup", "Download back-up": "Download backup", "Back-up terugzetten": "Restore backup",
@@ -1686,12 +1734,29 @@ img { max-width: 100%; }
     setSettings(false);
   });
   // ---------- Thema (klassiek / zacht), remembered per device; only the looks that are published are in LOOKS ----------
-  const LOOK_KEY = "wijnkelder.look", LOOKS = ["klassiek", "zacht", "crystal"];
+  const LOOK_KEY = "wijnkelder.look", LOOKS = ["klassiek", "zacht", "crystal", "bubbels"];
   let lookPick = "zacht"; // default for everyone until they choose another look
   try { const l = localStorage.getItem(LOOK_KEY); if (LOOKS.includes(l)) lookPick = l; } catch {}
   function applyLook() {
     if (lookPick === "klassiek") { rootEl.removeAttribute("data-look"); rootEl.removeAttribute("data-glass"); } else { rootEl.setAttribute("data-look", lookPick); rootEl.setAttribute("data-glass", ""); }
     document.querySelectorAll("[data-look-pick]").forEach(b => b.setAttribute("aria-checked", String(b.dataset.lookPick === lookPick)));
+    fillBubbles(lookPick === "bubbels");
+  }
+  // Rising bubbles for the Bubbels look: 56 fixed pseudo-random bubbles per background layer (page and sheet).
+  function fillBubbles(on) {
+    document.querySelectorAll(".lookbg").forEach(lb => {
+      let box = lb.querySelector(".bubs");
+      if (!on) { if (box) box.remove(); return; }
+      if (box) return;
+      box = document.createElement("div"); box.className = "bubs";
+      let html = "";
+      for (let i = 0; i < 56; i++) {
+        const r = k => { const x = Math.sin((i + 1) * 12.9898 + k * 78.233) * 43758.5453; return x - Math.floor(x); };
+        const s = 3 + Math.round(r(1) * r(2) * 11);
+        html += `<span class="bub" style="left:${Math.round(r(3) * 96)}%;width:${s}px;height:${s}px;animation-duration:${Math.round(3 + r(6) * 4)}s"><b style="animation-duration:${Math.round(11 + r(4) * 12 + s / 6)}s;animation-delay:-${Math.round(r(5) * 24)}s;box-shadow:inset 0 0 ${Math.round(s / 3)}px var(--bub-rim),0 1px 3px var(--bub-sh)"></b></span>`;
+      }
+      box.innerHTML = html; lb.appendChild(box);
+    });
   }
   applyLook();
   $("lookSeg").addEventListener("click", e => {
@@ -1707,14 +1772,14 @@ img { max-width: 100%; }
     const t = rootEl.getAttribute("data-theme");
     const dark = t === "dark" || (t !== "light" && window.matchMedia("(prefers-color-scheme: dark)").matches);
     const glass = rootEl.hasAttribute("data-glass");
-    const col = glass ? (dark ? "#1e0e14" : "#f3e8d3") : (dark ? "#140c0e" : "#efe5d2");
+    const col = glass ? (getComputedStyle(rootEl).getPropertyValue("--look-top").trim() || (dark ? "#1e0e14" : "#f3e8d3")) : (dark ? "#140c0e" : "#efe5d2");
     document.querySelectorAll('meta[name="theme-color"]').forEach((m, i) => { if (i) m.remove(); });
     let m = document.querySelector('meta[name="theme-color"]');
     if (!m) { m = document.createElement("meta"); m.name = "theme-color"; document.head.appendChild(m); }
     m.removeAttribute("media"); m.content = col;
   }
   window.matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", updateBarColor);
-  new MutationObserver(updateBarColor).observe(rootEl, { attributes: true, attributeFilter: ["data-theme", "data-glass"] });
+  new MutationObserver(updateBarColor).observe(rootEl, { attributes: true, attributeFilter: ["data-theme", "data-glass", "data-look"] });
   updateBarColor();  // ---------- Taal (automatisch / Nederlands / English), remembered per device; a change reloads the page ----------
   document.querySelectorAll("[data-lang-pick]").forEach(b => b.setAttribute("aria-checked", String(b.dataset.langPick === window.VINV.pick)));
   $("langSeg").addEventListener("click", e => {
