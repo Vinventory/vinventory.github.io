@@ -925,9 +925,10 @@ img { max-width: 100%; }
     "Verrassing": "Surprise", "Voorbeeld bekijken": "Preview", "Bijv. Proost op je verjaardag!": "E.g. Cheers on your birthday!", "Verstuur": "Send",
     "Je hebt vandaag al 10 verrassingen gestuurd. Probeer het morgen opnieuw.": "You have already sent 10 surprises today. Try again tomorrow.",
     "Deze vriend heeft je laatste 3 verrassingen nog niet gezien. Wacht even.": "This friend hasn't seen your last 3 surprises yet. Please wait a while.",
-    "Deze verrassing kan nog niet worden verstuurd.": "This surprise can't be sent yet.",    "Wijnkelder": "Wine cellar", "Bubbels": "Bubbles", "Zet in wijnkelder": "Put in cellar", "Mijn wijnen": "My wines",
+    "Deze verrassing kan nog niet worden verstuurd.": "This surprise can't be sent yet.",
+    "Wijnkelder": "Wine cellar", "Bubbels": "Bubbles", "Zet in wijnkelder": "Put in cellar", "Mijn wijnen": "My wines",
     "Thema": "Theme", "Klassiek": "Classic", "Zacht": "Soft", "Het uiterlijk van de app. Licht of donker kies je bij Weergave.": "The look of the app. Light or dark you choose under Appearance.",
-    "Taal": "Language","Automatisch volgt de taal van je telefoon.": "Automatic follows the language of your phone.",
+    "Taal": "Language", "Automatisch volgt de taal van je telefoon.": "Automatic follows the language of your phone.",
     "Back-up": "Backup", "Download back-up": "Download backup", "Back-up terugzetten": "Restore backup",
     "Eén bestand met al je wijnen, je logboek en je foto's.": "One file with all your wines, your logbook and your photos.",
     "Toevoegen": "Add", "Vervangen": "Replace", "Annuleren": "Cancel", "Zeker weten?": "Are you sure?", "Back-up teruggezet": "Backup restored",
@@ -1888,7 +1889,8 @@ img { max-width: 100%; }
   }
   window.matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", updateBarColor);
   new MutationObserver(updateBarColor).observe(rootEl, { attributes: true, attributeFilter: ["data-theme", "data-glass", "data-look"] });
-  updateBarColor();  // ---------- Taal (automatisch / Nederlands / English), remembered per device; a change reloads the page ----------
+  updateBarColor();
+  // ---------- Taal (automatisch / Nederlands / English), remembered per device; a change reloads the page ----------
   document.querySelectorAll("[data-lang-pick]").forEach(b => b.setAttribute("aria-checked", String(b.dataset.langPick === window.VINV.pick)));
   $("langSeg").addEventListener("click", e => {
     const b = e.target.closest("[data-lang-pick]");
@@ -2248,7 +2250,8 @@ img { max-width: 100%; }
         </div>` : `<div class="actions">
           <button class="btn ghost" type="button" data-close>Annuleren</button>
           <button class="btn primary" type="submit">Opslaan</button>
-        </div>`}      </form>`);
+        </div>`}
+      </form>`);
 
     let qty = w.quantity || 0;
     let rating = w.rating || null;
