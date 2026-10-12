@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Instrument+Sans:wght@400;500;600;700&display=swap">
-<script>try { var l = localStorage.getItem("wijnkelder.look"); if (l !== "klassiek") document.documentElement.setAttribute("data-look", l); } catch (e) {}</script>
+<script>try { var l = localStorage.getItem("wijnkelder.look"); if (l === "klassiek") l = null; else if (l !== "crystal") l = "zacht"; if (l) { document.documentElement.setAttribute("data-look", l); document.documentElement.setAttribute("data-glass", ""); } } catch (e) { document.documentElement.setAttribute("data-look", "zacht"); document.documentElement.setAttribute("data-glass", ""); }</script>
 <style>
 /* Layout: one-column cellar ledger on the phone, fixed scan bar at the bottom, full-height sheets for scan / form / detail. */
 :root {
@@ -470,7 +470,7 @@ img { max-width: 100%; }
 
 /* Thema "Zacht" (liquid glass, soft moving blobs). Set with data-look="zacht" on <html>; "klassiek" is the plain look above. */
 .lookbg { display: none; }
-:root[data-look="zacht"] {
+:root[data-glass] {
   --look-bg: radial-gradient(120% 70% at 10% 0%, #f7ecd4 0%, #efe5d2 45%, #e6d6b6 100%);
   --surface: linear-gradient(135deg, rgba(255,252,244,.44), rgba(255,252,244,.16));
   --sunk: linear-gradient(135deg, rgba(255,252,244,.36), rgba(255,252,244,.12));
@@ -481,7 +481,7 @@ img { max-width: 100%; }
   --b1: linear-gradient(145deg,#f0c36a,#d98f3a); --b2: linear-gradient(145deg,#eaa48b,#c9705f); --b3: linear-gradient(145deg,#e9d49a,#bf9a4a);
 }
 @media (prefers-color-scheme: dark) {
-  :root[data-look="zacht"]:not([data-theme="light"]) {
+  :root[data-glass]:not([data-theme="light"]) {
     --look-bg: radial-gradient(120% 70% at 10% 0%, #2a1119 0%, #170c10 50%, #0d0709 100%);
     --surface: linear-gradient(135deg, rgba(255,255,255,.09), rgba(255,255,255,.025));
     --sunk: linear-gradient(135deg, rgba(255,255,255,.07), rgba(255,255,255,.02));
@@ -492,7 +492,7 @@ img { max-width: 100%; }
     --b1: linear-gradient(145deg,#b3263f,#6d1328); --b2: linear-gradient(145deg,#d9803a,#8e3d1c); --b3: linear-gradient(145deg,#7c1d3a,#31091b);
   }
 }
-:root[data-look="zacht"][data-theme="dark"] {
+:root[data-glass][data-theme="dark"] {
   --look-bg: radial-gradient(120% 70% at 10% 0%, #2a1119 0%, #170c10 50%, #0d0709 100%);
   --surface: linear-gradient(135deg, rgba(255,255,255,.09), rgba(255,255,255,.025));
   --sunk: linear-gradient(135deg, rgba(255,255,255,.07), rgba(255,255,255,.02));
@@ -502,41 +502,46 @@ img { max-width: 100%; }
   --shadow: 0 10px 30px rgba(0,0,0,.5);
   --b1: linear-gradient(145deg,#b3263f,#6d1328); --b2: linear-gradient(145deg,#d9803a,#8e3d1c); --b3: linear-gradient(145deg,#7c1d3a,#31091b);
 }
-:root[data-look="zacht"] { background: var(--bg); }
-:root[data-look="zacht"] body { background: transparent; }
-:root[data-look="zacht"] .sheet { background: var(--look-bg); }
-:root[data-look="zacht"] .lookbg { display: block; position: fixed; top: -80px; right: 0; bottom: -80px; left: 0; z-index: 0; overflow: hidden; pointer-events: none; background: var(--look-bg); }
-:root[data-look="zacht"] .lookbg i { position: absolute; border-radius: 50%; filter: blur(8px); opacity: .6; will-change: transform; }
-:root[data-look="zacht"] .lookbg i:nth-child(1) { left: -30px; top: 17%; width: 170px; height: 170px; background: var(--b1); animation: lkA 24s ease-in-out infinite; }
-:root[data-look="zacht"] .lookbg i:nth-child(2) { right: -40px; top: 41%; width: 190px; height: 190px; background: var(--b2); animation: lkB 28s ease-in-out infinite; }
-:root[data-look="zacht"] .lookbg i:nth-child(3) { left: 50px; top: 69%; width: 150px; height: 150px; background: var(--b3); animation: lkC 21s ease-in-out infinite; }
+:root[data-glass] { background: var(--bg); }
+:root[data-glass] body { background: transparent; }
+:root[data-glass] .sheet { background: var(--look-bg); }
+:root[data-glass] .lookbg { display: block; position: fixed; top: -80px; right: 0; bottom: -80px; left: 0; z-index: 0; overflow: hidden; pointer-events: none; background: var(--look-bg); }
+:root[data-glass] .lookbg i { position: absolute; border-radius: 50%; filter: blur(8px); opacity: .6; will-change: transform; }
+:root[data-glass] .lookbg i:nth-child(1) { left: -30px; top: 17%; width: 170px; height: 170px; background: var(--b1); animation: lkA 24s ease-in-out infinite; }
+:root[data-glass] .lookbg i:nth-child(2) { right: -40px; top: 41%; width: 190px; height: 190px; background: var(--b2); animation: lkB 28s ease-in-out infinite; }
+:root[data-glass] .lookbg i:nth-child(3) { left: 50px; top: 69%; width: 150px; height: 150px; background: var(--b3); animation: lkC 21s ease-in-out infinite; }
 @keyframes lkA { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(46px,34px) scale(1.12); } }
 @keyframes lkB { 0%,100% { transform: translate(0,0) scale(1.08); } 50% { transform: translate(-52px,28px) scale(.94); } }
 @keyframes lkC { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(30px,-44px) scale(1.15); } }
-@media (prefers-reduced-motion: reduce) { :root[data-look="zacht"] .lookbg i { animation: none; } }
-:root[data-look="zacht"] .wrap, :root[data-look="zacht"] .sheet-in { position: relative; z-index: 1; }
-:root[data-look="zacht"] .tally, :root[data-look="zacht"] .card, :root[data-look="zacht"] .chip, :root[data-look="zacht"] .sortsel,
-:root[data-look="zacht"] .search, :root[data-look="zacht"] .setbtn, :root[data-look="zacht"] .homebtn, :root[data-look="zacht"] .x,
-:root[data-look="zacht"] .rate, :root[data-look="zacht"] .stat, :root[data-look="zacht"] .qtybox, :root[data-look="zacht"] .setpage > .setsec,
-:root[data-look="zacht"] .savebox, :root[data-look="zacht"] .logform, :root[data-look="zacht"] .statsec, :root[data-look="zacht"] .addmenu,
-:root[data-look="zacht"] .btn.ghost, :root[data-look="zacht"] .field input, :root[data-look="zacht"] .field select, :root[data-look="zacht"] .field textarea,
-:root[data-look="zacht"] .boughtin, :root[data-look="zacht"] .memo, :root[data-look="zacht"] .logitem, :root[data-look="zacht"] .tabbar,
-:root[data-look="zacht"] .fav.big, :root[data-look="zacht"] .sharetxt {
+@media (prefers-reduced-motion: reduce) { :root[data-glass] .lookbg i { animation: none; } }
+:root[data-glass] .wrap, :root[data-glass] .sheet-in { position: relative; z-index: 1; }
+:root[data-glass] .tally, :root[data-glass] .card, :root[data-glass] .chip, :root[data-glass] .sortsel,
+:root[data-glass] .search, :root[data-glass] .setbtn, :root[data-glass] .homebtn, :root[data-glass] .x,
+:root[data-glass] .rate, :root[data-glass] .stat, :root[data-glass] .qtybox, :root[data-glass] .setpage > .setsec,
+:root[data-glass] .savebox, :root[data-glass] .logform, :root[data-glass] .statsec, :root[data-glass] .addmenu,
+:root[data-glass] .btn.ghost, :root[data-glass] .field input, :root[data-glass] .field select, :root[data-glass] .field textarea,
+:root[data-glass] .boughtin, :root[data-glass] .memo, :root[data-glass] .logitem, :root[data-glass] .tabbar,
+:root[data-glass] .fav.big, :root[data-glass] .sharetxt {
   -webkit-backdrop-filter: blur(20px) saturate(180%); backdrop-filter: blur(20px) saturate(180%);
 }
-:root[data-look="zacht"] .card, :root[data-look="zacht"] .tally { border: 1px solid var(--line); border-radius: 22px; }
-:root[data-look="zacht"] .chip[aria-pressed="true"], :root[data-look="zacht"] .sortsel.on { box-shadow: 0 4px 14px rgba(0,0,0,.18); }
-:root[data-look="zacht"] .btn.primary, :root[data-look="zacht"] .mapbtn, :root[data-look="zacht"] .rate.pick, :root[data-look="zacht"] .step.plus {
+:root[data-glass] .card, :root[data-glass] .tally { border: 1px solid var(--line); border-radius: 22px; }
+:root[data-glass] .chip[aria-pressed="true"], :root[data-glass] .sortsel.on { box-shadow: 0 4px 14px rgba(0,0,0,.18); }
+:root[data-glass] .btn.primary, :root[data-glass] .mapbtn, :root[data-glass] .rate.pick, :root[data-glass] .step.plus {
   background: var(--accent-grad); border-color: transparent; box-shadow: 0 6px 18px var(--glow);
 }
-:root[data-look="zacht"] .rate.on { background: var(--pill); }
-:root[data-look="zacht"] .tabbar { left: 14px; right: 14px; bottom: 14px; max-width: 612px; margin: 0 auto; height: 70px; padding: 0 8px; border: 1px solid var(--line); border-radius: 35px; box-shadow: var(--shadow); }
-:root[data-look="zacht"] .tabbar-in { height: 70px; align-items: center; }
-:root[data-look="zacht"] .tab { align-self: center; justify-content: center; min-height: 56px; padding: 0; border-radius: 28px; }
-:root[data-look="zacht"] .tab[aria-current="page"] { background: var(--pill); box-shadow: none; }
-:root[data-look="zacht"] .scantab { width: 54px; height: 54px; margin-top: 0; border: 0; background: var(--accent-grad); box-shadow: 0 6px 20px var(--glow); }
-:root[data-look="zacht"] .tabdot { border-color: var(--surface-solid); }
-:root[data-look="zacht"] .toast { bottom: calc(104px + env(safe-area-inset-bottom, 0px)); }
+:root[data-glass] .rate.on { background: var(--pill); }
+:root[data-glass] .tabbar { left: 14px; right: 14px; bottom: 14px; max-width: 612px; margin: 0 auto; height: 70px; padding: 0 8px; border: 1px solid var(--line); border-radius: 35px; box-shadow: var(--shadow); }
+:root[data-glass] .tabbar-in { height: 70px; align-items: center; }
+:root[data-glass] .tab { align-self: center; justify-content: center; min-height: 56px; padding: 0; border-radius: 28px; }
+:root[data-glass] .tab[aria-current="page"] { background: var(--pill); box-shadow: none; }
+:root[data-glass] .scantab { width: 54px; height: 54px; margin-top: 0; border: 0; background: var(--accent-grad); box-shadow: 0 6px 20px var(--glow); }
+:root[data-glass] .tabdot { border-color: var(--surface-solid); }
+:root[data-glass] .toast { bottom: calc(104px + env(safe-area-inset-bottom, 0px)); }
+/* Thema "Crystal" = Glass with bigger, sharper, fully coloured blobs */
+:root[data-look="crystal"] .lookbg i { filter: none; opacity: 1; }
+:root[data-look="crystal"] .lookbg i:nth-child(1) { left: -50px; top: 14%; width: 230px; height: 230px; animation-duration: 22s; }
+:root[data-look="crystal"] .lookbg i:nth-child(2) { right: -70px; top: 40%; width: 260px; height: 260px; animation-duration: 26s; }
+:root[data-look="crystal"] .lookbg i:nth-child(3) { left: 30px; top: 70%; width: 200px; height: 200px; animation-duration: 19s; }
 </style>
 </head>
 <body>
@@ -634,6 +639,7 @@ img { max-width: 100%; }
       <div class="seg" id="lookSeg" role="radiogroup" aria-label="Thema">
         <button type="button" role="radio" data-look-pick="klassiek">Klassiek</button>
         <button type="button" role="radio" data-look-pick="zacht">Glass</button>
+        <button type="button" role="radio" data-look-pick="crystal">Crystal</button>
       </div>
       <p class="hint" style="margin:0">Het uiterlijk van de app. Licht of donker kies je bij Weergave.</p>
       </div>
@@ -1675,11 +1681,11 @@ img { max-width: 100%; }
     setSettings(false);
   });
   // ---------- Thema (klassiek / zacht), remembered per device; only the looks that are published are in LOOKS ----------
-  const LOOK_KEY = "wijnkelder.look", LOOKS = ["klassiek", "zacht"];
+  const LOOK_KEY = "wijnkelder.look", LOOKS = ["klassiek", "zacht", "crystal"];
   let lookPick = "zacht"; // default for everyone until they choose another look
   try { const l = localStorage.getItem(LOOK_KEY); if (LOOKS.includes(l)) lookPick = l; } catch {}
   function applyLook() {
-    if (lookPick === "klassiek") rootEl.removeAttribute("data-look"); else rootEl.setAttribute("data-look", lookPick);
+    if (lookPick === "klassiek") { rootEl.removeAttribute("data-look"); rootEl.removeAttribute("data-glass"); } else { rootEl.setAttribute("data-look", lookPick); rootEl.setAttribute("data-glass", ""); }
     document.querySelectorAll("[data-look-pick]").forEach(b => b.setAttribute("aria-checked", String(b.dataset.lookPick === lookPick)));
   }
   applyLook();
