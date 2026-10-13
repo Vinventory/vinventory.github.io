@@ -453,6 +453,8 @@ img { max-width: 100%; }
 .invbox input { flex: 1; min-width: 0; padding: 11px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; }
 .friendpick { display: flex; flex-direction: column; gap: 6px; }
 .friendpick button { min-height: 44px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); font-weight: 600; text-align: left; padding: 0 14px; }
+#fx-pick, #fx-kind { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }   /* the "Stuur een bericht" pickers: smaller buttons, two per row */
+#fx-pick button, #fx-kind button { min-height: 36px; padding: 0 10px; font-size: 14px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .friendpick button[aria-checked="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .tab { position: relative; }
 .tabdot { position: absolute; top: 8px; left: calc(50% + 8px); width: 11px; height: 11px; border-radius: 50%; background: var(--accent); border: 2px solid var(--surface); }
@@ -969,8 +971,8 @@ img { max-width: 100%; }
     "Weergave": "Appearance", "Automatisch": "Automatic", "Licht": "Light", "Donker": "Dark",
     "Automatisch volgt de instelling van je apparaat.": "Automatic follows the setting of your device.",
     "Stuur een bericht": "Send a message", "Berichten van vrienden afspelen": "Play messages from friends",
-    "Je vriend ziet de animatie 10 seconden lang, meteen als de app opengaat.": "Your friend sees the animation for 10 seconds, as soon as the app opens.",
-    "Animatie": "Animation", "Voorbeeld bekijken": "Preview", "Bijv. Proost op je verjaardag!": "E.g. Cheers on your birthday!", "Verstuur": "Send",
+    "De animatie duurt 10 seconden en start meteen als je vriend de app opent.": "The animation lasts 10 seconds and starts as soon as your friend opens the app.",
+    "Animatie": "Animation", "Bericht": "Message", "Voorbeeld bekijken": "Preview", "Bijv. Proost op je verjaardag!": "E.g. Cheers on your birthday!", "Verstuur": "Send",
     "Je hebt vandaag al 10 berichten gestuurd. Probeer het morgen opnieuw.": "You have already sent 10 messages today. Try again tomorrow.",
     "Deze vriend heeft je laatste 3 berichten nog niet gezien. Wacht even.": "This friend hasn't seen your last 3 messages yet. Please wait a while.",
     "Dit bericht kan nog niet worden verstuurd.": "This message can't be sent yet.",
@@ -3344,13 +3346,13 @@ img { max-width: 100%; }
       if (!this.fxOn || !this.list.length) return;
       const only = this.list.length === 1 ? this.list[0].friend_id : "";
       openSheet(`${top("Stuur een bericht")}
-        <p class="hint" style="margin:0">Je vriend ziet de animatie 10 seconden lang, meteen als de app opengaat.</p>
         <div class="field"><span class="section-l" style="margin:0">Aan</span>
           <div class="friendpick" id="fx-pick" role="radiogroup" aria-label="Aan">${this.list.map(f => `<button type="button" role="radio" data-pick="${esc(f.friend_id)}" aria-checked="${f.friend_id === only}">${esc(f.display_name)}</button>`).join("")}</div></div>
         <div class="field"><span class="section-l" style="margin:0">Animatie</span>
           <div class="friendpick" id="fx-kind" role="radiogroup" aria-label="Animatie">${FX_SENDABLE.map((n, i) => `<button type="button" role="radio" data-fx="${n}" aria-checked="${i === 0}">${esc(FX_LABEL[n] || n)}</button>`).join("")}</div>
-          <button class="linkbtn" type="button" id="fx-preview" style="align-self:flex-start">Voorbeeld bekijken</button></div>
-        <div class="field"><label for="fx-msg">Bericht (optioneel)</label><input id="fx-msg" maxlength="140" autocomplete="off" placeholder="Bijv. Proost op je verjaardag!"></div>
+          <button class="linkbtn" type="button" id="fx-preview" style="align-self:flex-start">Voorbeeld bekijken</button>
+          <p class="hint" style="margin:0">De animatie duurt 10 seconden en start meteen als je vriend de app opent.</p></div>
+        <div class="field"><label for="fx-msg">Bericht</label><textarea id="fx-msg" maxlength="140" style="min-height:130px" placeholder="Bijv. Proost op je verjaardag!"></textarea></div>
         <span class="hint" id="fx-status" hidden></span>
         <div class="actions"><button class="btn ghost" type="button" data-close>Annuleren</button><button class="btn primary" type="button" id="fx-send">Verstuur</button></div>`);
       const pickIn = id => $(id).addEventListener("click", e => {
