@@ -976,6 +976,9 @@ img { max-width: 100%; }
     "Je hebt vandaag al 10 berichten gestuurd. Probeer het morgen opnieuw.": "You have already sent 10 messages today. Try again tomorrow.",
     "Deze vriend heeft je laatste 3 berichten nog niet gezien. Wacht even.": "This friend hasn't seen your last 3 messages yet. Please wait a while.",
     "Dit bericht kan nog niet worden verstuurd.": "This message can't be sent yet.",
+    "Je gratis scans zijn op. Voer je eigen sleutel in bij Instellingen, of voeg de wijn zelf toe.": "Your free scans are used up. Enter your own key under Settings, or add the wine yourself.",
+    "Scannen is nu tijdelijk niet beschikbaar. Probeer het later opnieuw, of voeg de wijn zelf toe.": "Scanning is temporarily unavailable. Try again later, or add the wine yourself.",
+    "Eigen sleutel invoeren": "Enter your own key",
     "Wijnkelder": "Wine cellar", "Bubbels": "Bubbles", "Zet in wijnkelder": "Put in cellar", "Mijn wijnen": "My wines",
     "Thema": "Theme", "Klassiek": "Classic", "Zacht": "Soft", "Het uiterlijk van de app. Licht of donker kies je bij Weergave.": "The look of the app. Light or dark you choose under Appearance.",
     "Taal": "Language", "Taal / Language": "Language", "Automatisch volgt de taal van je telefoon.": "Automatic follows the language of your phone.",
@@ -1128,8 +1131,8 @@ img { max-width: 100%; }
     "Houd je wijnkelder bij: wat je hebt, wat je ervan vindt en wanneer je een fles opendeed. Je kelder is": "Keep track of your wine cellar: what you have, what you think of it and when you opened a bottle. Your cellar is",
     "privé": "private", ": alleen jij ziet je wijnen, op al je apparaten.": ": only you can see your wines, on all your devices.",
     "Wijnen toevoegen": "Adding wines",
-    "en maak een foto van het etiket: Claude vult de gegevens in. Dat werkt met je eigen Claude-sleutel (onder": "and take a photo of the label: Claude fills in the details. This works with your own Claude key (under",
-    ") en kost een klein bedrag op jouw Anthropic-account. Zonder sleutel opent de scanknop een formulier om de wijn zelf in te vullen.": ") and costs a small amount on your Anthropic account. Without a key, the scan button opens a form to fill in the wine yourself.",
+    "en maak een foto van het etiket: Claude vult de gegevens in. Je krijgt": "and take a photo of the label: Claude fills in the details. You get", "100 gratis scans": "100 free scans", ". Daarna werkt het met je eigen Claude-sleutel (onder": ". After that it works with your own Claude key (under",
+    "); dat kost een klein bedrag op jouw Anthropic-account. Zonder gratis scans of sleutel opent de scanknop een formulier om de wijn zelf in te vullen.": "); that costs a small amount on your Anthropic account. Without free scans or a key, the scan button opens a form to fill in the wine yourself.",
     "Bijhouden": "Keeping track",
     "pas je het aantal flessen aan. Doe je een fles open, noteer dat dan in het logboek. Met het hartje bewaar je favorieten. Onder": "you adjust the number of bottles. If you open a bottle, note it in the logbook. The heart saves favourites. Under",
     "zie je je statistieken, en op je": "you see your statistics, and on your", "zet je wijnen die je later wilt kopen.": "you put wines you want to buy later.",
@@ -1452,12 +1455,15 @@ img { max-width: 100%; }
   let canImages = true;
   function refreshKeyUi() {
     const has = !!getKey();
-    $("keyState").textContent = has ? "Sleutel opgeslagen op dit apparaat." : "Nog geen sleutel. Zonder sleutel opent de scanknop een formulier om de wijn zelf in te vullen.";
+    $("keyState").textContent = has ? T("Sleutel opgeslagen op dit apparaat.")
+      : ai.on && ai.left !== null ? (ai.left > 0 ? L(`Je hebt nog ${ai.left} gratis scans. Daarna kun je hieronder je eigen Anthropic-sleutel invoeren om te blijven scannen.`, `You have ${ai.left} free scans left. After that you can enter your own Anthropic key below to keep scanning.`)
+          : L("Je gratis scans zijn op. Voer hieronder je eigen Anthropic-sleutel in om te blijven scannen.", "Your free scans are used up. Enter your own Anthropic key below to keep scanning."))
+      : T("Nog geen sleutel. Zonder sleutel opent de scanknop een formulier om de wijn zelf in te vullen.");
     $("keyDel").hidden = !has; $("keyIn").value = "";
     // With a key saved, the field's place shows that scanning works; "Verwijderen" brings the field back.
     $("keyIn").hidden = has; $("keySave").hidden = has; $("keyDone").hidden = !has; $("keyState").hidden = has;
   }
-  function refreshSample() { sample = !demo && getKey() ? sampleFn : null; refreshKeyUi(); }
+  function refreshSample() { sample = canUseAi() ? sampleFn : null; refreshKeyUi(); }
   $("keySave").addEventListener("click", () => {
     const k = $("keyIn").value.trim();
     if (!/^sk-ant-[\w-]{20,}$/.test(k)) { showMsg("keyMsg", "Dit lijkt geen Anthropic-sleutel. Zo'n sleutel begint met sk-ant-.", true); return; }
@@ -1468,6 +1474,47 @@ img { max-width: 100%; }
     try { localStorage.removeItem(KEY_STORE); } catch {}
     refreshSample(); showMsg("keyMsg", "Sleutel verwijderd van dit apparaat.");
   });
+  // ---------- Gratis scans met de sleutel van de app (Edge Function "ai", zie AI-SLEUTEL-PLAN.md) ----------
+  // Zonder eigen sleutel gaat een scan via onze server (met het tegoed van AI_FREE gratis scans). Met een eigen sleutel verandert er niets.
+  // Dit zet zichzelf aan zodra schema-ai.sql is uitgevoerd (ai_status bestaat); anders werkt alles als vroeger.
+  const AI_URL = SUPABASE_URL + "/functions/v1/ai";
+  const ai = {
+    on: false, left: null,
+    async boot() {
+      if (demo || !me) return;
+      const user = me;
+      try {
+        const { data, error } = await sb.rpc("ai_status");
+        if (error || !data || me !== user) { this.on = false; this.left = null; refreshSample(); return; }
+        this.on = true; this.left = data.left;
+      } catch { this.on = false; }
+      refreshSample();
+    },
+    reset() { this.on = false; this.left = null; },
+    // Server-side route: kind = "scan" | "describe" | "pair"; returns { text }. Throws { code } like claudeCall does.
+    async call(kind, payload, signal) {
+      let token = "";
+      try { token = (await sb.auth.getSession()).data.session.access_token; } catch {}
+      if (!token) throw { code: "network" };
+      let res;
+      try {
+        res = await fetch(AI_URL, { method: "POST", signal, headers: { "content-type": "application/json", authorization: "Bearer " + token, apikey: SUPABASE_KEY },
+          body: JSON.stringify(Object.assign({ kind, lang: LANG }, payload)) });
+      } catch (e) { if (e && e.name === "AbortError") throw { code: "cancelled" }; throw { code: "network" }; }
+      let j = null; try { j = await res.json(); } catch {}
+      if (j && typeof j.left === "number") { this.left = j.left; refreshKeyUi(); }
+      if (!res.ok) {
+        const e = j && j.error;
+        throw { code: e === "limit" ? "no_free" : e === "rate_limited" ? "rate_limited" : e === "image_rejected" ? "image_rejected" : e === "service_unavailable" ? "service_unavailable"
+          : res.status === 404 ? "service_missing" : "api_error" };
+      }
+      return { text: (j && j.text) || "", truncated: !!(j && j.truncated) };
+    }
+  };
+  // True when the user can use Claude at all: an own key, or free scans on our server.
+  const canUseAi = () => !demo && (!!getKey() || ai.on);
+  const noFreeLeft = () => !getKey() && ai.on && ai.left !== null && ai.left <= 0;
+  function goToKey() { closeSheet(); showTab("set"); const s = $("keySec"); if (s) setTimeout(() => s.scrollIntoView({ block: "center" }), 50); }
   // Herinnering photos are shrunk until they are small (about 45 KB), so several fit on one wine.
   function compactPhoto(img) {
     let out = "";
@@ -2122,6 +2169,12 @@ img { max-width: 100%; }
         "Scannen kan met je eigen Claude-sleutel (zet hem bij Instellingen). Vul de wijn nu zelf in.", true);
       return;
     }
+    if (noFreeLeft()) {   // the free scans are used up: point to the own-key field, and let the wine be added by hand
+      e.preventDefault();
+      openForm({ quantity: target === "wish" ? 0 : 1, color: "rood" }, null, T(ERR.no_free), true);
+      toast(T(ERR.no_free), { label: T("Eigen sleutel invoeren"), run: goToKey });
+      return;
+    }
     $("fileIn").value = "";
   }
   $("scanTab").addEventListener("click", e => onScanTap(e, "kelder"));
@@ -2166,6 +2219,9 @@ img { max-width: 100%; }
   // ---------- Scan ----------
   const ERR = {
     no_key: "Vul eerst je Claude-sleutel in bij Instellingen (onderaan). Voeg de wijn nu zelf toe.",
+    no_free: "Je gratis scans zijn op. Voer je eigen sleutel in bij Instellingen, of voeg de wijn zelf toe.",
+    service_unavailable: "Scannen is nu tijdelijk niet beschikbaar. Probeer het later opnieuw, of voeg de wijn zelf toe.",
+    service_missing: "Scannen is nu tijdelijk niet beschikbaar. Probeer het later opnieuw, of voeg de wijn zelf toe.",
     invalid_key: "Je Claude-sleutel is ongeldig of ingetrokken. Controleer hem bij Instellingen (onderaan).",
     no_credit: "Er staat te weinig tegoed op je Anthropic-account. Vul het aan, of voeg de wijn zelf toe.",
     rate_limited: "Even te veel verzoeken. Probeer het over een minuut opnieuw.",
@@ -2209,6 +2265,7 @@ img { max-width: 100%; }
       $("scanPhoto").innerHTML = `<img class="photo" src="${thumb}" alt="Je foto">`;
 
       if (!sample) throw { code: "no_key" };
+      if (noFreeLeft()) throw { code: "no_free" };
       const big = await new Promise(r => scaled(loaded.img, 1500).toBlob(r, "image/jpeg", 0.85));
       URL.revokeObjectURL(loaded.url);
       if (!big) throw { ocr: true, message: T("De foto kon niet worden voorbereid.") };
@@ -2218,6 +2275,7 @@ img { max-width: 100%; }
       if (ctl.signal.aborted) return;
       scanCtl = null;
       openForm({ quantity: 1, color: "rood", thumb }, null, errText(e), true);
+      if (e && e.code === "no_free") toast(T(ERR.no_free), { label: T("Eigen sleutel invoeren"), run: goToKey });
     } finally { clearInterval(tick); }
   }
 
@@ -2226,7 +2284,14 @@ img { max-width: 100%; }
       `Het drinkvenster is je beste schatting voor deze jaargang; het huidige jaar is ${YEAR}. `,
       `Rules: "vintage", "drinkFrom" and "drinkTo" are numbers or null. Fill in what is not on the label with your wine knowledge if you are reasonably sure, otherwise an empty string. ` +
       `The drinking window is your best estimate for this vintage; the current year is ${YEAR}. For "color" and "confidence" use exactly the Dutch keywords from the template (rood = red, wit = white, rosé, mousserend = sparkling, dessert, versterkt = fortified; hoog = high, middel = medium, laag = low). `);
-    const askClaude = (prompt, opts) => withTimeout(sample.json(prompt, Object.assign({ signal: ctl.signal }, opts)), 150000, "Het antwoord van Claude")
+    const viaServer = !getKey();   // no own key: the scan goes through our server and counts as one of the free scans
+    const serverJson = async () => {
+      const { text } = await ai.call("scan", { image: await blobToB64(big) }, ctl.signal);
+      const m = text.match(/\{[\s\S]*\}/);
+      if (!m) throw { code: "invalid_json" };
+      try { return JSON.parse(m[0]); } catch { throw { code: "invalid_json" }; }
+    };
+    const askClaude = (prompt, opts) => withTimeout(viaServer ? serverJson() : sample.json(prompt, Object.assign({ signal: ctl.signal }, opts)), 150000, "Het antwoord van Claude")
       .catch(e => { if (e instanceof Error && !e.code) throw { ocr: true, message: e.message + L(". Probeer het nog eens", ". Please try again") }; throw e; });
     say("Claude leest het etiket…", "Claude leest de foto");
     const r = await askClaude(
@@ -2245,7 +2310,8 @@ img { max-width: 100%; }
       grape: str(r.grape), color: COLORS.some(c => c[0] === r.color) ? r.color : "rood", description: str(r.description), pairing: str(r.pairing),
       drinkFrom: int(r.drinkFrom), drinkTo: int(r.drinkTo), quantity: 1, thumb
     };
-    openForm(w, null, r.confidence === "laag" ? "Het etiket was lastig te lezen. Controleer de gegevens even." : "Herkend. Controleer de gegevens en sla op.");
+    const leftTxt = viaServer && ai.left !== null ? L(` Nog ${ai.left} gratis scans.`, ` ${ai.left} free scans left.`) : "";
+    openForm(w, null, T(r.confidence === "laag" ? "Het etiket was lastig te lezen. Controleer de gegevens even." : "Herkend. Controleer de gegevens en sla op.") + leftTxt);
   }
   const str = v => (v == null ? "" : String(v)).trim();
   const int = v => { const n = parseInt(v, 10); return n > 1800 && n < 2200 ? n : null; };
@@ -2484,7 +2550,7 @@ img { max-width: 100%; }
       if (r) { const n = +r.dataset.frate; rating = rating === n ? null : n; $("f-rating").innerHTML = ratingRow(rating, "data-frate"); }
     });
 
-    const wireGen = (btnId, fieldId, msgId, busy, ask) => {
+    const wireGen = (btnId, fieldId, msgId, busy, ask, kind) => {
       const btn = $(btnId);
       if (!btn) return;
       btn.addEventListener("click", async () => {
@@ -2493,16 +2559,17 @@ img { max-width: 100%; }
         btn.disabled = true; showMsg(msgId, busy);
         try {
           const facts = [d.producer, d.name, d.vintage, d.region, d.country, d.grape, colorName(d.color)].filter(Boolean).join(", ");
-          const { text } = await sample(ask + `\n\n${L("Wijn", "Wine")}: ${facts}`, { cache: false, onText: ({ text }) => { $(fieldId).value = text; } });
+          const { text } = getKey() ? await sample(ask + `\n\n${L("Wijn", "Wine")}: ${facts}`, { cache: false, onText: ({ text }) => { $(fieldId).value = text; } })
+            : await ai.call(kind, { facts });
           $(fieldId).value = text.trim(); showMsg(msgId, "");
         } catch (e) { showMsg(msgId, errText(e), true); }
         finally { btn.disabled = false; }
       });
     };
     wireGen("genDesc", "f-desc", "descMsg", "Claude schrijft een beschrijving…",
-      L("Schrijf 2 tot 3 zinnen in het Nederlands over deze wijn: stijl, geur en smaak. Noem geen gerechten. Alleen de beschrijving, geen kop of opsomming.", "Write 2 to 3 sentences in English about this wine: style, aroma and taste. Do not mention dishes. Only the description, no heading or list."));
+      L("Schrijf 2 tot 3 zinnen in het Nederlands over deze wijn: stijl, geur en smaak. Noem geen gerechten. Alleen de beschrijving, geen kop of opsomming.", "Write 2 to 3 sentences in English about this wine: style, aroma and taste. Do not mention dishes. Only the description, no heading or list."), "describe");
     wireGen("genPair", "f-pairing", "pairMsg", "Claude zoekt gerechten…",
-      L("Noem in het Nederlands 4 tot 6 concrete gerechten die goed bij deze wijn passen, gescheiden door komma's, eventueel gevolgd door één korte zin waarom. Geen kop, geen opsomming met streepjes.", "Name 4 to 6 concrete dishes in English that go well with this wine, separated by commas, optionally followed by one short sentence on why. No heading, no bulleted list."));
+      L("Noem in het Nederlands 4 tot 6 concrete gerechten die goed bij deze wijn passen, gescheiden door komma's, eventueel gevolgd door één korte zin waarom. Geen kop, geen opsomming met streepjes.", "Name 4 to 6 concrete dishes in English that go well with this wine, separated by commas, optionally followed by one short sentence on why. No heading, no bulleted list."), "pair");
 
     form.addEventListener("submit", e => {
       e.preventDefault();
@@ -2646,8 +2713,9 @@ img { max-width: 100%; }
       pb.disabled = true; showMsg("dPairMsg", "Claude zoekt gerechten…");
       try {
         const facts = [w.producer, w.name, w.vintage, w.region, w.country, w.grape, colorName(w.color)].filter(Boolean).join(", ");
-        const { text } = await sample(L("Noem in het Nederlands 4 tot 6 concrete gerechten die goed bij deze wijn passen, gescheiden door komma's, eventueel gevolgd door één korte zin waarom. Geen kop, geen opsomming met streepjes.", "Name 4 to 6 concrete dishes in English that go well with this wine, separated by commas, optionally followed by one short sentence on why. No heading, no bulleted list.") + "\n\n" + L("Wijn", "Wine") + ": " + facts,
-          { cache: false, onText: ({ text }) => { if (openId === id) showMsg("dPairMsg", text); } });
+        const { text } = getKey() ? await sample(L("Noem in het Nederlands 4 tot 6 concrete gerechten die goed bij deze wijn passen, gescheiden door komma's, eventueel gevolgd door één korte zin waarom. Geen kop, geen opsomming met streepjes.", "Name 4 to 6 concrete dishes in English that go well with this wine, separated by commas, optionally followed by one short sentence on why. No heading, no bulleted list.") + "\n\n" + L("Wijn", "Wine") + ": " + facts,
+          { cache: false, onText: ({ text }) => { if (openId === id) showMsg("dPairMsg", text); } })
+          : await ai.call("pair", { facts });
         const cw = current();
         cw.pairing = text.trim();
         saveSoon(cw);
@@ -3208,6 +3276,7 @@ img { max-width: 100%; }
     refreshSample();
     store.init().then(ok => { if (ok) maybeWelcome(); });
     friends.boot();
+    ai.boot();
   }
   // ---------- Demo: look around with example wines; nothing is saved ----------
   function demoWines() {
@@ -3279,7 +3348,7 @@ img { max-width: 100%; }
   function leaveApp() {
     me = null; wines = []; loading = false; filter = "alle"; query = ""; $("search").value = "";
     if (store.channel) { sb.removeChannel(store.channel); store.channel = null; }
-    friends.reset();
+    friends.reset(); ai.reset();
     closeSheet(); setSettings(false); showTab("wijnen");
     try { localStorage.removeItem(KEY_STORE); } catch {}   // a shared device shouldn't keep someone's key
     refreshSample(); render();
@@ -3637,7 +3706,7 @@ img { max-width: 100%; }
     { icon: "M7 11V8a5 5 0 0 1 10 0v3M5 11h14v10H5zM12 15v3", t: "Welkom bij Vinventory",
       p: "Houd je wijnkelder bij: wat je hebt, wat je ervan vindt en wanneer je een fles opendeed. Je kelder is <b>privé</b>: alleen jij ziet je wijnen, op al je apparaten." },
     { icon: "M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2M12 9.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z", t: "Wijnen toevoegen",
-      p: "Tik onderaan op de ronde <b>scanknop</b> en maak een foto van het etiket: Claude vult de gegevens in. Dat werkt met je eigen Claude-sleutel (onder <b>Instellingen</b>) en kost een klein bedrag op jouw Anthropic-account. Zonder sleutel opent de scanknop een formulier om de wijn zelf in te vullen." },
+      p: "Tik onderaan op de ronde <b>scanknop</b> en maak een foto van het etiket: Claude vult de gegevens in. Je krijgt <b>100 gratis scans</b>. Daarna werkt het met je eigen Claude-sleutel (onder <b>Instellingen</b>); dat kost een klein bedrag op jouw Anthropic-account. Zonder gratis scans of sleutel opent de scanknop een formulier om de wijn zelf in te vullen." },
     { icon: BOOK, t: "Bijhouden",
       p: "Met <b>+</b> en <b>−</b> pas je het aantal flessen aan. Doe je een fles open, noteer dat dan in het logboek. Met het hartje bewaar je favorieten. Onder <b>Kelder</b> zie je je statistieken, en op je <b>Wishlist</b> zet je wijnen die je later wilt kopen." },
     { icon: "M12 3.5v11M8 7.5l4-4 4 4M6 11H5v9.5h14V11h-1", t: "Altijd bij de hand",
@@ -3700,6 +3769,7 @@ img { max-width: 100%; }
     if (document.visibilityState === "visible" && me) {
       store.load().then(l => store.apply(l)).catch(() => {});
       if (friends.on) friends.refresh(); else friends.boot();
+      ai.boot();
     }
   });
 
