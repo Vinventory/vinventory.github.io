@@ -442,6 +442,7 @@ img { max-width: 100%; }
 .tipmsg { display: flex; flex-direction: column; gap: 6px; }
 .tip .memo { background: var(--surface); }          /* same colour as the wine block above it */
 .tip .saveline { color: var(--ink); }               /* the friend's rating in plain (white at night) text */
+#fr-list .frow:last-child, #fr-blocked .frow:last-child { border-bottom: 1px solid var(--line); }   /* a line under the last friend too */
 .frow { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
 .frname { display: flex; flex-direction: column; min-width: 0; }
 .frname b { overflow-wrap: anywhere; }
@@ -739,13 +740,15 @@ img { max-width: 100%; }
     <div class="headrow"><h1 id="setTitle">Instellingen</h1></div>
     <div class="setpage" id="setMenu">
       <div class="setsec" id="themeSec">
-      <span class="section-l" style="margin:0">Weergave</span>
+        <button class="btn ghost backupbtn backuptoggle" type="button" id="themeToggle" aria-expanded="false" aria-controls="themeOpts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17a8.5 8.5 0 0 0 0-17z" fill="currentColor" stroke="none"/></svg><span>Weergave</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="backupopts" id="themeOpts" hidden>
       <div class="seg" id="themeSeg" role="radiogroup" aria-label="Weergave">
         <button type="button" role="radio" data-theme-pick="auto"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17a8.5 8.5 0 0 0 0-17z" fill="currentColor" stroke="none"/></svg>Automatisch</button>
         <button type="button" role="radio" data-theme-pick="light"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6 6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></svg>Licht</button>
         <button type="button" role="radio" data-theme-pick="dark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>Donker</button>
       </div>
       <p class="hint" style="margin:0">Automatisch volgt de instelling van je apparaat.</p>
+        </div>
       </div>
       <div class="setsec" id="lookSec">
       <span class="section-l" style="margin:0">Thema</span>
@@ -1716,7 +1719,7 @@ img { max-width: 100%; }
     tab = t;
     for (const [k, id] of Object.entries(VIEWS)) $(id).hidden = k !== t;
     document.querySelectorAll("[data-tab]").forEach(b => { if (b.dataset.tab === t) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
-    if (t !== "set") { resetRestore(); setBackupOpen(false); setLangOpen(false); setAcctOpen(false); setFrOpen(false); }
+    if (t !== "set") { resetRestore(); setBackupOpen(false); setLangOpen(false); setThemeOpen(false); setAcctOpen(false); setFrOpen(false); }
     if (t === "kelder") renderStats();
     if (t === "wish") renderWish();
     if (changed) window.scrollTo(0, 0);
@@ -1968,6 +1971,8 @@ img { max-width: 100%; }
     $("restoreBox").hidden = true; $("restoreReplace").textContent = "Vervangen";
   };
   // One "Back-up" button in the menu; tapping it shows the download and restore options.
+  const setThemeOpen = open => { $("themeOpts").hidden = !open; $("themeToggle").setAttribute("aria-expanded", String(open)); };
+  $("themeToggle").addEventListener("click", () => setThemeOpen($("themeOpts").hidden));
   const setLangOpen = open => { $("langOpts").hidden = !open; $("langToggle").setAttribute("aria-expanded", String(open)); };
   $("langToggle").addEventListener("click", () => setLangOpen($("langOpts").hidden));
   const setBackupOpen = open => { $("backupOpts").hidden = !open; $("backupToggle").setAttribute("aria-expanded", String(open)); };
@@ -2058,7 +2063,7 @@ img { max-width: 100%; }
   });
 
   // Settings are a page now: "open" switches to it; closing only folds the back-up part away.
-  const setSettings = open => { if (open) showTab("set"); else { resetRestore(); setBackupOpen(false); setLangOpen(false); setAcctOpen(false); setFrOpen(false); } };
+  const setSettings = open => { if (open) showTab("set"); else { resetRestore(); setBackupOpen(false); setLangOpen(false); setThemeOpen(false); setAcctOpen(false); setFrOpen(false); } };
 
   // The round scan button in the tab bar is a label for #fileIn.
   // A scan always starts on "Mijn kelder"; the form can switch it to the wishlist.
