@@ -969,7 +969,7 @@ img { max-width: 100%; }
     "Weergave": "Appearance", "Automatisch": "Automatic", "Licht": "Light", "Donker": "Dark",
     "Automatisch volgt de instelling van je apparaat.": "Automatic follows the setting of your device.",
     "Stuur een verrassing": "Send a surprise", "Verrassingen van vrienden afspelen": "Play surprises from friends",
-    "Je vriend ziet de animatie een minuut lang, meteen als de app opengaat.": "Your friend sees the animation for one minute, as soon as the app opens.",
+    "Je vriend ziet de animatie 10 seconden lang, meteen als de app opengaat.": "Your friend sees the animation for 10 seconds, as soon as the app opens.",
     "Verrassing": "Surprise", "Voorbeeld bekijken": "Preview", "Bijv. Proost op je verjaardag!": "E.g. Cheers on your birthday!", "Verstuur": "Send",
     "Je hebt vandaag al 10 verrassingen gestuurd. Probeer het morgen opnieuw.": "You have already sent 10 surprises today. Try again tomorrow.",
     "Deze vriend heeft je laatste 3 verrassingen nog niet gezien. Wacht even.": "This friend hasn't seen your last 3 surprises yet. Please wait a while.",
@@ -1701,9 +1701,9 @@ img { max-width: 100%; }
 
   // ---------- Events ----------
   $("search").addEventListener("input", e => {
-    // Secret words start an effect for one minute (FX_WORDS, e.g. "Nikki" = Kurk).
+    // Secret words start an effect for 10 seconds (FX_WORDS, e.g. "Nikki" = Kurk).
     const fxWord = FX_WORDS[e.target.value.trim().toLowerCase()];
-    if (fxWord) { e.target.value = ""; query = ""; render(); startFx(fxWord, 60 * 1000); toast(L("Proost!", "Cheers!")); return; }
+    if (fxWord) { e.target.value = ""; query = ""; render(); startFx(fxWord, 10 * 1000); toast(L("Proost!", "Cheers!")); return; }
     query = e.target.value; render();
   });
   const sortChipEl = $("sortChip");   // kept as a reference: renderList() rebuilds #chips and puts it back at the end
@@ -3333,7 +3333,7 @@ img { max-width: 100%; }
       if (!list.length) return;
       const g = list.find(x => FX[x.effect]);   // the newest one this app knows
       if (g) {
-        startFx(g.effect, 60 * 1000);
+        startFx(g.effect, 10 * 1000);
         // The message stays 20 seconds: "Anna stuurt je een bericht:" with the message on the next line.
         toast(g.message ? L(`${g.from_name} stuurt je een bericht:\n${g.message}`, `${g.from_name} sends you a message:\n${g.message}`)
                         : L(`${g.from_name} stuurt je een verrassing!`, `${g.from_name} sent you a surprise!`), null, 20000);
@@ -3344,7 +3344,7 @@ img { max-width: 100%; }
       if (!this.fxOn || !this.list.length) return;
       const only = this.list.length === 1 ? this.list[0].friend_id : "";
       openSheet(`${top("Stuur een verrassing")}
-        <p class="hint" style="margin:0">Je vriend ziet de animatie een minuut lang, meteen als de app opengaat.</p>
+        <p class="hint" style="margin:0">Je vriend ziet de animatie 10 seconden lang, meteen als de app opengaat.</p>
         <div class="field"><span class="section-l" style="margin:0">Aan</span>
           <div class="friendpick" id="fx-pick" role="radiogroup" aria-label="Aan">${this.list.map(f => `<button type="button" role="radio" data-pick="${esc(f.friend_id)}" aria-checked="${f.friend_id === only}">${esc(f.display_name)}</button>`).join("")}</div></div>
         <div class="field"><span class="section-l" style="margin:0">Verrassing</span>
