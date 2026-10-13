@@ -304,6 +304,7 @@ form { display: flex; flex-direction: column; gap: 12px; }
 
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(24px + env(safe-area-inset-bottom, 0px)); z-index: 20; background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 20px; font-size: 14px; font-weight: 500; max-width: calc(100% - 32px); text-align: center; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 2px 10px; width: max-content; }
 .toast[hidden] { display: none; }
+.toast { white-space: pre-line; }
 .toastbtn { border: 0; background: none; color: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; padding: 4px 2px; font-size: 14px; }
 
 /* "Bewaar voor" reminders at the top */
@@ -633,7 +634,7 @@ img { max-width: 100%; }
   --k-drop: radial-gradient(circle at 30% 30%,#fff1cc,rgba(255,190,90,.9) 55%,rgba(224,130,40,.6)); --k-dropsh: 0 0 8px rgba(255,180,80,.7);
 }
 .fxlayer .kflash { width: 220px; height: 220px; border-radius: 50%; opacity: 0; background: var(--k-flash); animation: kBurst 4s ease-out infinite; }
-.fxlayer .kbottle { width: 120px; height: 380px; transform-origin: 60px 380px; transform: rotate(var(--rot)); opacity: .9; animation: kRecoil 4s ease-in-out infinite; }
+.fxlayer .kbottle { width: 126px; height: 391px; transform-origin: 63px 391px; transform: rotate(var(--rot)); animation: kRecoil 4s ease-in-out infinite; }
 .fxlayer .kh { width: 0; height: 0; animation: kx 4s linear infinite; }
 .fxlayer .kh > div { animation: ky 4s linear infinite; }
 .fxlayer .kh svg { display: block; opacity: 0; filter: drop-shadow(0 0 4px var(--k-glow)); animation: kFade 4s linear infinite; }
@@ -642,7 +643,7 @@ img { max-width: 100%; }
 .fxlayer .kring { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--k-ring); opacity: 0; animation: kPop 4s ease-out infinite; }
 .fxlayer .kcorkx { width: 0; height: 0; animation: kxc 4s linear infinite; }
 .fxlayer .kcorky { animation: kyc 4s linear infinite; }
-.fxlayer .kcorkb { width: 18px; height: 28px; margin: -14px 0 0 -9px; border-radius: 5px; background: linear-gradient(90deg,var(--k-cork2),var(--k-cork1) 45%,var(--k-cork2)); box-shadow: inset 0 0 0 1px rgba(60,35,10,.35); animation: kSpin 4s linear infinite; }
+.fxlayer .kcorkb { width: 18px; height: 28px; margin: -26px 0 0 -9px; border-radius: 5px; background: linear-gradient(90deg,var(--k-cork2),var(--k-cork1) 45%,var(--k-cork2)); box-shadow: inset 0 0 0 1px rgba(60,35,10,.35); animation: kSpin 4s linear infinite; }
 @keyframes kx { 0% { transform: translateX(0); } 34%, 100% { transform: translateX(var(--dx)); } }
 @keyframes ky { 0% { transform: translateY(0); animation-timing-function: cubic-bezier(.15,.7,.35,1); } 14% { transform: translateY(calc(var(--up) * -1)); animation-timing-function: cubic-bezier(.55,0,.9,.45); } 34%, 100% { transform: translateY(var(--down)); } }
 @keyframes kFade { 0% { opacity: 0; } 1.5%, 34% { opacity: 1; } 37%, 100% { opacity: 0; } }
@@ -1881,6 +1882,8 @@ img { max-width: 100%; }
   document.addEventListener("visibilitychange", () => { if (!document.hidden) applyFx(); });
   // Kurk (hearts) and Champagne (a fountain of drops and foam): two bottles, left and right; the right one pops 2 s later (4 s loop).
   // Ported from the design canvas ("Animatie"); positions are on a 390 px wide frame measured from the bottom of the screen.
+  // The champagne bottle of the design (one drawing for day and night). The cork is placed BEHIND it, so it seems to come out of the bottle.
+  const BOTTLE = '<svg viewBox="0 0 160 495" width="126" height="391" aria-hidden="true"><defs> <linearGradient id="gla" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#010201"></stop><stop offset=".1" stop-color="#060d09"></stop><stop offset=".27" stop-color="#1d3326"></stop><stop offset=".45" stop-color="#0d1c14"></stop><stop offset=".78" stop-color="#050a07"></stop><stop offset=".92" stop-color="#10241a"></stop><stop offset="1" stop-color="#010201"></stop></linearGradient> <linearGradient id="foa" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#6e4d14"></stop><stop offset=".2" stop-color="#c79c3e"></stop><stop offset=".42" stop-color="#ffe9a0"></stop><stop offset=".62" stop-color="#d2a547"></stop><stop offset=".85" stop-color="#8e6a22"></stop><stop offset="1" stop-color="#5c3f0e"></stop></linearGradient> <linearGradient id="dka" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity="0"></stop><stop offset=".72" stop-color="#000" stop-opacity="0.18"></stop><stop offset="1" stop-color="#000" stop-opacity="0.7"></stop></linearGradient> <linearGradient id="sda" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#000" stop-opacity="0.55"></stop><stop offset=".22" stop-color="#000" stop-opacity="0"></stop><stop offset=".8" stop-color="#000" stop-opacity="0"></stop><stop offset="1" stop-color="#000" stop-opacity="0.55"></stop></linearGradient> <linearGradient id="ppa" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1c1712"></stop><stop offset="1" stop-color="#0b0907"></stop></linearGradient> <linearGradient id="fra" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"></stop><stop offset="1" stop-color="#fff" stop-opacity="0"></stop></linearGradient> <radialGradient id="sha" cx=".3" cy=".3" r=".8"><stop offset="0" stop-color="#fff" stop-opacity="0.3"></stop><stop offset="1" stop-color="#fff" stop-opacity="0"></stop></radialGradient> <filter id="bla"><feGaussianBlur stdDeviation="1.3"></feGaussianBlur></filter><filter id="b2a"><feGaussianBlur stdDeviation=".5"></feGaussianBlur></filter> <filter id="gra" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="4"></feTurbulence><feColorMatrix values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .11 0"></feColorMatrix></filter> <filter id="fca" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".05 .55" numOctaves="2" seed="9"></feTurbulence><feColorMatrix values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 1.6 0 0 0 -.78"></feColorMatrix></filter> <clipPath id="cpa"><path d="M64 24 H96 V125 C96 167 142 189 142 257 V461 Q142 481 124 481 H36 Q18 481 18 461 V257 C18 189 64 167 64 125 Z"></path></clipPath><clipPath id="cla"><path d="M35 281 Q80 287 125 281 V415 Q80 421 35 415 Z"></path></clipPath><clipPath id="cfa"><rect x="63" y="14" width="34" height="86" rx="3"></rect></clipPath></defs> <ellipse cx="80" cy="485" rx="72" ry="8" fill="rgba(60,40,10,.38)" filter="url(#bla)"></ellipse> <path d="M64 24 H96 V125 C96 167 142 189 142 257 V461 Q142 481 124 481 H36 Q18 481 18 461 V257 C18 189 64 167 64 125 Z" fill="url(#gla)"></path> <g clip-path="url(#cpa)"> <ellipse cx="58" cy="228" rx="46" ry="64" fill="url(#sha)"></ellipse> <path d="M30 258 C32 330 30 410 36 466" stroke="#fff" stroke-width="9" stroke-linecap="round" fill="none" opacity="0.225" filter="url(#bla)"></path> <path d="M30 262 C32 330 31 410 35 462" stroke="#fff" stroke-width="3.2" stroke-linecap="round" fill="none" opacity="0.5"></path> <path d="M44 232 C38 252 34 268 33 286" stroke="#fff" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.45"></path> <path d="M53 192 C48 205 44 214 41 224" stroke="#fff" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.35"></path> <path d="M133 270 C134 340 134 410 130 462" stroke="#cfeedd" stroke-width="2.4" stroke-linecap="round" fill="none" opacity="0.3"></path> <path d="M72 30 V120" stroke="#fff" stroke-width="2.2" stroke-linecap="round" fill="none" opacity="0.35"></path> <rect x="0" y="0" width="160" height="495" fill="url(#sda)"></rect><rect x="0" y="0" width="160" height="495" fill="url(#dka)"></rect> <rect x="0" y="250" width="160" height="245" fill="url(#fra)"></rect> <path d="M20 462 Q80 474 140 462" stroke="#fff" stroke-width="1.2" fill="none" opacity=".18"></path><path d="M20 470 Q80 482 140 470" stroke="#000" stroke-width="5" fill="none" opacity=".25"></path> </g> <path d="M63 116 Q80 121 97 116 V130 Q80 135 63 130 Z" fill="#17120d" stroke="#c9a13f" stroke-width="1"></path><text x="80" y="126" text-anchor="middle" font-size="3.8" letter-spacing=".35" fill="#e3c26a" font-family="Georgia,serif">★</text> <ellipse cx="80" cy="106" rx="17" ry="3.4" fill="rgba(0,0,0,.4)" filter="url(#b2a)"></ellipse> <rect x="63" y="14" width="34" height="86" rx="3" fill="url(#foa)"></rect><path d="M66 26 V92" stroke="rgba(255,255,255,.3)" stroke-width="1.1"></path><path d="M70 26 V92" stroke="rgba(0,0,0,.14)" stroke-width="0.7"></path><path d="M74 26 V92" stroke="rgba(255,255,255,.3)" stroke-width="0.7"></path><path d="M78 26 V92" stroke="rgba(0,0,0,.14)" stroke-width="1.1"></path><path d="M83 26 V92" stroke="rgba(255,255,255,.3)" stroke-width="0.7"></path><path d="M87 26 V92" stroke="rgba(0,0,0,.14)" stroke-width="0.7"></path><path d="M91 26 V92" stroke="rgba(255,255,255,.3)" stroke-width="1.1"></path><path d="M95 26 V92" stroke="rgba(0,0,0,.14)" stroke-width="0.7"></path> <rect x="63" y="14" width="34" height="86" fill="#fff" filter="url(#fca)" clip-path="url(#cfa)" opacity=".26"></rect> <path d="M63 99 q2.83 7 5.67 0 q2.83 7 5.67 0 q2.83 7 5.67 0 q2.83 7 5.67 0 q2.83 7 5.67 0 q2.83 7 5.67 0 V94 H63 Z" fill="url(#foa)" transform="translate(0,6)"></path> <path d="M63 99 q2.83 7 5.67 0 q2.83 7 5.67 0 q2.83 7 5.67 0 q2.83 7 5.67 0 q2.83 7 5.67 0 q2.83 7 5.67 0" fill="none" stroke="rgba(70,45,5,.35)" stroke-width="1" transform="translate(0,6)"></path> <path d="M63 54 H97 M63 62 H97" stroke="rgba(70,45,5,.28)" stroke-width="1"></path> <rect x="61" y="2" width="38" height="20" rx="4" fill="url(#foa)"></rect> <path d="M63 8 H97" stroke="rgba(255,248,210,.8)" stroke-width="1.4" stroke-linecap="round"></path><path d="M61 22 H99" stroke="rgba(60,38,4,.45)" stroke-width="1.6"></path><path d="M63 4.5 H97" stroke="rgba(255,255,255,.5)" stroke-width=".8"></path> <rect x="72" y="14" width="3" height="84" rx="1.5" fill="#fff" opacity=".28"></rect> <path d="M35 281 Q80 287 125 281 V415 Q80 421 35 415 Z" fill="rgba(0,0,0,.3)" transform="translate(1.5,2)" filter="url(#b2a)"></path> <path d="M35 281 Q80 287 125 281 V415 Q80 421 35 415 Z" fill="url(#ppa)" stroke="#c9a13f" stroke-width="1.6"></path> <rect x="30" y="278" width="100" height="144" filter="url(#gra)" clip-path="url(#cla)"></rect> <path d="M40 289 Q80 294 120 289 V408 Q80 413 40 408 Z" fill="none" stroke="#a98230" stroke-width=".8"></path> <text x="80" y="325" text-anchor="middle" font-size="9.2" font-weight="700" letter-spacing="1" fill="#e9c971" font-family="Georgia,serif">VINVENTORY</text> <path d="M80 366 s-12 -7 -14 -14 c-2 -6 2 -12 8 -12 c4 0 5 3 6 5 c1 -2 2 -5 6 -5 c6 0 10 6 8 12 c-2 7 -14 14 -14 14 z" fill="#d3a647" transform="translate(0,-4)"></path> <text x="80" y="386" text-anchor="middle" font-size="6.6" letter-spacing="1.2" fill="#d8b25a" font-family="Georgia,serif">CUVÉE PRESTIGE</text> <text x="80" y="398" text-anchor="middle" font-size="5.6" letter-spacing="1.4" fill="#a98230" font-family="Georgia,serif">MILLÉSIME 2026</text> <g clip-path="url(#cpa)"><rect x="0" y="0" width="160" height="495" fill="url(#sda)" opacity=".7"></rect><path d="M33 290 V412" stroke="#fff" stroke-width="3" opacity=".2" filter="url(#b2a)"></path></g> </svg>';
   function fxScene(kind) {
     const rnd = (i, k) => { const x = Math.sin((i + 1) * 12.9898 + k * 78.233) * 43758.5453; return x - Math.floor(x); };
     const champ = kind === "champagne";
@@ -1888,7 +1891,8 @@ img { max-width: 100%; }
     const heart = `<path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 7.9 3.6 4.5 7 4.5c2 0 3.4 1.1 5 3 1.6-1.9 3-3 5-3 3.4 0 5.6 3.4 4.3 6.8-1.8 4.6-9.3 9.2-9.3 9.2z" style="fill:var(--k-heart)"/><path d="M7.2 7.6c-1.5.1-2.6 1.4-2.4 3" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round" opacity=".55"/>`;
     return sides.map((c, n) => {
       const rad = c.rot * Math.PI / 180;
-      const mx = Math.round(c.bl + 60 + 380 * Math.sin(rad)), my = Math.round(c.bb + 380 * Math.cos(rad));
+      const bl = c.bl - 3;   // the bottle is 126 x 391 px, turning around the middle of its base
+      const mx = Math.round(bl + 63 + 391 * Math.sin(rad)), my = Math.round(c.bb + 391 * Math.cos(rad));
       const at = (x, y) => `left:${x}px;bottom:${y}px`;
       let front = "";
       if (!champ) {
@@ -1911,15 +1915,10 @@ img { max-width: 100%; }
       const dl = `animation-delay:${c.delay}s`;
       return `<div class="fxside ${c.cls}${champ ? " champ" : ""}">
         <div class="kflash" style="${at(mx - 110, my - 110)};${dl}"></div>
-        <div class="kbottle" style="${at(c.bl, c.bb)};--rot:${c.rot}deg;--s:${c.dir};${dl}"><svg viewBox="0 0 120 380" width="120" height="380" aria-hidden="true"><defs>
-          <linearGradient id="kglas${n}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" style="stop-color:var(--k-g2)"/><stop offset=".35" style="stop-color:var(--k-g1)"/><stop offset="1" style="stop-color:var(--k-g2)"/></linearGradient>
-          <linearGradient id="kfolie${n}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" style="stop-color:var(--k-gold2)"/><stop offset=".4" style="stop-color:var(--k-gold1)"/><stop offset="1" style="stop-color:var(--k-gold2)"/></linearGradient></defs>
-          <path d="M43 12 H77 V120 C77 152 112 162 112 206 V380 H8 V206 C8 162 43 152 43 120 Z" fill="url(#kglas${n})"/>
-          <rect x="41" y="12" width="38" height="92" rx="3" fill="url(#kfolie${n})"/><rect x="37" y="0" width="46" height="14" rx="5" fill="url(#kfolie${n})"/>
-          <rect x="20" y="214" width="7" height="150" rx="3.5" fill="#fff" opacity=".2"/><path d="M50 24 V98" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".35"/></svg></div>
+        <div class="kcorkx" style="${at(mx, my)};--cx:${120 * c.dir}px;${dl}"><div class="kcorky" style="${dl}"><div class="kcorkb" style="${dl}"></div></div></div>
+        <div class="kbottle" style="${at(bl, c.bb)};--rot:${c.rot}deg;--s:${c.dir};${dl}">${BOTTLE}</div>
         ${front}
         <div class="kring" style="${at(mx - 40, my - 40)};${dl}"></div>
-        <div class="kcorkx" style="${at(mx, my)};--cx:${120 * c.dir}px;${dl}"><div class="kcorky" style="${dl}"><div class="kcorkb" style="${dl}"></div></div></div>
       </div>`;
     }).join("");
   }
@@ -3098,7 +3097,7 @@ img { max-width: 100%; }
   // ---------- Notices ----------
   let toastT;
   // Optional action adds a button to the toast, e.g. { label: "Noteer in logboek", run }.
-  function toast(t, action) {
+  function toast(t, action, ms) {   // ms: how long it stays (optional)
     const el = $("toast");
     el.textContent = t;
     if (action) {
@@ -3109,7 +3108,7 @@ img { max-width: 100%; }
     }
     el.hidden = false;
     clearTimeout(toastT);
-    toastT = setTimeout(() => { el.hidden = true; }, action ? 6000 : /^Opslaan lukte|^Je kelder is vol|^Je mag|^Deze wijn bevat|^Saving failed|^Your cellar is full|^This wine contains|^This wine is too big/.test(t) ? 9000 : 2600);
+    toastT = setTimeout(() => { el.hidden = true; }, ms || action ? (ms || 6000) : /^Opslaan lukte|^Je kelder is vol|^Je mag|^Deze wijn bevat|^Saving failed|^Your cellar is full|^This wine contains|^This wine is too big/.test(t) ? 9000 : 2600);
   }
   function showNotice(t) { $("notice").textContent = t; $("notice").hidden = false; }
   function hideNotice() { $("notice").hidden = true; }
@@ -3335,8 +3334,9 @@ img { max-width: 100%; }
       const g = list.find(x => FX[x.effect]);   // the newest one this app knows
       if (g) {
         startFx(g.effect, 60 * 1000);
-        toast(g.message ? L(`${g.from_name} stuurt je een verrassing: "${g.message}"`, `${g.from_name} sent you a surprise: "${g.message}"`)
-                        : L(`${g.from_name} stuurt je een verrassing!`, `${g.from_name} sent you a surprise!`));
+        // The message stays 20 seconds: "Anna stuurt je een bericht:" with the message on the next line.
+        toast(g.message ? L(`${g.from_name} stuurt je een bericht:\n${g.message}`, `${g.from_name} sends you a message:\n${g.message}`)
+                        : L(`${g.from_name} stuurt je een verrassing!`, `${g.from_name} sent you a surprise!`), null, 20000);
       }
       list.forEach(x => this.call("seen_effect", { p_id: x.id }).catch(() => {}));
     },
