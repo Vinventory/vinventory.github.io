@@ -1677,9 +1677,9 @@ img { max-width: 100%; }
 
   // ---------- Events ----------
   $("search").addEventListener("input", e => {
-    // Secret words start an effect for one hour (FX_WORDS, e.g. "Nikki" = Kurk).
+    // Secret words start an effect for one minute (FX_WORDS, e.g. "Nikki" = Kurk).
     const fxWord = FX_WORDS[e.target.value.trim().toLowerCase()];
-    if (fxWord) { e.target.value = ""; query = ""; render(); startFx(fxWord, 60 * 60 * 1000); toast(L("Proost! Een uur lang een verrassing.", "Cheers! A surprise for one hour.")); return; }
+    if (fxWord) { e.target.value = ""; query = ""; render(); startFx(fxWord, 60 * 1000); toast(L("Proost!", "Cheers!")); return; }
     query = e.target.value; render();
   });
   const sortChipEl = $("sortChip");   // kept as a reference: renderList() rebuilds #chips and puts it back at the end
