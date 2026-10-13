@@ -609,27 +609,51 @@ img { max-width: 100%; }
   --k-g1: #1f3a2b; --k-g2: #0b150f; --k-gold1: #f1d58a; --k-gold2: #a9782a; --k-heart: #ff4d6a; --k-glow: rgba(255,77,106,.75); --k-ring: rgba(255,170,185,.9);
   --k-flash: radial-gradient(circle,rgba(255,150,170,.9),rgba(255,70,100,.4) 40%,rgba(255,70,100,0) 70%); --k-cork1: #d9b07a; --k-cork2: #a9793f;
 }
-.fxlayer .cork { position: absolute; left: 0; bottom: 0; width: 0; height: 0; transform: scale(.8); transform-origin: 0 100%; }
-.fxlayer .cork > * { position: absolute; }
-.fxlayer .kflash { left: 12px; bottom: 109px; width: 220px; height: 220px; border-radius: 50%; opacity: 0; background: var(--k-flash); animation: kBurst 6s ease-out infinite; }
-.fxlayer .kbottle { left: -30px; bottom: -150px; width: 120px; height: 380px; transform-origin: 60px 380px; transform: rotate(14deg); opacity: .85; animation: kRecoil 6s ease-in-out infinite; }
-.fxlayer .kh { left: 122px; bottom: 219px; width: 0; height: 0; animation: kx 6s linear infinite; }
-.fxlayer .kh > div { animation: ky 6s linear infinite; }
-.fxlayer .kh svg { display: block; opacity: 0; filter: drop-shadow(0 0 4px var(--k-glow)); animation: kFade 6s linear infinite; }
-.fxlayer .kring { left: 82px; bottom: 179px; width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--k-ring); opacity: 0; animation: kPop 6s ease-out infinite; }
-.fxlayer .kcorkx { left: 122px; bottom: 219px; width: 0; height: 0; --cx: 120px; animation: kxc 6s linear infinite; }
-.fxlayer .kcorky { animation: kyc 6s linear infinite; }
-.fxlayer .kcorkb { width: 18px; height: 28px; margin: -14px 0 0 -9px; border-radius: 5px; background: linear-gradient(90deg,var(--k-cork2),var(--k-cork1) 45%,var(--k-cork2)); box-shadow: inset 0 0 0 1px rgba(60,35,10,.35); animation: kSpin 6s linear infinite; }
+/* Two bottles: the left one pops first, the right one 2 s later (4 s loop). Each side is drawn on a 390 px wide frame, anchored to its own screen edge and scaled down a little. */
+.fxlayer .fxside { position: absolute; bottom: 0; width: 0; height: 0; transform: scale(.85); }
+.fxlayer .fxside.l { left: 0; transform-origin: 0 100%; }
+.fxlayer .fxside.r { left: calc(100% - 390px); transform-origin: 390px 100%; }
+.fxlayer .fxside > * { position: absolute; }
+.fxlayer .champ {
+  --k-flash: radial-gradient(circle,rgba(255,255,255,.95),rgba(255,240,200,.5) 40%,rgba(255,240,200,0) 70%);
+  --k-foam: radial-gradient(circle at 35% 30%,#ffffff,rgba(255,252,240,.88) 60%,rgba(240,228,200,.5));
+  --k-drop: radial-gradient(circle at 30% 30%,#ffffff,rgba(255,236,170,.9) 55%,rgba(214,168,76,.65)); --k-dropsh: 0 1px 2px rgba(120,90,30,.4);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .fxlayer .champ {
+    --k-ring: rgba(255,214,150,.9); --k-flash: radial-gradient(circle,rgba(255,214,150,.9),rgba(255,170,80,.4) 40%,rgba(255,170,80,0) 70%);
+    --k-foam: radial-gradient(circle at 35% 30%,#fff3dc,rgba(255,224,170,.8) 60%,rgba(230,170,90,.4));
+    --k-drop: radial-gradient(circle at 30% 30%,#fff1cc,rgba(255,190,90,.9) 55%,rgba(224,130,40,.6)); --k-dropsh: 0 0 8px rgba(255,180,80,.7);
+  }
+}
+:root[data-theme="dark"] .fxlayer .champ {
+  --k-ring: rgba(255,214,150,.9); --k-flash: radial-gradient(circle,rgba(255,214,150,.9),rgba(255,170,80,.4) 40%,rgba(255,170,80,0) 70%);
+  --k-foam: radial-gradient(circle at 35% 30%,#fff3dc,rgba(255,224,170,.8) 60%,rgba(230,170,90,.4));
+  --k-drop: radial-gradient(circle at 30% 30%,#fff1cc,rgba(255,190,90,.9) 55%,rgba(224,130,40,.6)); --k-dropsh: 0 0 8px rgba(255,180,80,.7);
+}
+.fxlayer .kflash { width: 220px; height: 220px; border-radius: 50%; opacity: 0; background: var(--k-flash); animation: kBurst 4s ease-out infinite; }
+.fxlayer .kbottle { width: 120px; height: 380px; transform-origin: 60px 380px; transform: rotate(var(--rot)); opacity: .9; animation: kRecoil 4s ease-in-out infinite; }
+.fxlayer .kh { width: 0; height: 0; animation: kx 4s linear infinite; }
+.fxlayer .kh > div { animation: ky 4s linear infinite; }
+.fxlayer .kh svg { display: block; opacity: 0; filter: drop-shadow(0 0 4px var(--k-glow)); animation: kFade 4s linear infinite; }
+.fxlayer .kfoam { border-radius: 50%; opacity: 0; background: var(--k-foam); animation: kFoam 4s ease-out infinite; }
+.fxlayer .kdrop { border-radius: 50%; opacity: 0; background: var(--k-drop); box-shadow: var(--k-dropsh); animation: kArc 4s linear infinite; }
+.fxlayer .kring { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--k-ring); opacity: 0; animation: kPop 4s ease-out infinite; }
+.fxlayer .kcorkx { width: 0; height: 0; animation: kxc 4s linear infinite; }
+.fxlayer .kcorky { animation: kyc 4s linear infinite; }
+.fxlayer .kcorkb { width: 18px; height: 28px; margin: -14px 0 0 -9px; border-radius: 5px; background: linear-gradient(90deg,var(--k-cork2),var(--k-cork1) 45%,var(--k-cork2)); box-shadow: inset 0 0 0 1px rgba(60,35,10,.35); animation: kSpin 4s linear infinite; }
 @keyframes kx { 0% { transform: translateX(0); } 34%, 100% { transform: translateX(var(--dx)); } }
 @keyframes ky { 0% { transform: translateY(0); animation-timing-function: cubic-bezier(.15,.7,.35,1); } 14% { transform: translateY(calc(var(--up) * -1)); animation-timing-function: cubic-bezier(.55,0,.9,.45); } 34%, 100% { transform: translateY(var(--down)); } }
 @keyframes kFade { 0% { opacity: 0; } 1.5%, 34% { opacity: 1; } 37%, 100% { opacity: 0; } }
+@keyframes kArc { 0% { transform: translate(0,0); opacity: 0; } 1.5% { opacity: 1; } 3.5% { transform: translate(calc(var(--dx) * .103), calc(var(--up) * -.4375)); } 7% { transform: translate(calc(var(--dx) * .206), calc(var(--up) * -.75)); } 10.5% { transform: translate(calc(var(--dx) * .309), calc(var(--up) * -.9375)); } 14% { transform: translate(calc(var(--dx) * .412), calc(var(--up) * -1)); } 17% { transform: translate(calc(var(--dx) * .5), calc(var(--up) * -.9775 + var(--down) * .0225)); } 20.4% { transform: translate(calc(var(--dx) * .6), calc(var(--up) * -.8976 + var(--down) * .1024)); } 23.8% { transform: translate(calc(var(--dx) * .7), calc(var(--up) * -.7599 + var(--down) * .2401)); } 27.2% { transform: translate(calc(var(--dx) * .8), calc(var(--up) * -.5644 + var(--down) * .4356)); } 30.6% { transform: translate(calc(var(--dx) * .9), calc(var(--up) * -.3111 + var(--down) * .6889)); } 34% { transform: translate(var(--dx), var(--down)); opacity: 1; } 37%, 100% { transform: translate(var(--dx), var(--down)); opacity: 0; } }
+@keyframes kFoam { 0% { transform: scale(.2); opacity: 0; } 3% { opacity: .95; } 14% { transform: scale(1.1); opacity: .9; } 34% { transform: scale(1.6) translateY(-10px); opacity: .6; } 48%, 100% { transform: scale(2); opacity: 0; } }
 @keyframes kxc { 0% { transform: translateX(0); } 30% { transform: translateX(var(--cx)); } 93%, 100% { transform: translateX(0); } }
 @keyframes kyc { 0% { transform: translateY(0); opacity: 1; animation-timing-function: cubic-bezier(.12,.55,.35,1); } 30% { transform: translateY(-820px); opacity: 1; } 31% { transform: translateY(-820px); opacity: 0; } 93% { transform: translateY(0); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
 @keyframes kSpin { 0% { transform: rotate(0deg); } 30%, 100% { transform: rotate(900deg); } }
 @keyframes kBurst { 0% { transform: scale(.3); opacity: 0; } 3% { opacity: .9; } 12% { transform: scale(1.2); opacity: .6; } 30% { transform: scale(1.7); opacity: 0; } 100% { opacity: 0; } }
 @keyframes kPop { 0% { transform: scale(.1); opacity: .9; } 5% { opacity: .9; } 11% { transform: scale(2.6); opacity: 0; } 100% { opacity: 0; } }
-@keyframes kRecoil { 0% { transform: rotate(14deg) translate(0,0); } 2% { transform: rotate(10deg) translate(-6px,10px); } 10% { transform: rotate(15.5deg) translate(1px,-2px); } 18% { transform: rotate(14deg) translate(0,0); } 90% { transform: rotate(14deg) translate(0,0); } 92% { transform: rotate(13deg) translate(-1px,0); } 94% { transform: rotate(15deg) translate(1px,0); } 96% { transform: rotate(13deg) translate(-1px,0); } 98% { transform: rotate(15deg) translate(1px,0); } 100% { transform: rotate(14deg) translate(0,0); } }
-@media (prefers-reduced-motion: reduce) { .fxlayer .cork, .fxlayer .cork * { animation: none !important; } }
+@keyframes kRecoil { 0% { transform: rotate(var(--rot)) translate(0,0); } 2% { transform: rotate(calc(var(--rot) - var(--s) * 4deg)) translate(calc(var(--s) * -6px),10px); } 10% { transform: rotate(calc(var(--rot) + var(--s) * 1.5deg)) translate(calc(var(--s) * 1px),-2px); } 18%, 90% { transform: rotate(var(--rot)) translate(0,0); } 92% { transform: rotate(calc(var(--rot) - var(--s) * 1deg)) translate(calc(var(--s) * -1px),0); } 94% { transform: rotate(calc(var(--rot) + var(--s) * 1deg)) translate(calc(var(--s) * 1px),0); } 96% { transform: rotate(calc(var(--rot) - var(--s) * 1deg)) translate(calc(var(--s) * -1px),0); } 98% { transform: rotate(calc(var(--rot) + var(--s) * 1deg)) translate(calc(var(--s) * 1px),0); } 100% { transform: rotate(var(--rot)) translate(0,0); } }
+@media (prefers-reduced-motion: reduce) { .fxlayer .fxside, .fxlayer .fxside * { animation: none !important; } }
 </style>
 </head>
 <body>
@@ -1797,11 +1821,12 @@ img { max-width: 100%; }
   }
   // ---------- Effects: an animation in its own layer (#fxLayer) over any theme, for a limited time ----------
   // FX lists the effects (name -> HTML builder); FX_WORDS the secret search words. State per device: localStorage wijnkelder.fx = {name, until}.
-  const FX = { kurk: corkHtml };
+  const FX = { kurk: () => fxScene("kurk"), champagne: () => fxScene("champagne") };
+  const FX_SENDABLE = ["champagne"];   // effects friends can send each other (must also be in private.effect_names() in schema-effecten.sql)
   const FX_WORDS = { nikki: "kurk" };
-  const FX_LABEL = { kurk: L("Kurk 🍾", "Cork 🍾") };
+  const FX_LABEL = { kurk: L("Kurk 💕", "Cork 💕"), champagne: "Champagne 🍾" };
   const FX_FRIENDS_KEY = "wijnkelder.fxFromFriends";   // "off" = surprises from friends are not played
-  const FX_SEND = false;   // the "Stuur een verrassing" button is hidden for now (owner's wish, 2026-10-13); set to true to show it again
+  const FX_SEND = true;   // false hides the "Stuur een verrassing" button
   // Plays an effect for a few seconds, then goes back to what was running before (e.g. a Nikki hour).
   function previewFx(name) {
     let prev = null;
@@ -1832,24 +1857,49 @@ img { max-width: 100%; }
     fxTimer = setTimeout(applyFx, Math.min(s.until - Date.now() + 300, 2147483000));
   }
   document.addEventListener("visibilitychange", () => { if (!document.hidden) applyFx(); });
-  // Kurk: a champagne bottle bottom left, the cork flies out and hearts fly up (6 s loop). Positions are measured from the bottom of the screen.
-  function corkHtml() {
+  // Kurk (hearts) and Champagne (a fountain of drops and foam): two bottles, left and right; the right one pops 2 s later (4 s loop).
+  // Ported from the design canvas ("Animatie"); positions are on a 390 px wide frame measured from the bottom of the screen.
+  function fxScene(kind) {
     const rnd = (i, k) => { const x = Math.sin((i + 1) * 12.9898 + k * 78.233) * 43758.5453; return x - Math.floor(x); };
-    let hearts = "";
-    for (let j = 0; j < 28; j++) {
-      const s = 12 + Math.round(rnd(j, 4) * 16), d = (0.05 + rnd(j, 5) * 0.65).toFixed(2);
-      hearts += `<div class="kh" style="--dx:${Math.round(-70 + rnd(j, 1) * 330)}px;--up:${Math.round(120 + rnd(j, 2) * 420)}px;--down:${Math.round(40 + rnd(j, 3) * 320)}px;animation-delay:${d}s"><div style="animation-delay:${d}s"><svg viewBox="0 0 24 24" width="${s}" height="${s}" aria-hidden="true" style="margin-left:-${s / 2}px;transform:rotate(${Math.round(rnd(j, 6) * 50 - 25)}deg);animation-delay:${d}s"><path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 7.9 3.6 4.5 7 4.5c2 0 3.4 1.1 5 3 1.6-1.9 3-3 5-3 3.4 0 5.6 3.4 4.3 6.8-1.8 4.6-9.3 9.2-9.3 9.2z" style="fill:var(--k-heart)"/><path d="M7.2 7.6c-1.5.1-2.6 1.4-2.4 3" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round" opacity=".55"/></svg></div></div>`;
-    }
-    return `<div class="cork"><div class="kflash"></div>
-      <div class="kbottle"><svg viewBox="0 0 120 380" width="120" height="380" aria-hidden="true"><defs>
-        <linearGradient id="kglas" x1="0" y1="0" x2="1" y2="0"><stop offset="0" style="stop-color:var(--k-g2)"/><stop offset=".35" style="stop-color:var(--k-g1)"/><stop offset="1" style="stop-color:var(--k-g2)"/></linearGradient>
-        <linearGradient id="kfolie" x1="0" y1="0" x2="1" y2="0"><stop offset="0" style="stop-color:var(--k-gold2)"/><stop offset=".4" style="stop-color:var(--k-gold1)"/><stop offset="1" style="stop-color:var(--k-gold2)"/></linearGradient></defs>
-        <path d="M43 12 H77 V120 C77 152 112 162 112 206 V380 H8 V206 C8 162 43 152 43 120 Z" fill="url(#kglas)"/>
-        <rect x="41" y="12" width="38" height="92" rx="3" fill="url(#kfolie)"/><rect x="37" y="0" width="46" height="14" rx="5" fill="url(#kfolie)"/>
-        <rect x="20" y="214" width="7" height="150" rx="3.5" fill="#fff" opacity=".2"/><path d="M50 24 V98" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".35"/></svg></div>
-      ${hearts}
-      <div class="kring"></div>
-      <div class="kcorkx"><div class="kcorky"><div class="kcorkb"></div></div></div></div>`;
+    const champ = kind === "champagne";
+    const sides = [{ bl: -65, bb: -80, rot: 14, dir: 1, delay: 0, seed: 0, cls: "l" }, { bl: 370, bb: -10, rot: -22, dir: -1, delay: 2, seed: 50, cls: "r" }];
+    const heart = `<path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 7.9 3.6 4.5 7 4.5c2 0 3.4 1.1 5 3 1.6-1.9 3-3 5-3 3.4 0 5.6 3.4 4.3 6.8-1.8 4.6-9.3 9.2-9.3 9.2z" style="fill:var(--k-heart)"/><path d="M7.2 7.6c-1.5.1-2.6 1.4-2.4 3" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round" opacity=".55"/>`;
+    return sides.map((c, n) => {
+      const rad = c.rot * Math.PI / 180;
+      const mx = Math.round(c.bl + 60 + 380 * Math.sin(rad)), my = Math.round(c.bb + 380 * Math.cos(rad));
+      const at = (x, y) => `left:${x}px;bottom:${y}px`;
+      let front = "";
+      if (!champ) {
+        for (let j = 0; j < 28; j++) {
+          const q = j + c.seed, s = 12 + Math.round(rnd(q, 4) * 16), d = (c.delay + 0.05 + rnd(q, 5) * 0.65).toFixed(2);
+          front += `<div class="kh" style="${at(mx, my)};--dx:${Math.round(c.dir * (-70 + rnd(q, 1) * 330))}px;--up:${Math.round(120 + rnd(q, 2) * 420)}px;--down:${Math.round(40 + rnd(q, 3) * 320)}px;animation-delay:${d}s"><div style="animation-delay:${d}s"><svg viewBox="0 0 24 24" width="${s}" height="${s}" aria-hidden="true" style="margin-left:-${s / 2}px;transform:rotate(${Math.round(rnd(q, 6) * 50 - 25)}deg);animation-delay:${d}s">${heart}</svg></div></div>`;
+        }
+      } else {
+        // A narrow fan along the bottle's axis, spread over most of the loop. The design has 170 drops per bottle; 90 keeps phones smooth.
+        const tilt = Math.tan(Math.abs(c.rot) * Math.PI / 180);
+        for (let j = 0; j < 90; j++) {
+          const q = j + c.seed + 100, s = 3 + Math.round(rnd(q, 4) * 6), up = 200 + rnd(q, 2) * 300;
+          front += `<div class="kdrop" style="${at(mx, my)};width:${s}px;height:${s}px;margin-left:-${s / 2}px;--dx:${Math.round(c.dir * (tilt * up + (rnd(q, 1) - 0.5) * 70))}px;--up:${Math.round(up)}px;--down:${Math.round(up + 60 + rnd(q, 3) * 160)}px;animation-delay:${(c.delay + 0.1 + rnd(q, 5) * 2.6).toFixed(2)}s"></div>`;
+        }
+        for (let j = 0; j < 16; j++) {
+          const q = j + c.seed + 200, s = 14 + Math.round(rnd(q, 7) * 20);
+          front += `<div class="kfoam" style="${at(Math.round(mx - s / 2 + (rnd(q, 8) * 24 - 12)), Math.round(my - s / 2 + (rnd(q, 9) * 20 - 6)))};width:${s}px;height:${s}px;animation-delay:${(c.delay + rnd(q, 10) * 2.2).toFixed(2)}s"></div>`;
+        }
+      }
+      const dl = `animation-delay:${c.delay}s`;
+      return `<div class="fxside ${c.cls}${champ ? " champ" : ""}">
+        <div class="kflash" style="${at(mx - 110, my - 110)};${dl}"></div>
+        <div class="kbottle" style="${at(c.bl, c.bb)};--rot:${c.rot}deg;--s:${c.dir};${dl}"><svg viewBox="0 0 120 380" width="120" height="380" aria-hidden="true"><defs>
+          <linearGradient id="kglas${n}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" style="stop-color:var(--k-g2)"/><stop offset=".35" style="stop-color:var(--k-g1)"/><stop offset="1" style="stop-color:var(--k-g2)"/></linearGradient>
+          <linearGradient id="kfolie${n}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" style="stop-color:var(--k-gold2)"/><stop offset=".4" style="stop-color:var(--k-gold1)"/><stop offset="1" style="stop-color:var(--k-gold2)"/></linearGradient></defs>
+          <path d="M43 12 H77 V120 C77 152 112 162 112 206 V380 H8 V206 C8 162 43 152 43 120 Z" fill="url(#kglas${n})"/>
+          <rect x="41" y="12" width="38" height="92" rx="3" fill="url(#kfolie${n})"/><rect x="37" y="0" width="46" height="14" rx="5" fill="url(#kfolie${n})"/>
+          <rect x="20" y="214" width="7" height="150" rx="3.5" fill="#fff" opacity=".2"/><path d="M50 24 V98" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".35"/></svg></div>
+        ${front}
+        <div class="kring" style="${at(mx - 40, my - 40)};${dl}"></div>
+        <div class="kcorkx" style="${at(mx, my)};--cx:${120 * c.dir}px;${dl}"><div class="kcorky" style="${dl}"><div class="kcorkb" style="${dl}"></div></div></div>
+      </div>`;
+    }).join("");
   }
   // Rising bubbles for the Bubbels look: 56 fixed pseudo-random bubbles per background layer (page and sheet).
   function fillBubbles(on) {
@@ -3253,7 +3303,7 @@ img { max-width: 100%; }
         <div class="field"><span class="section-l" style="margin:0">Aan</span>
           <div class="friendpick" id="fx-pick" role="radiogroup" aria-label="Aan">${this.list.map(f => `<button type="button" role="radio" data-pick="${esc(f.friend_id)}" aria-checked="${f.friend_id === only}">${esc(f.display_name)}</button>`).join("")}</div></div>
         <div class="field"><span class="section-l" style="margin:0">Verrassing</span>
-          <div class="friendpick" id="fx-kind" role="radiogroup" aria-label="Verrassing">${Object.keys(FX).map((n, i) => `<button type="button" role="radio" data-fx="${n}" aria-checked="${i === 0}">${esc(FX_LABEL[n] || n)}</button>`).join("")}</div>
+          <div class="friendpick" id="fx-kind" role="radiogroup" aria-label="Verrassing">${FX_SENDABLE.map((n, i) => `<button type="button" role="radio" data-fx="${n}" aria-checked="${i === 0}">${esc(FX_LABEL[n] || n)}</button>`).join("")}</div>
           <button class="linkbtn" type="button" id="fx-preview" style="align-self:flex-start">Voorbeeld bekijken</button></div>
         <div class="field"><label for="fx-msg">Bericht (optioneel)</label><input id="fx-msg" maxlength="140" autocomplete="off" placeholder="Bijv. Proost op je verjaardag!"></div>
         <span class="hint" id="fx-status" hidden></span>
