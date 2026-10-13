@@ -1801,6 +1801,7 @@ img { max-width: 100%; }
   const FX_WORDS = { nikki: "kurk" };
   const FX_LABEL = { kurk: L("Kurk 🍾", "Cork 🍾") };
   const FX_FRIENDS_KEY = "wijnkelder.fxFromFriends";   // "off" = surprises from friends are not played
+  const FX_SEND = false;   // the "Stuur een verrassing" button is hidden for now (owner's wish, 2026-10-13); set to true to show it again
   // Plays an effect for a few seconds, then goes back to what was running before (e.g. a Nikki hour).
   function previewFx(name) {
     let prev = null;
@@ -3316,6 +3317,7 @@ img { max-width: 100%; }
       $("fr-invite").disabled = !this.profile;
       $("fr-fxbox").hidden = !this.fxOn;
       $("fr-fx").disabled = !this.list.length;
+      $("fr-fx").hidden = !FX_SEND;
       try { $("fr-fxon").checked = localStorage.getItem(FX_FRIENDS_KEY) !== "off"; } catch {}
       $("fr-list").innerHTML = this.list.length
         ? `<span class="section-l">Je vrienden</span>` + this.list.map(f => `<div class="frow"><div class="frname"><b>${esc(f.display_name)}</b><span class="hint">${L("Vrienden sinds", "Friends since")} ${esc(fmtDate(String(f.since).slice(0, 10)))}</span></div><div class="fracts"><button class="linkbtn" type="button" data-fr-rm="${esc(f.friend_id)}">Verwijder als vriend</button><button class="linkbtn" type="button" data-fr-bl="${esc(f.friend_id)}">Blokkeren</button></div></div>`).join("")
