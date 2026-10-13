@@ -803,7 +803,7 @@ img { max-width: 100%; }
           <span class="hint" id="fr-msg" hidden></span>
           <div class="invbox" id="fr-linkbox" hidden><input id="fr-link" readonly aria-label="Uitnodigingslink"><button class="btn ghost" type="button" id="fr-copy">Kopieer</button></div>
           <div id="fr-fxbox" hidden style="display:flex;flex-direction:column;gap:8px">
-            <button class="btn ghost backupbtn" type="button" id="fr-fx">Stuur een verrassing</button>
+            <button class="btn ghost backupbtn" type="button" id="fr-fx">Stuur een bericht</button>
           </div>
           <div id="fr-list"></div>
           <div id="fr-blocked"></div>
@@ -968,12 +968,12 @@ img { max-width: 100%; }
     /* settings */
     "Weergave": "Appearance", "Automatisch": "Automatic", "Licht": "Light", "Donker": "Dark",
     "Automatisch volgt de instelling van je apparaat.": "Automatic follows the setting of your device.",
-    "Stuur een verrassing": "Send a surprise", "Verrassingen van vrienden afspelen": "Play surprises from friends",
+    "Stuur een bericht": "Send a message", "Berichten van vrienden afspelen": "Play messages from friends",
     "Je vriend ziet de animatie 10 seconden lang, meteen als de app opengaat.": "Your friend sees the animation for 10 seconds, as soon as the app opens.",
-    "Verrassing": "Surprise", "Voorbeeld bekijken": "Preview", "Bijv. Proost op je verjaardag!": "E.g. Cheers on your birthday!", "Verstuur": "Send",
-    "Je hebt vandaag al 10 verrassingen gestuurd. Probeer het morgen opnieuw.": "You have already sent 10 surprises today. Try again tomorrow.",
-    "Deze vriend heeft je laatste 3 verrassingen nog niet gezien. Wacht even.": "This friend hasn't seen your last 3 surprises yet. Please wait a while.",
-    "Deze verrassing kan nog niet worden verstuurd.": "This surprise can't be sent yet.",
+    "Animatie": "Animation", "Voorbeeld bekijken": "Preview", "Bijv. Proost op je verjaardag!": "E.g. Cheers on your birthday!", "Verstuur": "Send",
+    "Je hebt vandaag al 10 berichten gestuurd. Probeer het morgen opnieuw.": "You have already sent 10 messages today. Try again tomorrow.",
+    "Deze vriend heeft je laatste 3 berichten nog niet gezien. Wacht even.": "This friend hasn't seen your last 3 messages yet. Please wait a while.",
+    "Dit bericht kan nog niet worden verstuurd.": "This message can't be sent yet.",
     "Wijnkelder": "Wine cellar", "Bubbels": "Bubbles", "Zet in wijnkelder": "Put in cellar", "Mijn wijnen": "My wines",
     "Thema": "Theme", "Klassiek": "Classic", "Zacht": "Soft", "Het uiterlijk van de app. Licht of donker kies je bij Weergave.": "The look of the app. Light or dark you choose under Appearance.",
     "Taal": "Language", "Taal / Language": "Language", "Automatisch volgt de taal van je telefoon.": "Automatic follows the language of your phone.",
@@ -1849,7 +1849,7 @@ img { max-width: 100%; }
   const FX_SENDABLE = ["champagne", "proost"];   // effects friends can send each other (must also be in private.effect_names() in schema-effecten.sql)
   const FX_WORDS = { nikki: "kurk" };
   const FX_LABEL = { kurk: L("Kurk 💕", "Cork 💕"), champagne: "Champagne 🍾", proost: "Proost! 🥂" };
-  const FX_SEND = true;   // false hides the "Stuur een verrassing" button
+  const FX_SEND = true;   // false hides the "Stuur een bericht" button
   // Plays an effect for a few seconds, then goes back to what was running before (e.g. a Nikki hour).
   function previewFx(name) {
     let prev = null;
@@ -3336,19 +3336,19 @@ img { max-width: 100%; }
         startFx(g.effect, 10 * 1000);
         // The message stays 20 seconds: "Anna stuurt je een bericht:" with the message on the next line.
         toast(g.message ? L(`${g.from_name} stuurt je een bericht:\n${g.message}`, `${g.from_name} sends you a message:\n${g.message}`)
-                        : L(`${g.from_name} stuurt je een verrassing!`, `${g.from_name} sent you a surprise!`), null, 20000);
+                        : L(`${g.from_name} stuurt je een bericht!`, `${g.from_name} sent you a message!`), null, 20000);
       }
       list.forEach(x => this.call("seen_effect", { p_id: x.id }).catch(() => {}));
     },
     openSendFx() {
       if (!this.fxOn || !this.list.length) return;
       const only = this.list.length === 1 ? this.list[0].friend_id : "";
-      openSheet(`${top("Stuur een verrassing")}
+      openSheet(`${top("Stuur een bericht")}
         <p class="hint" style="margin:0">Je vriend ziet de animatie 10 seconden lang, meteen als de app opengaat.</p>
         <div class="field"><span class="section-l" style="margin:0">Aan</span>
           <div class="friendpick" id="fx-pick" role="radiogroup" aria-label="Aan">${this.list.map(f => `<button type="button" role="radio" data-pick="${esc(f.friend_id)}" aria-checked="${f.friend_id === only}">${esc(f.display_name)}</button>`).join("")}</div></div>
-        <div class="field"><span class="section-l" style="margin:0">Verrassing</span>
-          <div class="friendpick" id="fx-kind" role="radiogroup" aria-label="Verrassing">${FX_SENDABLE.map((n, i) => `<button type="button" role="radio" data-fx="${n}" aria-checked="${i === 0}">${esc(FX_LABEL[n] || n)}</button>`).join("")}</div>
+        <div class="field"><span class="section-l" style="margin:0">Animatie</span>
+          <div class="friendpick" id="fx-kind" role="radiogroup" aria-label="Animatie">${FX_SENDABLE.map((n, i) => `<button type="button" role="radio" data-fx="${n}" aria-checked="${i === 0}">${esc(FX_LABEL[n] || n)}</button>`).join("")}</div>
           <button class="linkbtn" type="button" id="fx-preview" style="align-self:flex-start">Voorbeeld bekijken</button></div>
         <div class="field"><label for="fx-msg">Bericht (optioneel)</label><input id="fx-msg" maxlength="140" autocomplete="off" placeholder="Bijv. Proost op je verjaardag!"></div>
         <span class="hint" id="fx-status" hidden></span>
@@ -3369,12 +3369,12 @@ img { max-width: 100%; }
         let r;
         try { r = await this.call("send_effect", { p_to: pick.dataset.pick, p_effect: kind(), p_message: $("fx-msg").value }); }
         catch { showMsg("fx-status", L("Er ging iets mis. Probeer het opnieuw.", "Something went wrong. Please try again."), true); btn.disabled = false; return; }
-        if (r.status === "ok") { closeSheet(); toast(L(`Verrassing gestuurd naar ${friend ? friend.display_name : "je vriend"}`, `Surprise sent to ${friend ? friend.display_name : "your friend"}`)); return; }
+        if (r.status === "ok") { closeSheet(); toast(L(`Bericht gestuurd naar ${friend ? friend.display_name : "je vriend"}`, `Message sent to ${friend ? friend.display_name : "your friend"}`)); return; }
         showMsg("fx-status", {
           not_friends: "Je kunt niets sturen naar deze persoon.",
-          rate_limited: "Je hebt vandaag al 10 verrassingen gestuurd. Probeer het morgen opnieuw.",
-          too_many_pending: "Deze vriend heeft je laatste 3 verrassingen nog niet gezien. Wacht even.",
-          invalid_effect: "Deze verrassing kan nog niet worden verstuurd."
+          rate_limited: "Je hebt vandaag al 10 berichten gestuurd. Probeer het morgen opnieuw.",
+          too_many_pending: "Deze vriend heeft je laatste 3 berichten nog niet gezien. Wacht even.",
+          invalid_effect: "Dit bericht kan nog niet worden verstuurd."
         }[r.status] || L("Er ging iets mis. Probeer het opnieuw.", "Something went wrong. Please try again."), true);
         btn.disabled = false;
       });
