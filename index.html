@@ -758,13 +758,33 @@ img { max-width: 100%; }
       <p class="hint" style="margin:0">Het uiterlijk van de app. Licht of donker kies je bij Weergave.</p>
       </div>
       <div class="setsec" id="langSec">
-      <span class="section-l" style="margin:0">Taal</span>
+        <button class="btn ghost backupbtn backuptoggle" type="button" id="langToggle" aria-expanded="false" aria-controls="langOpts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.4 2.4 3.6 5.2 3.6 8.5s-1.2 6.1-3.6 8.5c-2.4-2.4-3.6-5.2-3.6-8.5s1.2-6.1 3.6-8.5z"/></svg><span>Taal / Language</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="backupopts" id="langOpts" hidden>
       <div class="seg" id="langSeg" role="radiogroup" aria-label="Taal">
         <button type="button" role="radio" data-lang-pick="auto">Automatisch</button>
         <button type="button" role="radio" data-lang-pick="nl">Nederlands</button>
         <button type="button" role="radio" data-lang-pick="en">English</button>
       </div>
       <p class="hint" style="margin:0">Automatisch volgt de taal van je telefoon.</p>
+        </div>
+      </div>
+      <div class="setsec" id="friendsSec" hidden>
+        <button class="btn ghost backupbtn backuptoggle" type="button" id="frToggle" aria-expanded="false" aria-controls="frOpts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 6.5M18 14a6.5 6.5 0 0 1 3.5 6"/></svg><span>Vrienden</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="backupopts" id="frOpts" hidden>
+          <div class="field">
+            <label for="fr-name">Jouw weergavenaam</label>
+            <div class="boughtrow"><input id="fr-name" maxlength="40" autocomplete="off" placeholder="Bijv. Anna"><button class="btn ghost" type="button" id="fr-nameSave">Bewaar</button></div>
+            <span class="hint">Alleen je vrienden zien deze naam. Je e-mailadres blijft privé.</span>
+          </div>
+          <button class="btn primary backupbtn" type="button" id="fr-invite" disabled>Nodig een vriend uit</button>
+          <span class="hint" id="fr-msg" hidden></span>
+          <div class="invbox" id="fr-linkbox" hidden><input id="fr-link" readonly aria-label="Uitnodigingslink"><button class="btn ghost" type="button" id="fr-copy">Kopieer</button></div>
+          <div id="fr-fxbox" hidden style="display:flex;flex-direction:column;gap:8px">
+            <button class="btn ghost backupbtn" type="button" id="fr-fx">Stuur een verrassing</button>
+          </div>
+          <div id="fr-list"></div>
+          <div id="fr-blocked"></div>
+        </div>
       </div>
       <div class="setsec" id="backupSec">
         <button class="btn ghost backupbtn backuptoggle" type="button" id="backupToggle" aria-expanded="false" aria-controls="backupOpts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7.5 12 4l8 3.5v9L12 20l-8-3.5zM4 7.5l8 3.5 8-3.5M12 11v9"/></svg><span>Back-up</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
@@ -795,24 +815,6 @@ img { max-width: 100%; }
         <p class="hint" style="margin:0">Ingelogd als <b id="acctMail"></b></p>
         <button class="btn ghost backupbtn" type="button" id="signOutBtn">Uitloggen</button>
         <button class="btn danger backupbtn" type="button" id="acctDelBtn">Account verwijderen</button>
-        </div>
-      </div>
-      <div class="setsec" id="friendsSec" hidden>
-        <button class="btn ghost backupbtn backuptoggle" type="button" id="frToggle" aria-expanded="false" aria-controls="frOpts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 6.5M18 14a6.5 6.5 0 0 1 3.5 6"/></svg><span>Vrienden</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
-        <div class="backupopts" id="frOpts" hidden>
-          <div class="field">
-            <label for="fr-name">Jouw weergavenaam</label>
-            <div class="boughtrow"><input id="fr-name" maxlength="40" autocomplete="off" placeholder="Bijv. Anna"><button class="btn ghost" type="button" id="fr-nameSave">Bewaar</button></div>
-            <span class="hint">Alleen je vrienden zien deze naam. Je e-mailadres blijft privé.</span>
-          </div>
-          <button class="btn primary backupbtn" type="button" id="fr-invite" disabled>Nodig een vriend uit</button>
-          <span class="hint" id="fr-msg" hidden></span>
-          <div class="invbox" id="fr-linkbox" hidden><input id="fr-link" readonly aria-label="Uitnodigingslink"><button class="btn ghost" type="button" id="fr-copy">Kopieer</button></div>
-          <div id="fr-fxbox" hidden style="display:flex;flex-direction:column;gap:8px">
-            <button class="btn ghost backupbtn" type="button" id="fr-fx">Stuur een verrassing</button>
-          </div>
-          <div id="fr-list"></div>
-          <div id="fr-blocked"></div>
         </div>
       </div>
       <div class="setsec" id="helpSec">
@@ -951,7 +953,7 @@ img { max-width: 100%; }
     "Deze verrassing kan nog niet worden verstuurd.": "This surprise can't be sent yet.",
     "Wijnkelder": "Wine cellar", "Bubbels": "Bubbles", "Zet in wijnkelder": "Put in cellar", "Mijn wijnen": "My wines",
     "Thema": "Theme", "Klassiek": "Classic", "Zacht": "Soft", "Het uiterlijk van de app. Licht of donker kies je bij Weergave.": "The look of the app. Light or dark you choose under Appearance.",
-    "Taal": "Language", "Automatisch volgt de taal van je telefoon.": "Automatic follows the language of your phone.",
+    "Taal": "Language", "Taal / Language": "Language", "Automatisch volgt de taal van je telefoon.": "Automatic follows the language of your phone.",
     "Back-up": "Backup", "Download back-up": "Download backup", "Back-up terugzetten": "Restore backup",
     "Eén bestand met al je wijnen, je logboek en je foto's.": "One file with all your wines, your logbook and your photos.",
     "Toevoegen": "Add", "Vervangen": "Replace", "Annuleren": "Cancel", "Zeker weten?": "Are you sure?", "Back-up teruggezet": "Backup restored",
@@ -1714,7 +1716,7 @@ img { max-width: 100%; }
     tab = t;
     for (const [k, id] of Object.entries(VIEWS)) $(id).hidden = k !== t;
     document.querySelectorAll("[data-tab]").forEach(b => { if (b.dataset.tab === t) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
-    if (t !== "set") { resetRestore(); setBackupOpen(false); setAcctOpen(false); setFrOpen(false); }
+    if (t !== "set") { resetRestore(); setBackupOpen(false); setLangOpen(false); setAcctOpen(false); setFrOpen(false); }
     if (t === "kelder") renderStats();
     if (t === "wish") renderWish();
     if (changed) window.scrollTo(0, 0);
@@ -1966,6 +1968,8 @@ img { max-width: 100%; }
     $("restoreBox").hidden = true; $("restoreReplace").textContent = "Vervangen";
   };
   // One "Back-up" button in the menu; tapping it shows the download and restore options.
+  const setLangOpen = open => { $("langOpts").hidden = !open; $("langToggle").setAttribute("aria-expanded", String(open)); };
+  $("langToggle").addEventListener("click", () => setLangOpen($("langOpts").hidden));
   const setBackupOpen = open => { $("backupOpts").hidden = !open; $("backupToggle").setAttribute("aria-expanded", String(open)); };
   $("backupToggle").addEventListener("click", () => {
     const open = $("backupOpts").hidden;
@@ -2054,7 +2058,7 @@ img { max-width: 100%; }
   });
 
   // Settings are a page now: "open" switches to it; closing only folds the back-up part away.
-  const setSettings = open => { if (open) showTab("set"); else { resetRestore(); setBackupOpen(false); setAcctOpen(false); setFrOpen(false); } };
+  const setSettings = open => { if (open) showTab("set"); else { resetRestore(); setBackupOpen(false); setLangOpen(false); setAcctOpen(false); setFrOpen(false); } };
 
   // The round scan button in the tab bar is a label for #fileIn.
   // A scan always starts on "Mijn kelder"; the form can switch it to the wishlist.
