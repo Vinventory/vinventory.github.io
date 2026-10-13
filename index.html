@@ -846,13 +846,16 @@ img { max-width: 100%; }
         <button class="btn ghost backupbtn backuptoggle" type="button" id="helpBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 1-1 1.7M12 17h.01"/></svg><span>How to</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button>
       </div>
       <div class="setsec" id="keySec">
-        <span class="section-l" style="margin:0">Scannen met Claude</span>
+        <button class="btn ghost backupbtn backuptoggle" type="button" id="keyToggle" aria-expanded="false" aria-controls="keyOpts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3.2"/></svg><span>Scannen met Claude</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="backupopts" id="keyOpts" hidden>
         <p class="hint" style="margin:0" id="keyState"></p>
+        <a class="btn ghost backupbtn" id="keyMake" href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>Sleutel maken bij Anthropic</a>
         <input class="setinput" id="keyIn" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="sk-ant-…" aria-label="Claude-sleutel">
         <p class="setinput keydone" id="keyDone" hidden>Sleutel opgeslagen. Je kunt nu etiketten scannen.</p>
         <div class="actions"><button class="btn ghost backupbtn" type="button" id="keyDel" hidden>Verwijderen</button><button class="btn primary backupbtn" type="button" id="keySave">Bewaar sleutel</button></div>
         <span class="hint" id="keyMsg" hidden></span>
-        <p class="hint" style="margin:0">Dit is je eigen Anthropic-sleutel. Elke scan kost credits. De sleutel blijft op dit apparaat en komt nooit in je kelder. Uitloggen haalt hem hier weg. <a class="linkbtn" href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener" style="padding:0">Sleutel maken</a></p>
+        <p class="hint" style="margin:0">Dit is je eigen Anthropic-sleutel. Elke scan kost credits. De sleutel blijft op dit apparaat en komt nooit in je kelder. Uitloggen haalt hem hier weg.</p>
+        </div>
       </div>
       <p class="legallinks"><a href="privacy.html" target="_blank" rel="noopener">Privacy</a> · <a href="voorwaarden.html" target="_blank" rel="noopener">Voorwaarden</a></p>
     </div>
@@ -978,7 +981,7 @@ img { max-width: 100%; }
     "Dit bericht kan nog niet worden verstuurd.": "This message can't be sent yet.",
     "Je gratis scans zijn op. Voer je eigen sleutel in bij Instellingen, of voeg de wijn zelf toe.": "Your free scans are used up. Enter your own key under Settings, or add the wine yourself.",
     "Scannen is nu tijdelijk niet beschikbaar. Probeer het later opnieuw, of voeg de wijn zelf toe.": "Scanning is temporarily unavailable. Try again later, or add the wine yourself.",
-    "Eigen sleutel invoeren": "Enter your own key",
+    "Eigen sleutel invoeren": "Enter your own key", "Sleutel maken bij Anthropic": "Create a key at Anthropic",
     "Wijnkelder": "Wine cellar", "Bubbels": "Bubbles", "Zet in wijnkelder": "Put in cellar", "Mijn wijnen": "My wines",
     "Thema": "Theme", "Klassiek": "Classic", "Zacht": "Soft", "Het uiterlijk van de app. Licht of donker kies je bij Weergave.": "The look of the app. Light or dark you choose under Appearance.",
     "Taal": "Language", "Taal / Language": "Language", "Automatisch volgt de taal van je telefoon.": "Automatic follows the language of your phone.",
@@ -1461,7 +1464,7 @@ img { max-width: 100%; }
       : T("Nog geen sleutel. Zonder sleutel opent de scanknop een formulier om de wijn zelf in te vullen.");
     $("keyDel").hidden = !has; $("keyIn").value = "";
     // With a key saved, the field's place shows that scanning works; "Verwijderen" brings the field back.
-    $("keyIn").hidden = has; $("keySave").hidden = has; $("keyDone").hidden = !has; $("keyState").hidden = has;
+    $("keyIn").hidden = has; $("keySave").hidden = has; $("keyDone").hidden = !has; $("keyState").hidden = has; $("keyMake").hidden = has;
   }
   function refreshSample() { sample = canUseAi() ? sampleFn : null; refreshKeyUi(); }
   $("keySave").addEventListener("click", () => {
@@ -1514,7 +1517,7 @@ img { max-width: 100%; }
   // True when the user can use Claude at all: an own key, or free scans on our server.
   const canUseAi = () => !demo && (!!getKey() || ai.on);
   const noFreeLeft = () => !getKey() && ai.on && ai.left !== null && ai.left <= 0;
-  function goToKey() { closeSheet(); showTab("set"); const s = $("keySec"); if (s) setTimeout(() => s.scrollIntoView({ block: "center" }), 50); }
+  function goToKey() { closeSheet(); showTab("set"); setKeyOpen(true); const s = $("keySec"); if (s) setTimeout(() => s.scrollIntoView({ block: "center" }), 50); }
   // Herinnering photos are shrunk until they are small (about 45 KB), so several fit on one wine.
   function compactPhoto(img) {
     let out = "";
@@ -1788,7 +1791,7 @@ img { max-width: 100%; }
     tab = t;
     for (const [k, id] of Object.entries(VIEWS)) $(id).hidden = k !== t;
     document.querySelectorAll("[data-tab]").forEach(b => { if (b.dataset.tab === t) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
-    if (t !== "set") { resetRestore(); setBackupOpen(false); setLangOpen(false); setThemeOpen(false); setAcctOpen(false); setFrOpen(false); }
+    if (t !== "set") { resetRestore(); setBackupOpen(false); setLangOpen(false); setThemeOpen(false); setKeyOpen(false); setAcctOpen(false); setFrOpen(false); }
     if (t === "kelder") renderStats();
     if (t === "wish") renderWish();
     if (changed) window.scrollTo(0, 0);
@@ -2059,6 +2062,8 @@ img { max-width: 100%; }
     $("restoreBox").hidden = true; $("restoreReplace").textContent = "Vervangen";
   };
   // One "Back-up" button in the menu; tapping it shows the download and restore options.
+  const setKeyOpen = open => { $("keyOpts").hidden = !open; $("keyToggle").setAttribute("aria-expanded", String(open)); };
+  $("keyToggle").addEventListener("click", () => setKeyOpen($("keyOpts").hidden));
   const setThemeOpen = open => { $("themeOpts").hidden = !open; $("themeToggle").setAttribute("aria-expanded", String(open)); };
   $("themeToggle").addEventListener("click", () => setThemeOpen($("themeOpts").hidden));
   const setLangOpen = open => { $("langOpts").hidden = !open; $("langToggle").setAttribute("aria-expanded", String(open)); };
@@ -2151,7 +2156,7 @@ img { max-width: 100%; }
   });
 
   // Settings are a page now: "open" switches to it; closing only folds the back-up part away.
-  const setSettings = open => { if (open) showTab("set"); else { resetRestore(); setBackupOpen(false); setLangOpen(false); setThemeOpen(false); setAcctOpen(false); setFrOpen(false); } };
+  const setSettings = open => { if (open) showTab("set"); else { resetRestore(); setBackupOpen(false); setLangOpen(false); setThemeOpen(false); setKeyOpen(false); setAcctOpen(false); setFrOpen(false); } };
 
   // The round scan button in the tab bar is a label for #fileIn.
   // A scan always starts on "Mijn kelder"; the form can switch it to the wishlist.
