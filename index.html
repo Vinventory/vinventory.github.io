@@ -972,7 +972,7 @@ img { max-width: 100%; }
     "Automatisch volgt de instelling van je apparaat.": "Automatic follows the setting of your device.",
     "Stuur een bericht": "Send a message", "Berichten van vrienden afspelen": "Play messages from friends",
     "De animatie duurt 10 seconden en start meteen als je vriend de app opent.": "The animation lasts 10 seconds and starts as soon as your friend opens the app.",
-    "Animatie": "Animation", "Bericht": "Message", "Voorbeeld bekijken": "Preview", "Bijv. Proost op je verjaardag!": "E.g. Cheers on your birthday!", "Verstuur": "Send",
+    "Glitterplaatjes": "Glitter pictures", "Bericht": "Message", "Voorbeeld bekijken": "Preview", "Bijv. Proost op je verjaardag!": "E.g. Cheers on your birthday!", "Verstuur": "Send",
     "Je hebt vandaag al 10 berichten gestuurd. Probeer het morgen opnieuw.": "You have already sent 10 messages today. Try again tomorrow.",
     "Deze vriend heeft je laatste 3 berichten nog niet gezien. Wacht even.": "This friend hasn't seen your last 3 messages yet. Please wait a while.",
     "Dit bericht kan nog niet worden verstuurd.": "This message can't be sent yet.",
@@ -3348,8 +3348,8 @@ img { max-width: 100%; }
       openSheet(`${top("Stuur een bericht")}
         <div class="field"><span class="section-l" style="margin:0">Aan</span>
           <div class="friendpick" id="fx-pick" role="radiogroup" aria-label="Aan">${this.list.map(f => `<button type="button" role="radio" data-pick="${esc(f.friend_id)}" aria-checked="${f.friend_id === only}">${esc(f.display_name)}</button>`).join("")}</div></div>
-        <div class="field"><span class="section-l" style="margin:0">Animatie</span>
-          <div class="friendpick" id="fx-kind" role="radiogroup" aria-label="Animatie">${FX_SENDABLE.map((n, i) => `<button type="button" role="radio" data-fx="${n}" aria-checked="${i === 0}">${esc(FX_LABEL[n] || n)}</button>`).join("")}</div>
+        <div class="field"><span class="section-l" style="margin:0">Glitterplaatjes</span>
+          <div class="friendpick" id="fx-kind" role="radiogroup" aria-label="Glitterplaatjes">${FX_SENDABLE.map((n, i) => `<button type="button" role="radio" data-fx="${n}" aria-checked="${i === 0}">${esc(FX_LABEL[n] || n)}</button>`).join("")}</div>
           <button class="linkbtn" type="button" id="fx-preview" style="align-self:flex-start">Voorbeeld bekijken</button>
           <p class="hint" style="margin:0">De animatie duurt 10 seconden en start meteen als je vriend de app opent.</p></div>
         <div class="field"><label for="fx-msg">Bericht</label><textarea id="fx-msg" maxlength="140" style="min-height:130px" placeholder="Bijv. Proost op je verjaardag!"></textarea></div>
