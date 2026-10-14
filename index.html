@@ -2375,7 +2375,7 @@ img { max-width: 100%; }
   async function scan(file) {
     openSheet(`${top("Etiket lezen")}
       <div id="scanPhoto"></div>
-      <div class="reading"><canvas class="pixrun" aria-hidden="true"></canvas><span id="readMsg">Foto openen…</span><span class="hint" id="readStep"></span></div>
+      <div class="reading"><canvas class="pixrun" aria-hidden="true"></canvas><span id="readMsg">Foto openen…</span></div>
       <button class="btn ghost" type="button" data-close>Stoppen</button>`);
     pixelRunner(document.querySelector("#sheet .pixrun"));
     scanCtl = new AbortController();
