@@ -2311,6 +2311,7 @@ img { max-width: 100%; }
 
   // Scan screen loader: a fine dot-matrix strip with a pixel horse that gallops from left to right (stops by itself when the sheet is closed).
   // The horse is built from ellipses and thick lines in a 40 x 22 cell space and rasterised onto the grid, so the shapes stay smooth.
+  // Round puffs of dust start at the hooves that touch the ground and drift backwards and up, growing and fading.
   function pixelRunner(cv) {
     if (!cv) return;
     const ROWS = 22, SW = 40, STEPS = 12;
@@ -2329,8 +2330,10 @@ img { max-width: 100%; }
       const dx = x - (s.x0 + vx * t), dy = y - (s.y0 + vy * t);
       return dx * dx + dy * dy <= s.r * s.r;
     };
+    const cache = [];
     const sprite = step => {
-      const a = step / STEPS * Math.PI * 2, bob = -Math.abs(Math.sin(a)) * 1.1, tw = Math.sin(a * 2 + 1);
+      if (cache[step]) return cache[step];
+      const a = step / STEPS * Math.PI * 2, bob = -Math.abs(Math.sin(a)) * 1.1, tw = Math.sin(a * 2 + 1), feet = [];
       const S = [
         ell(11, 10 + bob, 5.6, 5), ell(18, 10.5 + bob, 8, 4.6), ell(25, 10 + bob, 5, 5.2),               // hindquarters, barrel, chest
         cap(25, 8 + bob, 30, 3.6 + bob, 2.6),                                                              // neck
@@ -2343,31 +2346,48 @@ img { max-width: 100%; }
         const fx = hx + 7.5 * Math.sin(q), fy = 21 - lift * 6;
         const kx = (hx + fx) / 2 + dir * (0.8 + lift * 2.6), ky = (hy + fy) / 2 - lift * 0.5;
         S.push(cap(hx, hy, kx, ky, 1), cap(kx, ky, fx, fy, 0.9));
+        if (lift < 0.25) feet.push([fx, fy]);                                                              // hoof on the ground: dust starts here
       });
       const px = [];
       for (let r = 0; r < ROWS; r++) { const row = []; for (let c = 0; c < SW; c++) { const x = c + 0.5, y = r + 0.5; row.push(S.some(s => inside(s, x, y)) ? 1 : 0); } px.push(row); }
-      return px;
+      return (cache[step] = { px, feet });
     };
     const still = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
-    let x0 = still ? Math.floor((cols - SW) / 2) : -SW, t = 0, last = performance.now();
-    const draw = () => {
-      const col = getComputedStyle(cv).color, px = sprite(Math.floor(t * STEPS) % STEPS), hx = Math.floor(x0);
+    let x0 = still ? Math.floor((cols - SW) / 2) : -SW, t = 0, last = performance.now(), parts = [];
+    const draw = dt => {
+      const col = getComputedStyle(cv).color, sp = sprite(Math.floor(t * STEPS) % STEPS), px = sp.px, hx = Math.floor(x0);
+      const dust = {};
+      if (!still) {
+        sp.feet.forEach(f => { if (Math.random() < dt * 7) parts.push({ x: hx + f[0] + (Math.random() - 0.5) * 2, y: 21 - Math.random() * 1.2, vx: -(5 + Math.random() * 5), vy: -(3 + Math.random() * 3), age: 0, life: 0.9 + Math.random() * 0.5 }); });
+        parts = parts.filter(p => {
+          p.age += dt; if (p.age >= p.life) return false;
+          p.x += p.vx * dt; p.y += p.vy * dt;
+          const f = p.age / p.life, r = 1 + 2.6 * f, al = 0.42 * (1 - f) * (1 - f * 0.3), R = Math.ceil(r);
+          for (let yy = -R; yy <= R; yy++) for (let xx = -R; xx <= R; xx++) {
+            if (xx * xx + yy * yy > r * r) continue;
+            const cx = Math.round(p.x) + xx, cy = Math.round(p.y) + yy;
+            if (cx < 0 || cx >= cols || cy < 0 || cy >= ROWS) continue;
+            const k = cy * 1000 + cx; if (!dust[k] || dust[k] < al) dust[k] = al;
+          }
+          return true;
+        });
+      }
       g.clearRect(0, 0, pw, ph);
       g.fillStyle = col;
       for (let r = 0; r < ROWS; r++) for (let c = 0; c < cols; c++) {
         const sx = c - hx, on = sx >= 0 && sx < SW && px[r][sx];
-        g.globalAlpha = on ? 0.9 : 0.1;
+        g.globalAlpha = on ? 0.9 : Math.max(0.1, dust[r * 1000 + c] || 0);
         g.fillRect(c * P, r * P, CELL, CELL);
       }
     };
-    draw();
+    draw(0);
     if (still) return;
     const frame = now => {
       if (!cv.isConnected) return;
       const dt = Math.min(0.05, (now - last) / 1000); last = now;
       x0 += dt * 60; t += dt * 3;             // 60 cells per second (about 144 px), 3 strides per second
-      if (x0 > cols) x0 = -SW;
-      draw(); requestAnimationFrame(frame);
+      if (x0 > cols) { x0 = -SW; parts = []; }
+      draw(dt); requestAnimationFrame(frame);
     };
     requestAnimationFrame(frame);
   }
