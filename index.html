@@ -2365,7 +2365,7 @@ img { max-width: 100%; }
     const frame = now => {
       if (!cv.isConnected) return;
       const dt = Math.min(0.05, (now - last) / 1000); last = now;
-      x0 += dt * 36; t += dt * 2.2;           // 36 cells per second (about 86 px), a bit over 2 strides per second
+      x0 += dt * 60; t += dt * 3;             // 60 cells per second (about 144 px), 3 strides per second
       if (x0 > cols) x0 = -SW;
       draw(); requestAnimationFrame(frame);
     };
