@@ -663,6 +663,7 @@ img { max-width: 100%; }
 @keyframes kBurst { 0% { transform: scale(.3); opacity: 0; } 3% { opacity: .9; } 12% { transform: scale(1.2); opacity: .6; } 30% { transform: scale(1.7); opacity: 0; } 100% { opacity: 0; } }
 @keyframes kPop { 0% { transform: scale(.1); opacity: .9; } 5% { opacity: .9; } 11% { transform: scale(2.6); opacity: 0; } 100% { opacity: 0; } }
 @keyframes kRecoil { 0% { transform: rotate(var(--rot)) translate(0,0); } 2% { transform: rotate(calc(var(--rot) - var(--s) * 4deg)) translate(calc(var(--s) * -6px),10px); } 10% { transform: rotate(calc(var(--rot) + var(--s) * 1.5deg)) translate(calc(var(--s) * 1px),-2px); } 18%, 90% { transform: rotate(var(--rot)) translate(0,0); } 92% { transform: rotate(calc(var(--rot) - var(--s) * 1deg)) translate(calc(var(--s) * -1px),0); } 94% { transform: rotate(calc(var(--rot) + var(--s) * 1deg)) translate(calc(var(--s) * 1px),0); } 96% { transform: rotate(calc(var(--rot) - var(--s) * 1deg)) translate(calc(var(--s) * -1px),0); } 98% { transform: rotate(calc(var(--rot) + var(--s) * 1deg)) translate(calc(var(--s) * 1px),0); } 100% { transform: rotate(var(--rot)) translate(0,0); } }
+.fxlayer .fxside, .fxlayer .fxside * { animation-iteration-count: 1 !important; }
 @media (prefers-reduced-motion: reduce) { .fxlayer .fxside, .fxlayer .fxside * { animation: none !important; } }
 /* Proost! (two glasses clink) */
 .fxlayer { --p-spark: #e3a92e; --p-wine: #8a1c38; }
@@ -692,6 +693,7 @@ img { max-width: 100%; }
 .fxlayer .eband { position: absolute; left: 0; right: 0; bottom: 0; height: 100px; opacity: 0; background: rgba(0,0,0,.74); animation: eZaal 6s ease-in-out infinite; }
 .fxlayer .fxE { position: absolute; left: 50%; top: 0; width: 390px; height: 844px; margin-left: -195px; }
 .fxlayer .fxE > * { position: absolute; }
+.fxlayer .efade { left: 0; top: 0; width: 390px; height: 844px; opacity: 0; animation: eZaal 6s ease-in-out infinite; }
 .fxlayer .fxE .pring { box-sizing: border-box; }
 @keyframes eSway{0%,100%{transform:rotate(-1.6deg)}50%{transform:rotate(1.6deg)}}
 @keyframes eFlik{0%,100%{opacity:1}30%{opacity:.62}60%{opacity:.88}}
@@ -1000,7 +1002,7 @@ img { max-width: 100%; }
     "Weergave": "Appearance", "Automatisch": "Automatic", "Licht": "Light", "Donker": "Dark",
     "Automatisch volgt de instelling van je apparaat.": "Automatic follows the setting of your device.",
     "Stuur een bericht": "Send a message", "Berichten van vrienden afspelen": "Play messages from friends",
-    "De animatie duurt 12 seconden en start zodra je vriend het bericht wegklikt.": "The animation lasts 12 seconds and starts as soon as your friend closes the message.",
+    "De animatie speelt Ã©Ã©n keer af en start zodra je vriend het bericht wegklikt.": "The animation plays once and starts as soon as your friend closes the message.",
     "Glitterplaatjes": "Glitter pictures", "Bericht": "Message", "Voorbeeld bekijken": "Preview", "Bijv. Proost op je verjaardag!": "E.g. Cheers on your birthday!", "Verstuur": "Send",
     "Je hebt vandaag al 10 berichten gestuurd. Probeer het morgen opnieuw.": "You have already sent 10 messages today. Try again tomorrow.",
     "Deze vriend heeft je laatste 3 berichten nog niet gezien. Wacht even.": "This friend hasn't seen your last 3 messages yet. Please wait a while.",
@@ -1779,12 +1781,12 @@ img { max-width: 100%; }
 
   // ---------- Events ----------
   $("search").addEventListener("input", e => {
-    // Secret words start an effect for FX_MS (12 seconds) (FX_WORDS, e.g. "Nikki" = Kurk).
+    // Secret words start an effect once (FX_WORDS, e.g. "Nikki" = Kurk).
     const fxWord = FX_WORDS[e.target.value.trim().toLowerCase()];
     if (fxWord) {
       e.target.value = ""; query = ""; render();
       e.target.blur();   // close the keyboard first, so it doesn't cover the animation
-      setTimeout(() => { startFx(fxWord, FX_MS); toast(L("Proost!", "Cheers!")); }, 500);
+      setTimeout(() => { startFx(fxWord, FX_MS[fxWord]); toast(L("Proost!", "Cheers!")); }, 500);
       return;
     }
     query = e.target.value; render();
@@ -1932,15 +1934,15 @@ img { max-width: 100%; }
   const FX_SENDABLE = ["champagne", "proost", "kroonluchter"];   // effects friends can send each other (must also be in private.effect_names() in schema-effecten.sql)
   const FX_WORDS = { nikki: "kurk" };
   const FX_LABEL = { kurk: L("Kurk 💕", "Cork 💕"), champagne: "Champagne 🍾", proost: "Proost! 🥂", kroonluchter: L("Kroonluchter 🥂", "Chandelier 🥂") };
-  // Every effect plays 12 seconds: that is a whole number of loops for all of them (4 s for Kurk/Champagne, 6 s for Proost/Kroonluchter), so they end cleanly.
-  const FX_MS = 12 * 1000;
+  // Every effect plays ONCE, for as long as one pass takes (ms): Kurk 4.5 s, Champagne 6.5 s, Proost and Kroonluchter one 6 s loop.
+  const FX_MS = { kurk: 4500, champagne: 6500, proost: 6000, kroonluchter: 6000 };
   const FX_SEND = true;   // false hides the "Stuur een bericht" button
   // Plays an effect for a few seconds, then goes back to what was running before (e.g. a Nikki hour).
   function previewFx(name) {
     let prev = null;
     try { prev = localStorage.getItem(FX_KEY); } catch {}
-    startFx(name, FX_MS);
-    setTimeout(() => { try { if (prev) localStorage.setItem(FX_KEY, prev); else localStorage.removeItem(FX_KEY); } catch {} applyFx(); }, FX_MS + 100);
+    startFx(name, FX_MS[name]);
+    setTimeout(() => { try { if (prev) localStorage.setItem(FX_KEY, prev); else localStorage.removeItem(FX_KEY); } catch {} applyFx(); }, FX_MS[name] + 100);
   }
   const FX_KEY = "wijnkelder.fx";
   let fxTimer = 0;
@@ -2046,7 +2048,7 @@ img { max-width: 100%; }
         + `<div style="position:absolute;left:0;top:250px;width:166px;height:150px;overflow:hidden;opacity:.34;filter:blur(.7px);-webkit-mask-image:linear-gradient(to bottom,#000 0%,transparent 100%);mask-image:linear-gradient(to bottom,#000 0%,transparent 100%)">`
         + `<div style="position:absolute;left:0;top:-250px;width:166px;height:273px;transform-origin:0 0;transform:translateY(500px) scaleY(-1)">${glass()}</div></div>${glass()}</div></div>`;
     });
-    h += E_EDGE + E_GLOW + E_SWAY + E_CHAND + '<div class="pring"></div>';
+    h += E_EDGE + '<div class="efade">' + E_GLOW + E_SWAY + E_CHAND + '</div><div class="pring"></div>';
     for (let j = 0; j < 18; j++) {
       const ang = (-160 + (j / 17) * 140) * Math.PI / 180, dist = 60 + rnd(j, 2) * 90, s = 8 + Math.round(rnd(j, 3) * 8);
       h += `<div class="pspark" style="--sx:${Math.round(Math.cos(ang) * dist)}px;--sy:${Math.round(Math.sin(ang) * dist + 20)}px"><svg viewBox="0 0 12 12" width="${s}" height="${s}" aria-hidden="true" style="margin:-${s / 2}px 0 0 -${s / 2}px"><path d="M6 0 L7.4 4.6 L12 6 L7.4 7.4 L6 12 L4.6 7.4 L0 6 L4.6 4.6 Z" style="fill:var(--p-spark)"/></svg></div>`;
@@ -3471,7 +3473,7 @@ img { max-width: 100%; }
       if (!list.length) return;
       const g = list.find(x => FX[x.effect]);   // the newest one this app knows
       if (g) {
-        // A card with the sender and the message stays until it is closed; the animation (12 seconds) starts only then.
+        // A card with the sender and the message stays until it is closed; the animation starts only then.
         const old = $("msgCard"); if (old) old.remove();
         const card = document.createElement("div");
         card.id = "msgCard"; card.className = "msgcard"; card.setAttribute("role", "alert");
@@ -3485,7 +3487,7 @@ img { max-width: 100%; }
         body.textContent = g.message || L("stuurt je een bericht!", "sent you a message!");
         card.append(head, body);
         document.body.appendChild(card);
-        x.addEventListener("click", () => { card.remove(); startFx(g.effect, FX_MS); });
+        x.addEventListener("click", () => { card.remove(); startFx(g.effect, FX_MS[g.effect]); });
       }
       list.forEach(x => this.call("seen_effect", { p_id: x.id }).catch(() => {}));
     },
@@ -3498,7 +3500,7 @@ img { max-width: 100%; }
         <div class="field"><span class="section-l" style="margin:0">Glitterplaatjes</span>
           <div class="friendpick" id="fx-kind" role="radiogroup" aria-label="Glitterplaatjes">${FX_SENDABLE.map((n, i) => `<button type="button" role="radio" data-fx="${n}" aria-checked="${i === 0}">${esc(FX_LABEL[n] || n)}</button>`).join("")}</div>
           <button class="linkbtn" type="button" id="fx-preview" style="align-self:flex-start">Voorbeeld bekijken</button>
-          <p class="hint" style="margin:0">De animatie duurt 12 seconden en start zodra je vriend het bericht wegklikt.</p></div>
+          <p class="hint" style="margin:0">De animatie speelt Ã©Ã©n keer af en start zodra je vriend het bericht wegklikt.</p></div>
         <div class="field"><label for="fx-msg">Bericht</label><textarea id="fx-msg" maxlength="140" style="min-height:130px" placeholder="Bijv. Proost op je verjaardag!"></textarea></div>
         <span class="hint" id="fx-status" hidden></span>
         <div class="actions"><button class="btn ghost" type="button" data-close>Annuleren</button><button class="btn primary" type="button" id="fx-send">Verstuur</button></div>`);
