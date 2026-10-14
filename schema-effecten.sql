@@ -33,7 +33,7 @@ create policy "verrassing lezen" on public.effects for select to authenticated
 
 -- De effecten die de app kent. Alleen deze namen kunnen worden verstuurd.
 create or replace function private.effect_names() returns text[]
-language sql immutable set search_path = '' as $$ select array['kurk', 'champagne', 'proost'] $$;
+language sql immutable set search_path = '' as $$ select array['kurk', 'champagne', 'proost', 'kroonluchter'] $$;
 
 create or replace function public.send_effect(p_to uuid, p_effect text, p_message text) returns jsonb
 language plpgsql security definer set search_path = '' as $$
