@@ -2309,30 +2309,42 @@ img { max-width: 100%; }
     return `{"isWine": true, "name": "naam van de wijn of cuvée, zonder de producent", "producer": "producent of château", "vintage": 2019, "region": "streek of appellation", "country": "land", "grape": "druif of blend", "color": "rood|wit|rosé|mousserend|dessert|versterkt", "description": "2 tot 3 zinnen in het Nederlands over stijl, geur en smaak (noem hier geen gerechten)", "pairing": "4 tot 6 concrete gerechten in het Nederlands die goed bij deze wijn passen, gescheiden door komma's","drinkFrom": 2025, "drinkTo": 2032, "confidence": "hoog|middel|laag"}`;
   }
 
-  // Scan screen loader: a dot-matrix strip with a pixel horse that gallops from left to right (stops by itself when the sheet is closed).
+  // Scan screen loader: a fine dot-matrix strip with a pixel horse that gallops from left to right (stops by itself when the sheet is closed).
+  // The horse is built from ellipses and thick lines in a 40 x 22 cell space and rasterised onto the grid, so the shapes stay smooth.
   function pixelRunner(cv) {
     if (!cv) return;
-    const CELL = 6, GAP = 2, P = CELL + GAP, ROWS = 14, SW = 18, STEPS = 8;
+    const CELL = 3, GAP = 1, P = CELL + GAP, ROWS = 22, SW = 40, STEPS = 12;
     const dpr = Math.min(window.devicePixelRatio || 1, 3);
     const w = Math.max(160, Math.floor((cv.parentElement && cv.parentElement.clientWidth) || 300));
     const cols = Math.floor((w + GAP) / P), pw = cols * P - GAP, ph = ROWS * P - GAP;
     cv.style.width = pw + "px"; cv.style.height = ph + "px"; cv.width = Math.round(pw * dpr); cv.height = Math.round(ph * dpr);
     const g = cv.getContext("2d"); g.scale(dpr, dpr);
+    const cap = (x0, y0, x1, y1, r) => ({ x0, y0, x1, y1, r });
+    const ell = (cx, cy, rx, ry) => ({ cx, cy, rx, ry });
+    const inside = (s, x, y) => {
+      if (s.rx) { const dx = (x - s.cx) / s.rx, dy = (y - s.cy) / s.ry; return dx * dx + dy * dy <= 1; }
+      const vx = s.x1 - s.x0, vy = s.y1 - s.y0, l2 = vx * vx + vy * vy || 1;
+      const t = Math.max(0, Math.min(1, ((x - s.x0) * vx + (y - s.y0) * vy) / l2));
+      const dx = x - (s.x0 + vx * t), dy = y - (s.y0 + vy * t);
+      return dx * dx + dy * dy <= s.r * s.r;
+    };
     const sprite = step => {
-      const a = step / STEPS * Math.PI * 2, px = Array.from({ length: ROWS }, () => Array(SW).fill(0));
-      const set = (x, y) => { x = Math.round(x); y = Math.round(y); if (x >= 0 && x < SW && y >= 0 && y < ROWS) px[y][x] = 1; };
-      const rect = (x0, y0, x1, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y); };
-      const line = (x0, y0, x1, y1) => { const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0), 1); for (let i = 0; i <= n; i++) set(x0 + (x1 - x0) * i / n, y0 + (y1 - y0) * i / n); };
-      const b = -Math.round(Math.abs(Math.sin(a)) * 1.2), wag = Math.round(Math.sin(a * 2));
-      rect(5, 5 + b, 12, 5 + b); rect(4, 6 + b, 13, 8 + b);                       // body
-      rect(12, 4 + b, 13, 6 + b); rect(13, 3 + b, 14, 4 + b); rect(14, 2 + b, 15, 3 + b);   // neck
-      rect(14, 1 + b, 17, 2 + b); rect(16, 3 + b, 17, 4 + b); set(14, b); set(11 + wag, 4 + b); set(10 + wag, 5 + b);   // head, muzzle, ear, mane
-      line(4, 5 + b, 2, 6 + b + wag); line(2, 6 + b + wag, 1, 9 + b + wag);          // tail
-      [[12, a], [10, a + 0.9], [5, a + Math.PI], [7, a + Math.PI + 0.9]].forEach(([hx, q]) => {   // legs: front pair, hind pair
-        const s = Math.sin(q), lift = Math.max(0, Math.cos(q));
-        const kx = hx + s * 2.5, ky = 10 + b - lift * 1.5, fx = hx + s * 5, fy = 13 - Math.round(lift * 3);
-        line(hx, 8 + b, kx, ky); line(kx, ky, fx, fy);
+      const a = step / STEPS * Math.PI * 2, bob = -Math.abs(Math.sin(a)) * 1.1, tw = Math.sin(a * 2 + 1);
+      const S = [
+        ell(11, 10 + bob, 5.6, 5), ell(18, 10.5 + bob, 8, 4.6), ell(25, 10 + bob, 5, 5.2),               // hindquarters, barrel, chest
+        cap(25, 8 + bob, 30, 3.6 + bob, 2.6),                                                              // neck
+        cap(30.5, 3.6 + bob, 35.6, 6.6 + bob, 1.9), cap(30, 2 + bob, 30.8, -0.2 + bob, 0.8),               // head, ear
+        cap(24, 5.4 + bob, 28.6, 1 + bob + tw * 0.6, 0.9),                                                  // mane
+        cap(6, 8 + bob, 2.5, 9.5 + bob + tw, 1.1), cap(2.5, 9.5 + bob + tw, 0.8, 14 + bob + tw * 1.6, 1)   // tail
+      ];
+      [[25.5, 1, a], [22.5, 1, a + 0.8], [10, -1, a + Math.PI], [13, -1, a + Math.PI + 0.8]].forEach(([hx, dir, q]) => {   // legs: front pair, hind pair
+        const lift = Math.max(0, Math.cos(q)), hy = 13 + bob;
+        const fx = hx + 7.5 * Math.sin(q), fy = 21 - lift * 6;
+        const kx = (hx + fx) / 2 + dir * (0.8 + lift * 2.6), ky = (hy + fy) / 2 - lift * 0.5;
+        S.push(cap(hx, hy, kx, ky, 1), cap(kx, ky, fx, fy, 0.9));
       });
+      const px = [];
+      for (let r = 0; r < ROWS; r++) { const row = []; for (let c = 0; c < SW; c++) { const x = c + 0.5, y = r + 0.5; row.push(S.some(s => inside(s, x, y)) ? 1 : 0); } px.push(row); }
       return px;
     };
     const still = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -2340,9 +2352,10 @@ img { max-width: 100%; }
     const draw = () => {
       const col = getComputedStyle(cv).color, px = sprite(Math.floor(t * STEPS) % STEPS), hx = Math.floor(x0);
       g.clearRect(0, 0, pw, ph);
+      g.fillStyle = col;
       for (let r = 0; r < ROWS; r++) for (let c = 0; c < cols; c++) {
         const sx = c - hx, on = sx >= 0 && sx < SW && px[r][sx];
-        g.globalAlpha = on ? 0.85 : 0.1; g.fillStyle = col;
+        g.globalAlpha = on ? 0.9 : 0.1;
         g.fillRect(c * P, r * P, CELL, CELL);
       }
     };
@@ -2351,7 +2364,7 @@ img { max-width: 100%; }
     const frame = now => {
       if (!cv.isConnected) return;
       const dt = Math.min(0.05, (now - last) / 1000); last = now;
-      x0 += dt * 13; t += dt * 2.2;           // 13 cells per second, about 2 strides per second
+      x0 += dt * 22; t += dt * 1.9;           // 22 cells per second, about 2 strides per second
       if (x0 > cols) x0 = -SW;
       draw(); requestAnimationFrame(frame);
     };
