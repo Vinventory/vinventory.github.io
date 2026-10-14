@@ -1755,7 +1755,12 @@ img { max-width: 100%; }
   $("search").addEventListener("input", e => {
     // Secret words start an effect for 10 seconds (FX_WORDS, e.g. "Nikki" = Kurk).
     const fxWord = FX_WORDS[e.target.value.trim().toLowerCase()];
-    if (fxWord) { e.target.value = ""; query = ""; render(); startFx(fxWord, 10 * 1000); toast(L("Proost!", "Cheers!")); return; }
+    if (fxWord) {
+      e.target.value = ""; query = ""; render();
+      e.target.blur();   // close the keyboard first, so it doesn't cover the animation
+      setTimeout(() => { startFx(fxWord, 10 * 1000); toast(L("Proost!", "Cheers!")); }, 500);
+      return;
+    }
     query = e.target.value; render();
   });
   const sortChipEl = $("sortChip");   // kept as a reference: renderList() rebuilds #chips and puts it back at the end
