@@ -100,6 +100,8 @@ h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(34px, 9vw
 .backuptoggle .chev { transition: transform .15s; }
 .backuptoggle[aria-expanded="true"] .chev { transform: rotate(180deg); }
 .backupopts { display: flex; flex-direction: column; gap: 8px; }
+.qrbox { align-self: center; width: 188px; padding: 8px; border-radius: 16px; background: #ffffff; box-shadow: 0 2px 10px rgba(0,0,0,.12); }
+.qrbox svg { display: block; width: 100%; height: auto; border-radius: 8px; }
 .restorebox { display: flex; flex-direction: column; gap: 10px; padding: 12px; border-radius: 12px; background: var(--sunk); }
 .restoretxt { margin: 0; font-size: 14px; overflow-wrap: anywhere; }
 .restoreacts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -917,6 +919,14 @@ img { max-width: 100%; }
       <p class="hint" style="margin:0">Het uiterlijk van de app. Licht of donker kies je bij Weergave.</p>
       <p class="hint" id="lookCredit" style="margin:0" hidden>Foto's: Sven Wilhelm (Unsplash) en Juliane Monari (Pexels).</p>
       </div>
+      <div class="setsec" id="shareSec">
+        <button class="btn ghost backupbtn backuptoggle" type="button" id="shareToggle" aria-expanded="false" aria-controls="shareOpts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V4M8 8l4-4 4 4M5 13v6h14v-6"/></svg><span>Delen</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="backupopts" id="shareOpts" hidden>
+          <button class="btn primary backupbtn" type="button" id="shareApp">Deel Vinventory</button>
+          <div class="qrbox"><svg viewBox="-4 -4 37 37" role="img" aria-label="QR-code naar Vinventory" shape-rendering="crispEdges"><rect x="-4" y="-4" width="37" height="37" fill="#ffffff"/><path fill="#1c1215" d="M0 0h7v1h-7zM8 0h4v1h-4zM13 0h3v1h-3zM18 0h1v1h-1zM22 0h7v1h-7zM0 1h1v1h-1zM6 1h1v1h-1zM8 1h4v1h-4zM13 1h3v1h-3zM18 1h3v1h-3zM22 1h1v1h-1zM28 1h1v1h-1zM0 2h1v1h-1zM2 2h3v1h-3zM6 2h1v1h-1zM8 2h2v1h-2zM11 2h1v1h-1zM13 2h2v1h-2zM18 2h3v1h-3zM22 2h1v1h-1zM24 2h3v1h-3zM28 2h1v1h-1zM0 3h1v1h-1zM2 3h3v1h-3zM6 3h1v1h-1zM12 3h1v1h-1zM14 3h2v1h-2zM17 3h1v1h-1zM22 3h1v1h-1zM24 3h3v1h-3zM28 3h1v1h-1zM0 4h1v1h-1zM2 4h3v1h-3zM6 4h1v1h-1zM8 4h1v1h-1zM12 4h2v1h-2zM15 4h1v1h-1zM17 4h1v1h-1zM19 4h1v1h-1zM22 4h1v1h-1zM24 4h3v1h-3zM28 4h1v1h-1zM0 5h1v1h-1zM6 5h1v1h-1zM9 5h2v1h-2zM12 5h3v1h-3zM17 5h1v1h-1zM20 5h1v1h-1zM22 5h1v1h-1zM28 5h1v1h-1zM0 6h7v1h-7zM8 6h1v1h-1zM10 6h1v1h-1zM12 6h1v1h-1zM14 6h1v1h-1zM16 6h1v1h-1zM18 6h1v1h-1zM20 6h1v1h-1zM22 6h7v1h-7zM10 7h3v1h-3zM14 7h1v1h-1zM19 7h2v1h-2zM0 8h1v1h-1zM3 8h7v1h-7zM12 8h6v1h-6zM21 8h1v1h-1zM24 8h1v1h-1zM26 8h3v1h-3zM3 9h1v1h-1zM5 9h1v1h-1zM10 9h2v1h-2zM14 9h1v1h-1zM18 9h2v1h-2zM23 9h2v1h-2zM26 9h2v1h-2zM0 10h1v1h-1zM3 10h1v1h-1zM5 10h3v1h-3zM9 10h2v1h-2zM12 10h1v1h-1zM14 10h1v1h-1zM18 10h1v1h-1zM23 10h1v1h-1zM26 10h1v1h-1zM1 11h2v1h-2zM5 11h1v1h-1zM7 11h3v1h-3zM12 11h1v1h-1zM14 11h2v1h-2zM17 11h6v1h-6zM24 11h2v1h-2zM28 11h1v1h-1zM0 12h2v1h-2zM6 12h1v1h-1zM8 12h1v1h-1zM10 12h5v1h-5zM18 12h3v1h-3zM22 12h1v1h-1zM28 12h1v1h-1zM0 13h3v1h-3zM5 13h1v1h-1zM7 13h1v1h-1zM10 13h1v1h-1zM12 13h1v1h-1zM17 13h2v1h-2zM22 13h7v1h-7zM0 14h1v1h-1zM5 14h3v1h-3zM12 14h1v1h-1zM14 14h2v1h-2zM17 14h1v1h-1zM19 14h1v1h-1zM26 14h1v1h-1zM28 14h1v1h-1zM1 15h2v1h-2zM4 15h1v1h-1zM9 15h1v1h-1zM12 15h3v1h-3zM16 15h1v1h-1zM18 15h2v1h-2zM23 15h1v1h-1zM26 15h1v1h-1zM28 15h1v1h-1zM2 16h5v1h-5zM10 16h1v1h-1zM12 16h1v1h-1zM15 16h1v1h-1zM19 16h2v1h-2zM23 16h1v1h-1zM25 16h1v1h-1zM0 17h1v1h-1zM4 17h2v1h-2zM8 17h2v1h-2zM12 17h1v1h-1zM18 17h2v1h-2zM21 17h1v1h-1zM24 17h1v1h-1zM26 17h2v1h-2zM0 18h3v1h-3zM4 18h1v1h-1zM6 18h2v1h-2zM10 18h2v1h-2zM13 18h2v1h-2zM16 18h4v1h-4zM22 18h1v1h-1zM24 18h2v1h-2zM28 18h1v1h-1zM0 19h2v1h-2zM3 19h1v1h-1zM10 19h4v1h-4zM15 19h2v1h-2zM19 19h2v1h-2zM25 19h2v1h-2zM0 20h2v1h-2zM4 20h6v1h-6zM11 20h3v1h-3zM17 20h1v1h-1zM20 20h8v1h-8zM8 21h1v1h-1zM10 21h2v1h-2zM13 21h1v1h-1zM16 21h5v1h-5zM24 21h2v1h-2zM0 22h7v1h-7zM8 22h2v1h-2zM13 22h1v1h-1zM15 22h2v1h-2zM19 22h2v1h-2zM22 22h1v1h-1zM24 22h2v1h-2zM0 23h1v1h-1zM6 23h1v1h-1zM8 23h1v1h-1zM11 23h1v1h-1zM13 23h1v1h-1zM16 23h2v1h-2zM19 23h2v1h-2zM24 23h1v1h-1zM27 23h2v1h-2zM0 24h1v1h-1zM2 24h3v1h-3zM6 24h1v1h-1zM8 24h6v1h-6zM15 24h2v1h-2zM18 24h8v1h-8zM0 25h1v1h-1zM2 25h3v1h-3zM6 25h1v1h-1zM8 25h1v1h-1zM14 25h1v1h-1zM16 25h4v1h-4zM21 25h1v1h-1zM27 25h1v1h-1zM0 26h1v1h-1zM2 26h3v1h-3zM6 26h1v1h-1zM13 26h2v1h-2zM16 26h2v1h-2zM19 26h1v1h-1zM21 26h1v1h-1zM23 26h2v1h-2zM26 26h3v1h-3zM0 27h1v1h-1zM6 27h1v1h-1zM10 27h2v1h-2zM14 27h2v1h-2zM19 27h1v1h-1zM21 27h1v1h-1zM25 27h2v1h-2zM28 27h1v1h-1zM0 28h7v1h-7zM8 28h3v1h-3zM13 28h1v1h-1zM17 28h4v1h-4zM22 28h1v1h-1zM24 28h2v1h-2z"/></svg></div>
+          <p class="hint" style="margin:0;text-align:center">Scan de code met de camera van je telefoon om Vinventory te openen.</p>
+        </div>
+      </div>
       <div class="setsec" id="friendsSec" hidden>
         <button class="btn ghost backupbtn backuptoggle" type="button" id="frToggle" aria-expanded="false" aria-controls="frOpts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 6.5M18 14a6.5 6.5 0 0 1 3.5 6"/></svg><span>Vrienden</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
         <div class="backupopts" id="frOpts" hidden>
@@ -1099,6 +1109,7 @@ img { max-width: 100%; }
     "Automatisch volgt de instelling van je apparaat.": "Automatic follows the setting of your device.",
     "Stuur een bericht": "Send a message", "Berichten van vrienden afspelen": "Play messages from friends",
     "Gids": "Guide",
+    "Deel Vinventory": "Share Vinventory", "Scan de code met de camera van je telefoon om Vinventory te openen.": "Scan the code with your phone's camera to open Vinventory.", "QR-code naar Vinventory": "QR code to Vinventory",
     "Foto's: Sven Wilhelm (Unsplash) en Juliane Monari (Pexels).": "Photos: Sven Wilhelm (Unsplash) and Juliane Monari (Pexels).",
     "De animatie speelt Ã©Ã©n keer af en start zodra je vriend het bericht wegklikt.": "The animation plays once and starts as soon as your friend closes the message.",
     "Glitterplaatjes": "Glitter pictures", "Bericht": "Message", "Voorbeeld bekijken": "Preview", "Bijv. Proost op je verjaardag!": "E.g. Cheers on your birthday!", "Verstuur": "Send",
@@ -1922,7 +1933,7 @@ img { max-width: 100%; }
     tab = t;
     for (const [k, id] of Object.entries(VIEWS)) $(id).hidden = k !== t;
     document.querySelectorAll("[data-tab]").forEach(b => { if (b.dataset.tab === t) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
-    if (t !== "set") { resetRestore(); setBackupOpen(false); setLangOpen(false); setThemeOpen(false); setKeyOpen(false); setAcctOpen(false); setFrOpen(false); }
+    if (t !== "set") { resetRestore(); setBackupOpen(false); setLangOpen(false); setThemeOpen(false); setKeyOpen(false); setAcctOpen(false); setShareOpen(false); setFrOpen(false); }
     if (t === "kelder") renderStats();
     if (t === "wish") renderWish();
     if (changed) window.scrollTo(0, 0);
@@ -2238,7 +2249,18 @@ img { max-width: 100%; }
     if (!open) resetRestore();
   });
   // "Account" works the same way: one button that folds out sign out and delete account.
-  const setAcctOpen = open => { $("acctOpts").hidden = !open; $("acctToggle").setAttribute("aria-expanded", String(open)); };
+  // ---------- Delen: de app doorsturen met de deelknop, of laten scannen met de QR-code ----------
+  const setShareOpen = open => { $("shareOpts").hidden = !open; $("shareToggle").setAttribute("aria-expanded", String(open)); };
+  $("shareToggle").addEventListener("click", () => setShareOpen($("shareOpts").hidden));
+  $("shareApp").addEventListener("click", async () => {
+    const text = T("Beheer je eigen wijnkelder gratis met Vinventory:") + "\n" + APP_URL;
+    if (navigator.share) {
+      try { await navigator.share({ text }); return; }
+      catch (e) { if (e && e.name === "AbortError") return; }
+    }
+    try { await navigator.clipboard.writeText(text); toast(L("Link gekopieerd. Plak hem in een bericht.", "Link copied. Paste it into a message.")); }
+    catch { toast(APP_URL, null, 6000); }
+  });  const setAcctOpen = open => { $("acctOpts").hidden = !open; $("acctToggle").setAttribute("aria-expanded", String(open)); };
   $("acctToggle").addEventListener("click", () => setAcctOpen($("acctOpts").hidden));
   function cleanBackupWine(x) {
     if (!x || typeof x !== "object" || Array.isArray(x)) return null;
@@ -2319,7 +2341,7 @@ img { max-width: 100%; }
   });
 
   // Settings are a page now: "open" switches to it; closing only folds the back-up part away.
-  const setSettings = open => { if (open) showTab("set"); else { resetRestore(); setBackupOpen(false); setLangOpen(false); setThemeOpen(false); setKeyOpen(false); setAcctOpen(false); setFrOpen(false); } };
+  const setSettings = open => { if (open) showTab("set"); else { resetRestore(); setBackupOpen(false); setLangOpen(false); setThemeOpen(false); setKeyOpen(false); setAcctOpen(false); setShareOpen(false); setFrOpen(false); } };
 
   // The round scan button in the tab bar is a label for #fileIn.
   // A scan always starts on "Mijn kelder"; the form can switch it to the wishlist.
