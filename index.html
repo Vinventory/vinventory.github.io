@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Instrument+Sans:wght@400;500;600;700&display=swap">
-<script>try { var l = localStorage.getItem("wijnkelder.look"); if (l === "klassiek") l = null; else if (l !== "crystal" && l !== "bubbels") l = "zacht"; if (l) { document.documentElement.setAttribute("data-look", l); document.documentElement.setAttribute("data-glass", ""); } } catch (e) { document.documentElement.setAttribute("data-look", "zacht"); document.documentElement.setAttribute("data-glass", ""); }</script>
+<script>try { var l = localStorage.getItem("wijnkelder.look"); if (l === "klassiek") l = null; else if (l !== "crystal" && l !== "bubbels" && l !== "helder" && l !== "gids") l = "zacht"; if (l) { document.documentElement.setAttribute("data-look", l); document.documentElement.setAttribute("data-glass", ""); } } catch (e) { document.documentElement.setAttribute("data-look", "zacht"); document.documentElement.setAttribute("data-glass", ""); }</script>
 <style>
 /* Layout: one-column cellar ledger on the phone, fixed scan bar at the bottom, full-height sheets for scan / form / detail. */
 :root {
@@ -537,7 +537,7 @@ img { max-width: 100%; }
 :root[data-glass] .btn.ghost, :root[data-glass] .field input, :root[data-glass] .field select, :root[data-glass] .field textarea,
 :root[data-glass] .boughtin, :root[data-glass] .memo, :root[data-glass] .logitem, :root[data-glass] .tabbar,
 :root[data-glass] .fav.big, :root[data-glass] .sharetxt {
-  -webkit-backdrop-filter: blur(20px) saturate(180%); backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: var(--gblur, blur(20px) saturate(180%)); backdrop-filter: var(--gblur, blur(20px) saturate(180%));
 }
 :root[data-glass] .card, :root[data-glass] .tally { border: 1px solid var(--line); border-radius: 22px; }
 :root[data-glass] .chip[aria-pressed="true"], :root[data-glass] .sortsel.on { box-shadow: 0 4px 14px rgba(0,0,0,.18); }
@@ -604,6 +604,98 @@ img { max-width: 100%; }
 @keyframes lkRise { 0% { transform: translateY(0); opacity: 0; } 12% { opacity: 1; } 85% { opacity: .9; } 100% { transform: translateY(-120vh); opacity: 0; } }
 @keyframes lkSway { from { transform: translateX(-14px); } to { transform: translateX(14px); } }
 @media (prefers-reduced-motion: reduce) { .lookbg .bub, .lookbg .bub b { animation: none; } .lookbg .bub b { opacity: .8; } }
+/* Thema's "Clear" (foto-achtergrond, heldere glasplaten) en "Gids" (sterk glas met gekleurde vlekken). Tokens als bij de andere glasthema's. */
+:root[data-look="helder"] {
+  --look-top: #faf0d4; --look-bg: #f3e6c8;
+  --surface: linear-gradient(155deg, rgba(255,255,255,.34) 0%, rgba(255,255,255,0) 42%), linear-gradient(135deg, rgba(255,252,244,.26), rgba(255,252,244,.1));
+  --sunk: linear-gradient(155deg, rgba(255,255,255,.28) 0%, rgba(255,255,255,0) 42%), linear-gradient(135deg, rgba(255,252,244,.2), rgba(255,252,244,.08));
+  --surface-solid: #fffdf6; --sunk-solid: #e5d9c1;
+  --line: rgba(255,255,255,.6); --muted: #6b5d43; --ink: #221d12;
+  --accent-grad: linear-gradient(180deg,#a8721f,#7d5112); --glow: rgba(138,90,20,.38); --pill: rgba(255,255,255,.5); --hi: rgba(255,255,255,.9);
+  --shadow: inset 2px 2px 3px rgba(255,255,255,.9), inset -1.5px -1.5px 3px rgba(255,255,255,.4), inset 0 0 22px rgba(255,255,255,.16), 0 12px 32px rgba(90,60,20,.14), 0 2px 6px rgba(90,60,20,.14);
+  --gblur: blur(19px) saturate(210%) brightness(1.04);
+  --photo: linear-gradient(rgba(255,247,232,.45), rgba(255,247,232,.4) 50%, rgba(255,247,232,.58)), url(img/helder-dag.jpg); --photo-filter: saturate(1.05);
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-look="helder"]:not([data-theme="light"]) {
+    --look-top: #2e2a22; --look-bg: #1c1814;
+    --surface: linear-gradient(155deg, rgba(255,255,255,.12) 0%, rgba(255,255,255,0) 42%), linear-gradient(135deg, rgba(255,255,255,.03), rgba(255,255,255,.005));
+    --sunk: linear-gradient(155deg, rgba(255,255,255,.1) 0%, rgba(255,255,255,0) 42%), linear-gradient(135deg, rgba(255,255,255,.024), rgba(255,255,255,.004));
+    --surface-solid: #22151a; --sunk-solid: #301c22;
+    --line: rgba(255,255,255,.24); --muted: #c2a5a8; --ink: #f7ece8;
+    --accent-grad: linear-gradient(180deg,#e04a65,#a3223a); --glow: rgba(224,74,101,.5); --pill: rgba(255,255,255,.14); --hi: rgba(255,255,255,.36);
+    --shadow: inset 2px 2px 3px rgba(255,255,255,.36), inset -1.5px -1.5px 3px rgba(255,255,255,.12), inset 0 0 22px rgba(255,255,255,.05), 0 12px 32px rgba(0,0,0,.5), 0 2px 6px rgba(0,0,0,.5);
+    --gblur: blur(19px) saturate(210%) brightness(1.04);
+    --photo: url(img/helder-nacht.jpg); --photo-filter: brightness(1.35) saturate(1.15);
+  }
+}
+:root[data-look="helder"][data-theme="dark"] {
+    --look-top: #2e2a22; --look-bg: #1c1814;
+    --surface: linear-gradient(155deg, rgba(255,255,255,.12) 0%, rgba(255,255,255,0) 42%), linear-gradient(135deg, rgba(255,255,255,.03), rgba(255,255,255,.005));
+    --sunk: linear-gradient(155deg, rgba(255,255,255,.1) 0%, rgba(255,255,255,0) 42%), linear-gradient(135deg, rgba(255,255,255,.024), rgba(255,255,255,.004));
+    --surface-solid: #22151a; --sunk-solid: #301c22;
+    --line: rgba(255,255,255,.24); --muted: #c2a5a8; --ink: #f7ece8;
+    --accent-grad: linear-gradient(180deg,#e04a65,#a3223a); --glow: rgba(224,74,101,.5); --pill: rgba(255,255,255,.14); --hi: rgba(255,255,255,.36);
+    --shadow: inset 2px 2px 3px rgba(255,255,255,.36), inset -1.5px -1.5px 3px rgba(255,255,255,.12), inset 0 0 22px rgba(255,255,255,.05), 0 12px 32px rgba(0,0,0,.5), 0 2px 6px rgba(0,0,0,.5);
+    --gblur: blur(19px) saturate(210%) brightness(1.04);
+    --photo: url(img/helder-nacht.jpg); --photo-filter: brightness(1.35) saturate(1.15);
+}
+:root[data-look="helder"] .lookbg { background: var(--look-bg); }
+:root[data-look="helder"] .lookbg i, :root[data-look="helder"] .lookbg::after { display: none; }
+:root[data-look="helder"] .lookbg::before { content: ""; position: absolute; inset: -20px; background: var(--photo) center bottom / cover no-repeat; filter: var(--photo-filter); animation: lkKb 40s ease-in-out infinite alternate; will-change: transform; }
+@keyframes lkKb { from { transform: scale(1) translateX(0); } to { transform: scale(1.08) translateX(-10px); } }
+@media (prefers-reduced-motion: reduce) { :root[data-look="helder"] .lookbg::before { animation: none; } }
+:root[data-look="gids"] {
+  --look-top: #efe5d2; --look-bg: #efe5d2;
+  --surface: linear-gradient(135deg, rgba(255,255,255,.4), rgba(255,255,255,.26));
+  --sunk: linear-gradient(135deg, rgba(255,255,255,.34), rgba(255,255,255,.2));
+  --surface-solid: #fbf6ea; --sunk-solid: #e8dcc4;
+  --line: rgba(255,255,255,.7); --muted: #6b5040; --ink: #2b1a14;
+  --accent-grad: linear-gradient(180deg, rgba(150,98,24,.92), rgba(110,70,14,.92)); --glow: rgba(138,90,20,.5); --pill: rgba(255,255,255,.6); --hi: rgba(255,255,255,.9);
+  --shadow: inset 0 1px 0 rgba(255,255,255,.95), 0 22px 40px -20px rgba(90,50,20,.55);
+  --gblur: blur(30px) saturate(210%);
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-look="gids"]:not([data-theme="light"]) {
+    --look-top: #140c0e; --look-bg: #140c0e;
+    --surface: linear-gradient(135deg, rgba(255,255,255,.1), rgba(255,255,255,.04));
+    --sunk: linear-gradient(135deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
+    --surface-solid: #22151a; --sunk-solid: #301c22;
+    --line: rgba(255,255,255,.14); --muted: rgba(246,236,230,.64); --ink: #f6ece6;
+    --accent-grad: linear-gradient(180deg, rgba(214,56,86,.9), rgba(150,26,52,.9)); --glow: rgba(200,40,70,.6); --pill: rgba(255,255,255,.14); --hi: rgba(255,255,255,.24);
+    --shadow: inset 0 1px 0 rgba(255,255,255,.28), 0 22px 44px -18px rgba(0,0,0,.8);
+    --gblur: blur(34px) saturate(200%);
+  }
+}
+:root[data-look="gids"][data-theme="dark"] {
+    --look-top: #140c0e; --look-bg: #140c0e;
+    --surface: linear-gradient(135deg, rgba(255,255,255,.1), rgba(255,255,255,.04));
+    --sunk: linear-gradient(135deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
+    --surface-solid: #22151a; --sunk-solid: #301c22;
+    --line: rgba(255,255,255,.14); --muted: rgba(246,236,230,.64); --ink: #f6ece6;
+    --accent-grad: linear-gradient(180deg, rgba(214,56,86,.9), rgba(150,26,52,.9)); --glow: rgba(200,40,70,.6); --pill: rgba(255,255,255,.14); --hi: rgba(255,255,255,.24);
+    --shadow: inset 0 1px 0 rgba(255,255,255,.28), 0 22px 44px -18px rgba(0,0,0,.8);
+    --gblur: blur(34px) saturate(200%);
+}
+:root[data-look="gids"] .lookbg i { filter: none; opacity: 1; }
+:root[data-look="gids"] .lookbg i:nth-child(1) { left: auto; right: -80px; top: 5%; width: 300px; height: 300px; background: radial-gradient(circle, rgba(238,170,70,.75), transparent 70%); }
+:root[data-look="gids"] .lookbg i:nth-child(2) { right: auto; left: -100px; top: 35%; width: 320px; height: 320px; background: radial-gradient(circle, rgba(228,110,125,.55), transparent 70%); }
+:root[data-look="gids"] .lookbg i:nth-child(3) { left: auto; right: -60px; top: 66%; width: 300px; height: 300px; background: radial-gradient(circle, rgba(190,150,225,.5), transparent 70%); }
+@media (prefers-color-scheme: dark) {
+:root[data-look="gids"]:not([data-theme="light"]) .lookbg i { mix-blend-mode: screen; }
+:root[data-look="gids"]:not([data-theme="light"]) .lookbg i:nth-child(1) { right: auto; left: -90px; top: 11%; width: 320px; height: 320px; background: radial-gradient(circle, rgba(190,40,70,.95), transparent 70%); }
+:root[data-look="gids"]:not([data-theme="light"]) .lookbg i:nth-child(2) { left: auto; right: -110px; top: 39%; width: 300px; height: 300px; background: radial-gradient(circle, rgba(226,150,52,.6), transparent 70%); }
+:root[data-look="gids"]:not([data-theme="light"]) .lookbg i:nth-child(3) { right: auto; left: 10px; top: 71%; width: 320px; height: 300px; background: radial-gradient(circle, rgba(130,45,125,.65), transparent 70%); }
+}
+:root[data-look="gids"][data-theme="dark"] .lookbg i { mix-blend-mode: screen; }
+:root[data-look="gids"][data-theme="dark"] .lookbg i:nth-child(1) { right: auto; left: -90px; top: 11%; width: 320px; height: 320px; background: radial-gradient(circle, rgba(190,40,70,.95), transparent 70%); }
+:root[data-look="gids"][data-theme="dark"] .lookbg i:nth-child(2) { left: auto; right: -110px; top: 39%; width: 300px; height: 300px; background: radial-gradient(circle, rgba(226,150,52,.6), transparent 70%); }
+:root[data-look="gids"][data-theme="dark"] .lookbg i:nth-child(3) { right: auto; left: 10px; top: 71%; width: 320px; height: 300px; background: radial-gradient(circle, rgba(130,45,125,.65), transparent 70%); }
+:root[data-look="helder"] .card, :root[data-look="helder"] .tally, :root[data-look="helder"] .setpage > .setsec, :root[data-look="helder"] .statsec,
+:root[data-look="gids"] .card, :root[data-look="gids"] .tally, :root[data-look="gids"] .setpage > .setsec, :root[data-look="gids"] .statsec { box-shadow: var(--shadow); }
+:root[data-look="helder"] .chip, :root[data-look="helder"] .sortsel, :root[data-look="helder"] .search, :root[data-look="helder"] .setbtn, :root[data-look="helder"] .btn.ghost, :root[data-look="helder"] .qtybox, :root[data-look="helder"] .rate, :root[data-look="helder"] .stat,
+:root[data-look="gids"] .chip, :root[data-look="gids"] .sortsel, :root[data-look="gids"] .search, :root[data-look="gids"] .setbtn, :root[data-look="gids"] .btn.ghost, :root[data-look="gids"] .qtybox, :root[data-look="gids"] .rate, :root[data-look="gids"] .stat { box-shadow: inset 0 1px 0 var(--hi); }
+:root[data-look="helder"] .card, :root[data-look="gids"] .card { border-radius: 24px; }
 /* Effects: animations that play for a while IN FRONT of the content on any theme (you can tap through them). Kurk = bottle, cork and hearts. */
 .fxlayer { position: fixed; inset: 0; z-index: 20; pointer-events: none; overflow: hidden; }
 .fxlayer {
@@ -819,8 +911,11 @@ img { max-width: 100%; }
         <button type="button" role="radio" data-look-pick="zacht">Glass</button>
         <button type="button" role="radio" data-look-pick="crystal">Crystal</button>
         <button type="button" role="radio" data-look-pick="bubbels">Bubbels</button>
+        <button type="button" role="radio" data-look-pick="helder">Clear</button>
+        <button type="button" role="radio" data-look-pick="gids">Gids</button>
       </div>
       <p class="hint" style="margin:0">Het uiterlijk van de app. Licht of donker kies je bij Weergave.</p>
+      <p class="hint" id="lookCredit" style="margin:0" hidden>Foto's: Sven Wilhelm (Unsplash) en Juliane Monari (Pexels).</p>
       </div>
       <div class="setsec" id="friendsSec" hidden>
         <button class="btn ghost backupbtn backuptoggle" type="button" id="frToggle" aria-expanded="false" aria-controls="frOpts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 6.5M18 14a6.5 6.5 0 0 1 3.5 6"/></svg><span>Vrienden</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
@@ -1003,6 +1098,8 @@ img { max-width: 100%; }
     "Weergave": "Appearance", "Automatisch": "Automatic", "Licht": "Light", "Donker": "Dark",
     "Automatisch volgt de instelling van je apparaat.": "Automatic follows the setting of your device.",
     "Stuur een bericht": "Send a message", "Berichten van vrienden afspelen": "Play messages from friends",
+    "Gids": "Guide",
+    "Foto's: Sven Wilhelm (Unsplash) en Juliane Monari (Pexels).": "Photos: Sven Wilhelm (Unsplash) and Juliane Monari (Pexels).",
     "De animatie speelt Ã©Ã©n keer af en start zodra je vriend het bericht wegklikt.": "The animation plays once and starts as soon as your friend closes the message.",
     "Glitterplaatjes": "Glitter pictures", "Bericht": "Message", "Voorbeeld bekijken": "Preview", "Bijv. Proost op je verjaardag!": "E.g. Cheers on your birthday!", "Verstuur": "Send",
     "Je hebt vandaag al 10 berichten gestuurd. Probeer het morgen opnieuw.": "You have already sent 10 messages today. Try again tomorrow.",
@@ -1921,12 +2018,13 @@ img { max-width: 100%; }
     setSettings(false);
   });
   // ---------- Thema (klassiek / zacht), remembered per device; only the looks that are published are in LOOKS ----------
-  const LOOK_KEY = "wijnkelder.look", LOOKS = ["klassiek", "zacht", "crystal", "bubbels"];
+  const LOOK_KEY = "wijnkelder.look", LOOKS = ["klassiek", "zacht", "crystal", "bubbels", "helder", "gids"];
   let lookPick = "zacht"; // default for everyone until they choose another look
   try { const l = localStorage.getItem(LOOK_KEY); if (LOOKS.includes(l)) lookPick = l; } catch {}
   function applyLook() {
     if (lookPick === "klassiek") { rootEl.removeAttribute("data-look"); rootEl.removeAttribute("data-glass"); } else { rootEl.setAttribute("data-look", lookPick); rootEl.setAttribute("data-glass", ""); }
     document.querySelectorAll("[data-look-pick]").forEach(b => b.setAttribute("aria-checked", String(b.dataset.lookPick === lookPick)));
+    const cr = $("lookCredit"); if (cr) cr.hidden = lookPick !== "helder";
     fillBubbles(lookPick === "bubbels");
   }
   // ---------- Effects: an animation in its own layer (#fxLayer) over any theme, for a limited time ----------
